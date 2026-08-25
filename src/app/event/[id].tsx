@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, ScrollView, Share, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,9 +8,18 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
-import { CATEGORY_LABELS, formatEventDate, formatPeriodTiming, getEventById } from '@/data/events';
+import { CATEGORY_LABELS, daysUntil, formatEventDate, formatPeriodTiming, getEventById } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORY_STYLE } from '@/lib/category-style';
+import { getDevotionalContent } from '@/lib/devotional-content';
+import {
+  areRemindersEnabled,
+  enableReminders,
+  isTopicFollowed,
+  notificationBody,
+  notificationTitle,
+  setTopicFollowed,
+} from '@/lib/notifications';
 import { resolveRegionTimeZone } from '@/lib/regions';
 
 export default function EventDetailScreen() {
@@ -17,6 +27,12 @@ export default function EventDetailScreen() {
   const event = getEventById(id);
   const { regionId } = useRegion();
   const theme = useTheme();
+  const [reminderOn, setReminderOn] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (event) isTopicFollowed(event.deity, event.category).then(setReminderOn);
+  }, [event]);
 
   if (!event) {
     return (
@@ -30,6 +46,30 @@ export default function EventDetailScreen() {
   const timing = formatPeriodTiming(event, timeZone, regionLabel);
   const { colorKey, icon } = CATEGORY_STYLE[event.category];
   const accentColor = theme[colorKey];
+  const { practice, prayer } = getDevotionalContent(event);
+
+  const handleSetReminder = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const next = !reminderOn;
+      if (next && !(await areRemindersEnabled())) await enableReminders();
+      await setTopicFollowed(event.deity, event.category, next);
+      setReminderOn(next);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const n = Math.max(daysUntil(event.date), 0);
+    const message = `${notificationTitle(event, n)}\n\n${notificationBody(event, n)}`;
+    try {
+      await Share.share({ message });
+    } catch {
+      // user dismissed the share sheet - nothing to do
+    }
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -48,6 +88,23 @@ export default function EventDetailScreen() {
             {event.tamilName}
           </ThemedText>
           <ThemedText type="smallBold">{formatEventDate(event.date)}</ThemedText>
+        </ThemedView>
+
+        <ThemedView style={styles.buttonRow}>
+          <Pressable onPress={handleSetReminder} disabled={busy} style={styles.buttonFlex}>
+            <ThemedView style={[styles.button, { backgroundColor: reminderOn ? theme.backgroundSelected : theme.primary }]}>
+              <ThemedText type="smallBold" style={{ color: reminderOn ? theme.text : theme.primaryText }}>
+                {reminderOn ? '🔔 Reminder set' : 'Set reminder'}
+              </ThemedText>
+            </ThemedView>
+          </Pressable>
+          <Pressable onPress={handleShare} style={styles.buttonFlex}>
+            <ThemedView style={[styles.button, styles.buttonOutline, { borderColor: theme.primary }]}>
+              <ThemedText type="smallBold" style={{ color: theme.primary }}>
+                Share with family
+              </ThemedText>
+            </ThemedView>
+          </Pressable>
         </ThemedView>
 
         {timing && (
@@ -75,13 +132,19 @@ export default function EventDetailScreen() {
         )}
 
         <ThemedView style={styles.section}>
-          <ThemedText type="smallBold">About</ThemedText>
+          <ThemedText type="smallBold">Why this day matters</ThemedText>
           <ThemedText>{event.description}</ThemedText>
+          <ThemedText style={styles.significance}>{event.significance}</ThemedText>
         </ThemedView>
 
         <ThemedView style={styles.section}>
-          <ThemedText type="smallBold">Significance</ThemedText>
-          <ThemedText>{event.significance}</ThemedText>
+          <ThemedText type="smallBold">What devotees traditionally do</ThemedText>
+          <ThemedText>{practice}</ThemedText>
+        </ThemedView>
+
+        <ThemedView type="backgroundElement" style={[styles.prayerCard, { borderLeftColor: accentColor }]}>
+          <ThemedText type="smallBold">Simple prayer</ThemedText>
+          <ThemedText style={styles.prayerText}>{prayer}</ThemedText>
         </ThemedView>
 
         <ThemedView style={styles.section}>
@@ -132,8 +195,36 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 26,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  buttonFlex: {
+    flex: 1,
+  },
+  button: {
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.three,
+    alignItems: 'center',
+  },
+  buttonOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+  },
   section: {
     gap: Spacing.one,
+  },
+  significance: {
+    marginTop: Spacing.one,
+  },
+  prayerCard: {
+    gap: Spacing.one,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderLeftWidth: 4,
+  },
+  prayerText: {
+    fontStyle: 'italic',
   },
   timingCard: {
     gap: Spacing.one,

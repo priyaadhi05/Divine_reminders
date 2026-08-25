@@ -1,15 +1,17 @@
-import { FlatList, Platform, StyleSheet } from 'react-native';
+import { useCallback, useState } from 'react';
+import { FlatList, Platform, Pressable, StyleSheet } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeityCard } from '@/components/deity-card';
-import { EverythingToggle } from '@/components/everything-toggle';
 import { MuruganMascot } from '@/components/murugan-mascot';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
-import { DEITIES, getUpcomingEvents } from '@/data/events';
+import { DEITIES, formatEventDate, getDeityById, relativeDayLabel, type DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { getFollowedUpcomingEvents } from '@/lib/notifications';
 
 // Rotating accent per deity card, since there's no per-deity artwork yet to
 // tell them apart visually - just symbol + name + this border color.
@@ -21,42 +23,94 @@ const DEITY_ACCENTS: Record<string, ThemeColor> = {
 };
 
 export default function HomeScreen() {
-  const [nextOverall] = getUpcomingEvents(1);
   const theme = useTheme();
+  const [sacredDays, setSacredDays] = useState<DeityEvent[]>([]);
+
+  // Reload whenever Home regains focus (e.g. coming back from "Manage my
+  // deities" or a deity's notify toggles), so the feed always reflects the
+  // current follow selection.
+  useFocusEffect(
+    useCallback(() => {
+      getFollowedUpcomingEvents(8).then(setSacredDays);
+    }, [])
+  );
+
+  const [nextOverall] = sacredDays;
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <FlatList
-          data={DEITIES}
+          data={sacredDays}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
-                  Divine Calendar
+                  Your Sacred Days
                 </ThemedText>
                 <ThemedText type="small" style={[styles.heroSubtitle, { color: theme.primaryText }]}>
-                  Festivals, vrathams &amp; auspicious days · 2026–2035
+                  Personalized to the deities you follow
                 </ThemedText>
               </ThemedView>
 
               <MuruganMascot nextEvent={nextOverall} />
 
-              <EverythingToggle />
+              <Pressable onPress={() => router.push('/onboarding')}>
+                <ThemedText type="linkPrimary">❤️ Manage my deities →</ThemedText>
+              </Pressable>
 
-              <ThemedText type="smallBold" style={styles.sectionLabel}>
-                Choose a deity
-              </ThemedText>
+              {sacredDays.length === 0 && (
+                <ThemedView type="backgroundElement" style={styles.emptyCard}>
+                  <ThemedText type="smallBold">No sacred days yet</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    Choose which deities are meaningful to you and this screen will fill up with what's coming next.
+                  </ThemedText>
+                </ThemedView>
+              )}
             </ThemedView>
           }
-          renderItem={({ item }) => <DeityCard deity={item} accentColor={DEITY_ACCENTS[item.id] ?? 'primary'} />}
+          renderItem={({ item }) => <SacredDayRow event={item} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
+          ListFooterComponent={
+            <ThemedView style={styles.browseSection}>
+              <ThemedText type="smallBold">Browse all deities</ThemedText>
+              {DEITIES.map((deity) => (
+                <ThemedView key={deity.id} style={styles.browseCardWrap}>
+                  <DeityCard deity={deity} accentColor={DEITY_ACCENTS[deity.id] ?? 'primary'} />
+                </ThemedView>
+              ))}
+            </ThemedView>
+          }
         />
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>
     </ThemedView>
+  );
+}
+
+function SacredDayRow({ event }: { event: DeityEvent }) {
+  const theme = useTheme();
+  const deity = getDeityById(event.deity);
+
+  return (
+    <Pressable onPress={() => router.push({ pathname: '/event/[id]', params: { id: event.id } })}>
+      <ThemedView type="backgroundElement" style={[styles.row, { borderLeftColor: theme.primary }]}>
+        <ThemedText style={styles.rowSymbol}>{deity?.symbol ?? '🪔'}</ThemedText>
+        <ThemedView type="backgroundElement" style={styles.rowText}>
+          <ThemedText type="smallBold" themeColor="primary">
+            {relativeDayLabel(event.date)}
+          </ThemedText>
+          <ThemedText type="subtitle" style={styles.rowName}>
+            {event.name}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {formatEventDate(event.date)}
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+    </Pressable>
   );
 }
 
@@ -87,17 +141,45 @@ const styles = StyleSheet.create({
     gap: Spacing.half,
   },
   heroTitle: {
-    fontSize: 40,
-    lineHeight: 46,
+    fontSize: 36,
+    lineHeight: 42,
   },
   heroSubtitle: {
     textAlign: 'center',
     opacity: 0.9,
   },
-  sectionLabel: {
-    marginTop: Spacing.one,
+  emptyCard: {
+    padding: Spacing.four,
+    borderRadius: Spacing.four,
+    gap: Spacing.one,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderLeftWidth: 4,
+  },
+  rowSymbol: {
+    fontSize: 28,
+  },
+  rowText: {
+    flex: 1,
+    gap: Spacing.half,
+  },
+  rowName: {
+    fontSize: 22,
+    lineHeight: 28,
   },
   separator: {
     height: Spacing.two,
+  },
+  browseSection: {
+    marginTop: Spacing.four,
+    gap: Spacing.two,
+  },
+  browseCardWrap: {
+    marginTop: Spacing.one,
   },
 });

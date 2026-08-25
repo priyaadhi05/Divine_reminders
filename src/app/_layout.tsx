@@ -6,7 +6,7 @@ import { Platform, useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { RegionProvider } from '@/contexts/region-context';
-import { getNotificationEventId, scheduleUpcomingReminders } from '@/lib/notifications';
+import { getNotificationEventId, hasOnboarded, scheduleUpcomingReminders } from '@/lib/notifications';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,9 +32,21 @@ function useReminderSync() {
   }, []);
 }
 
+// First launch (or any time onboarding hasn't been completed) goes straight
+// to "Choose your deities" before the rest of the app - see
+// src/app/onboarding.tsx.
+function useOnboardingGate() {
+  useEffect(() => {
+    hasOnboarded().then((done) => {
+      if (!done) router.replace('/onboarding');
+    });
+  }, []);
+}
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   useReminderSync();
+  useOnboardingGate();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -42,6 +54,7 @@ export default function RootLayout() {
         <AnimatedSplashOverlay />
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="event/[id]" options={{ title: '' }} />
         </Stack>
       </RegionProvider>

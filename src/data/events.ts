@@ -58,6 +58,7 @@ export interface Deity {
   tamilName: string;
   symbol: string; // emoji used as a stand-in identity mark - no artwork asset yet
   greeting: string; // devotional exclamation used to open a reminder line, e.g. "Vel Vel!"
+  honorific: 'Lord' | 'Goddess';
   dataset: DeityDataset;
 }
 
@@ -70,6 +71,7 @@ export const DEITIES: Deity[] = [
     tamilName: 'முருகன்',
     symbol: '🦚',
     greeting: 'Vel Vel!',
+    honorific: 'Lord',
     dataset: muruganData as DeityDataset,
   },
   {
@@ -78,6 +80,7 @@ export const DEITIES: Deity[] = [
     tamilName: 'விஷ்ணு',
     symbol: '🪷',
     greeting: 'Om Namo Narayanaya!',
+    honorific: 'Lord',
     dataset: vishnuData as DeityDataset,
   },
   {
@@ -86,14 +89,16 @@ export const DEITIES: Deity[] = [
     tamilName: 'சிவன்',
     symbol: '🔱',
     greeting: 'Om Namah Shivaya!',
+    honorific: 'Lord',
     dataset: shivaData as DeityDataset,
   },
   {
     id: 'durga',
-    name: 'Durga Devi',
-    tamilName: 'துர்கை',
-    symbol: '🦁',
+    name: 'Amman',
+    tamilName: 'அம்மன்',
+    symbol: '🌺',
     greeting: 'Om Shakti!',
+    honorific: 'Goddess',
     dataset: durgaData as DeityDataset,
   },
 ];
@@ -140,6 +145,25 @@ export function getUpcomingEvents(limit?: number, deityId?: string): DeityEvent[
   const pool = deityId ? getEventsForDeity(deityId) : getAllEvents();
   const upcoming = pool.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   return limit ? upcoming.slice(0, limit) : upcoming;
+}
+
+// Whole-day difference between today (IST calendar date) and an event's
+// date - used for the "Today / In 3 days / In 8 days" relative labels on
+// the personalized "Your Sacred Days" feed.
+export function daysUntil(dateStr: string): number {
+  const today = todayISTDateStr();
+  const toUTC = (d: string) => {
+    const [y, m, day] = d.split('-').map(Number);
+    return Date.UTC(y, m - 1, day);
+  };
+  return Math.round((toUTC(dateStr) - toUTC(today)) / 86400000);
+}
+
+export function relativeDayLabel(dateStr: string): string {
+  const n = daysUntil(dateStr);
+  if (n === 0) return 'Today';
+  if (n === 1) return 'Tomorrow';
+  return `In ${n} days`;
 }
 
 export function getEventsByYear(): Map<string, DeityEvent[]> {

@@ -10,14 +10,44 @@ const SUPPORTED = Platform.OS !== 'web';
 
 const ENABLED_KEY = 'divine-calendar:reminders-enabled';
 const FOLLOWED_TOPICS_KEY = 'divine-calendar:followed-topics';
+const ONBOARDED_KEY = 'divine-calendar:onboarded';
+const REMINDER_STYLE_KEY = 'divine-calendar:reminder-style';
 const NOTIFICATION_PREFIX = 'divine-calendar-reminder-';
 const CHANNEL_ID = 'divine-calendar-reminders';
 const REMINDER_HOUR = 9; // fires at 9am local device time on each countdown day
 
-// A fixed countdown per followed event: a heads-up 3 days out, then 2, then a
-// final one the day before - never on the day itself, and never added to any
-// calendar. This is the app's whole reminder mechanism.
-const LEAD_DAYS = [3, 2, 1] as const;
+// The "full" countdown per followed event: a heads-up 3 days out, a nudge
+// the day before, and a blessing on the day itself. "Quiet" style (chosen at
+// onboarding) drops the two heads-ups and keeps just the day-of blessing.
+// Either way this is the app's whole reminder mechanism - never a calendar
+// entry, always a notification.
+const FULL_LEAD_DAYS = [3, 1, 0] as const;
+const QUIET_LEAD_DAYS = [0] as const;
+
+export type ReminderStyle = 'full' | 'quiet';
+
+export async function getReminderStyle(): Promise<ReminderStyle> {
+  if (!SUPPORTED) return 'full';
+  const raw = await AsyncStorage.getItem(REMINDER_STYLE_KEY);
+  return raw === 'quiet' ? 'quiet' : 'full';
+}
+
+export async function setReminderStyle(style: ReminderStyle): Promise<void> {
+  if (!SUPPORTED) return;
+  await AsyncStorage.setItem(REMINDER_STYLE_KEY, style);
+  await scheduleUpcomingReminders();
+}
+
+// --- Onboarding ------------------------------------------------------------
+
+export async function hasOnboarded(): Promise<boolean> {
+  if (!SUPPORTED) return true; // nothing to gate on web - reminders are inert there anyway
+  return (await AsyncStorage.getItem(ONBOARDED_KEY)) === 'true';
+}
+
+export async function markOnboarded(): Promise<void> {
+  await AsyncStorage.setItem(ONBOARDED_KEY, 'true');
+}
 
 // iOS caps pending local notifications at ~64. Each followed event now
 // produces up to 3 notifications, so keep well under that: 18 events * 3 =
@@ -37,13 +67,32 @@ if (SUPPORTED) {
   });
 }
 
-function daysUntilLabel(daysBefore: number): string {
-  return daysBefore === 1 ? '1 day to go' : `${daysBefore} days to go`;
+// Notification title/body for the 3-day / 1-day / today countdown, e.g.:
+//   "🦚 Murugan's special day is in 3 days" / "Prepare your heart for
+//   Thaipusam 🙏\n\nSee the significance →"
+//   "🦚 Today is Thaipusam" / "May Lord Murugan bless you and your family
+//   with strength, wisdom and grace. 🙏"
+export function notificationTitle(event: DeityEvent, daysBefore: number): string {
+  const deity = getDeityById(event.deity);
+  const symbol = deity?.symbol ?? '🪔';
+  const speaker = deity?.name ?? 'the divine calendar';
+  if (daysBefore === 0) return `${symbol} Today is ${event.name}`;
+  if (daysBefore === 1) return `${symbol} ${speaker}'s special day is tomorrow`;
+  return `${symbol} ${speaker}'s special day is in ${daysBefore} days`;
+}
+
+export function notificationBody(event: DeityEvent, daysBefore: number): string {
+  const deity = getDeityById(event.deity);
+  const speaker = deity?.name ?? 'the divine calendar';
+  const honorific = deity?.honorific ?? 'Lord';
+  if (daysBefore === 0) {
+    return `May ${honorific} ${speaker} bless you and your family with strength, wisdom and grace. 🙏`;
+  }
+  return `Prepare your heart for ${event.name} 🙏\n\nSee the significance →`;
 }
 
 // First-person countdown line, voiced as whichever deity the event belongs
-// to - used both as the notification body and (for the nearest event) the
-// companion card's spoken line.
+// to - used for the home companion card's spoken (TTS) line.
 export function reminderLine(event: DeityEvent, daysBefore?: number): string {
   const deity = getDeityById(event.deity);
   const greeting = deity?.greeting ?? 'Vel Vel!';
@@ -76,8 +125,9 @@ export async function areRemindersEnabled(): Promise<boolean> {
 //   - A whole deity: every topic for that one deity (setDeityFollowed)
 //   - One category:  a single (deity, category) pair (setTopicFollowed) -
 //     e.g. "only Pradosham", "only Valarpirai Sashti"
-// Defaults to "everything" the first time, before the user has touched any
-// toggle, so turning reminders on behaves sensibly out of the box.
+// Defaults to nothing followed until onboarding (src/app/onboarding.tsx)
+// sets the user's chosen deities - "Your Sacred Days" is meant to be
+// personalized, not everything at once.
 
 function topicKey(deityId: string, category: string): string {
   return `${deityId}:${category}`;
@@ -90,12 +140,12 @@ function allTopics(): string[] {
 export async function getFollowedTopics(): Promise<Set<string>> {
   if (!SUPPORTED) return new Set();
   const raw = await AsyncStorage.getItem(FOLLOWED_TOPICS_KEY);
-  if (raw === null) return new Set(allTopics());
+  if (raw === null) return new Set();
   try {
     const parsed = JSON.parse(raw);
-    return new Set(Array.isArray(parsed) ? parsed : allTopics());
+    return new Set(Array.isArray(parsed) ? parsed : []);
   } catch {
-    return new Set(allTopics());
+    return new Set();
   }
 }
 
@@ -106,6 +156,15 @@ async function saveFollowedTopics(topics: Set<string>): Promise<void> {
 
 export async function isTopicFollowed(deityId: string, category: string): Promise<boolean> {
   return (await getFollowedTopics()).has(topicKey(deityId, category));
+}
+
+// The personalized "Your Sacred Days" feed - upcoming events restricted to
+// whatever the user actually follows, exactly the same filter scheduling
+// uses, so what's shown on Home always matches what will actually notify.
+export async function getFollowedUpcomingEvents(limit?: number): Promise<DeityEvent[]> {
+  const followed = await getFollowedTopics();
+  const upcoming = getUpcomingEvents().filter((e) => followed.has(topicKey(e.deity, e.category)));
+  return limit ? upcoming.slice(0, limit) : upcoming;
 }
 
 export async function setTopicFollowed(deityId: string, category: string, follow: boolean): Promise<void> {
@@ -194,10 +253,11 @@ export async function disableReminders(): Promise<void> {
 }
 
 // Re-syncs the rolling window of scheduled reminders for every followed
-// topic's upcoming events, each getting its 3/2/1-day-before countdown.
+// topic's upcoming events, each getting the countdown its reminder style
+// calls for (full 3/1/0-day, or just the day-of blessing for "quiet").
 // Cheap enough to just cancel-and-reschedule outright rather than diffing;
-// call this on app launch/foreground and whenever a follow preference
-// changes.
+// call this on app launch/foreground and whenever a follow preference or
+// style changes.
 export async function scheduleUpcomingReminders(): Promise<void> {
   if (!SUPPORTED) return;
   if (!(await areRemindersEnabled())) return;
@@ -206,6 +266,7 @@ export async function scheduleUpcomingReminders(): Promise<void> {
   await ensureChannel();
 
   const followed = await getFollowedTopics();
+  const leadDays = (await getReminderStyle()) === 'quiet' ? QUIET_LEAD_DAYS : FULL_LEAD_DAYS;
   const upcoming = getUpcomingEvents()
     .filter((e) => followed.has(topicKey(e.deity, e.category)))
     .slice(0, MAX_SCHEDULED_EVENTS);
@@ -213,7 +274,7 @@ export async function scheduleUpcomingReminders(): Promise<void> {
   for (const event of upcoming) {
     const [y, m, d] = event.date.split('-').map(Number);
 
-    for (const daysBefore of LEAD_DAYS) {
+    for (const daysBefore of leadDays) {
       const fireDate = new Date(y, m - 1, d, REMINDER_HOUR, 0, 0); // device-local time
       fireDate.setDate(fireDate.getDate() - daysBefore);
       if (fireDate.getTime() <= Date.now()) continue;
@@ -221,8 +282,8 @@ export async function scheduleUpcomingReminders(): Promise<void> {
       await Notifications.scheduleNotificationAsync({
         identifier: `${NOTIFICATION_PREFIX}${event.id}-${daysBefore}d`,
         content: {
-          title: `${event.name} · ${daysUntilLabel(daysBefore)}`,
-          body: reminderLine(event, daysBefore),
+          title: notificationTitle(event, daysBefore),
+          body: notificationBody(event, daysBefore),
           data: { eventId: event.id },
         },
         trigger: {
