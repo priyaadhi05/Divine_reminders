@@ -7,20 +7,33 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// Traditional South Indian temple palette: vermillion (kumkum/Vel) as
+// primary, gold/saffron as accent, peacock teal as secondary (Murugan's
+// vehicle). Warm off-white in light mode, deep maroon-black in dark mode.
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: '#2B1A15',
+    textSecondary: '#7A6155',
+    background: '#FDF8F3',
+    backgroundElement: '#F5EBE0',
+    backgroundSelected: '#EBD9C4',
+    primary: '#B0301F',
+    primaryText: '#FFFFFF',
+    accent: '#D4A017',
+    secondary: '#0F6B5C',
+    maroon: '#6B1E14',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#F5EBE0',
+    textSecondary: '#C9B8AE',
+    background: '#1A0F0C',
+    backgroundElement: '#2B1A15',
+    backgroundSelected: '#3D241C',
+    primary: '#E0543D',
+    primaryText: '#1A0F0C',
+    accent: '#E6B84D',
+    secondary: '#3FA593',
+    maroon: '#A6452F',
   },
 } as const;
 

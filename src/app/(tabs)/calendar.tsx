@@ -1,180 +1,159 @@
-import { Image } from 'expo-image';
-import { SymbolView } from 'expo-symbols';
-import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMemo, useState } from 'react';
+import { Alert, Platform, Pressable, SectionList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ExternalLink } from '@/components/external-link';
+import { EventCard } from '@/components/event-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Collapsible } from '@/components/ui/collapsible';
 import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { CATEGORY_LABELS, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { buildICS } from '@/lib/ics';
+import { CATEGORY_STYLE } from '@/lib/category-style';
+import { shareICS } from '@/lib/share-ics';
 
-export default function TabTwoScreen() {
-  const safeAreaInsets = useSafeAreaInsets();
-  const insets = {
-    ...safeAreaInsets,
-    bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
-  };
+const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
+  { key: 'all', label: 'All', icon: '📿', colorKey: 'primary' },
+  { key: 'festival', label: CATEGORY_LABELS.festival, ...CATEGORY_STYLE.festival },
+  { key: 'vratham', label: CATEGORY_LABELS.vratham, ...CATEGORY_STYLE.vratham },
+  { key: 'monthly-sashti', label: CATEGORY_LABELS['monthly-sashti'], ...CATEGORY_STYLE['monthly-sashti'] },
+  { key: 'monthly-krithigai', label: CATEGORY_LABELS['monthly-krithigai'], ...CATEGORY_STYLE['monthly-krithigai'] },
+  { key: 'theipirai-sashti', label: CATEGORY_LABELS['theipirai-sashti'], ...CATEGORY_STYLE['theipirai-sashti'] },
+];
+
+async function exportAllToCalendar() {
+  try {
+    const ics = buildICS(getAllEvents(), 'Murugan Events 2026-2035');
+    await shareICS(ics, 'murugan-events-2026-2035.ics');
+  } catch (err) {
+    Alert.alert('Could not export calendar', err instanceof Error ? err.message : 'Please try again.');
+  }
+}
+
+export default function CalendarScreen() {
+  const [filter, setFilter] = useState<EventCategory | 'all'>('all');
   const theme = useTheme();
 
-  const contentPlatformStyle = Platform.select({
-    android: {
-      paddingTop: insets.top,
-      paddingLeft: insets.left,
-      paddingRight: insets.right,
-      paddingBottom: insets.bottom,
-    },
-    web: {
-      paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
-    },
-  });
+  const sections = useMemo(() => {
+    const events = filter === 'all' ? getAllEvents() : getAllEvents().filter((e) => e.category === filter);
+    return getEventsByYearMonth(events).map((group) => ({ title: group.label, data: group.events }));
+  }, [filter]);
 
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: theme.background }]}
-      contentInset={insets}
-      contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
-      <ThemedView style={styles.container}>
-        <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
-          <ThemedText style={styles.centerText} themeColor="textSecondary">
-            This starter app includes example{'\n'}code to help you get started.
-          </ThemedText>
-
-          <ExternalLink href="https://docs.expo.dev" asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-              <ThemedView type="backgroundElement" style={styles.linkButton}>
-                <ThemedText type="link">Expo documentation</ThemedText>
-                <SymbolView
-                  tintColor={theme.text}
-                  name={{ ios: 'arrow.up.right.square', android: 'link', web: 'link' }}
-                  size={12}
-                />
-              </ThemedView>
-            </Pressable>
-          </ExternalLink>
-        </ThemedView>
-
-        <ThemedView style={styles.sectionsWrapper}>
-          <Collapsible title="File-based routing">
-            <ThemedText type="small">
-              This app has two screens: <ThemedText type="code">src/app/index.tsx</ThemedText> and{' '}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
-            </ThemedText>
-            <ThemedText type="small">
-              The layout file in <ThemedText type="code">src/app/_layout.tsx</ThemedText> sets up
-              the tab navigator.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/router/introduction">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Android, iOS, and web support">
-            <ThemedView type="backgroundElement" style={styles.collapsibleContent}>
-              <ThemedText type="small">
-                You can open this project on Android, iOS, and the web. To open the web version,
-                press <ThemedText type="smallBold">w</ThemedText> in the terminal running this
-                project.
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <SectionList
+          sections={sections}
+          keyExtractor={(item) => item.id}
+          stickySectionHeadersEnabled
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={
+            <ThemedView style={styles.header}>
+              <ThemedText type="title" style={styles.title} themeColor="primary">
+                Calendar
               </ThemedText>
-              <Image
-                source={require('@/assets/images/tutorial-web.png')}
-                style={styles.imageTutorial}
-              />
+              <ThemedText type="small" themeColor="textSecondary">
+                All Murugan events, 2026–2035 · festivals, vrathams &amp; monthly observances
+              </ThemedText>
+              <ThemedView style={styles.filterRow}>
+                {FILTERS.map((f) => {
+                  const selected = filter === f.key;
+                  const chipColor = theme[f.colorKey];
+                  return (
+                    <Pressable key={f.key} onPress={() => setFilter(f.key)}>
+                      <ThemedView
+                        type="backgroundElement"
+                        style={[
+                          styles.filterChip,
+                          selected && { backgroundColor: chipColor, borderColor: chipColor },
+                        ]}>
+                        <ThemedText style={styles.filterChipIcon}>{f.icon}</ThemedText>
+                        <ThemedText
+                          type="small"
+                          style={selected && { color: theme.primaryText, fontWeight: '700' }}>
+                          {f.label}
+                        </ThemedText>
+                      </ThemedView>
+                    </Pressable>
+                  );
+                })}
+              </ThemedView>
+              <Pressable onPress={exportAllToCalendar} style={styles.exportRow}>
+                <ThemedText type="linkPrimary">Export all 10 years to Calendar (.ics) →</ThemedText>
+              </Pressable>
             </ThemedView>
-          </Collapsible>
-
-          <Collapsible title="Images">
-            <ThemedText type="small">
-              For static images, you can use the <ThemedText type="code">@2x</ThemedText> and{' '}
-              <ThemedText type="code">@3x</ThemedText> suffixes to provide files for different
-              screen densities.
-            </ThemedText>
-            <Image source={require('@/assets/images/react-logo.png')} style={styles.imageReact} />
-            <ExternalLink href="https://reactnative.dev/docs/images">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Light and dark mode components">
-            <ThemedText type="small">
-              This template has light and dark mode support. The{' '}
-              <ThemedText type="code">useColorScheme()</ThemedText> hook lets you inspect what the
-              user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-            </ThemedText>
-            <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-              <ThemedText type="linkPrimary">Learn more</ThemedText>
-            </ExternalLink>
-          </Collapsible>
-
-          <Collapsible title="Animations">
-            <ThemedText type="small">
-              This template includes an example of an animated component. The{' '}
-              <ThemedText type="code">src/components/ui/collapsible.tsx</ThemedText> component uses
-              the powerful <ThemedText type="code">react-native-reanimated</ThemedText> library to
-              animate opening this hint.
-            </ThemedText>
-          </Collapsible>
-        </ThemedView>
+          }
+          renderSectionHeader={({ section }) => (
+            <ThemedView type="background" style={styles.sectionHeader}>
+              <ThemedText type="smallBold" themeColor="primary">
+                {section.title}
+              </ThemedText>
+            </ThemedView>
+          )}
+          renderItem={({ item }) => <EventCard event={item} />}
+          ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
+          SectionSeparatorComponent={() => <ThemedView style={styles.sectionSeparator} />}
+        />
         {Platform.OS === 'web' && <WebBadge />}
-      </ThemedView>
-    </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  contentContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
   container: {
-    maxWidth: MaxContentWidth,
-    flexGrow: 1,
-  },
-  titleContainer: {
-    gap: Spacing.three,
-    alignItems: 'center',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.six,
-  },
-  centerText: {
-    textAlign: 'center',
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  linkButton: {
+    flex: 1,
     flexDirection: 'row',
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.five,
     justifyContent: 'center',
-    gap: Spacing.one,
-    alignItems: 'center',
   },
-  sectionsWrapper: {
-    gap: Spacing.five,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  collapsibleContent: {
-    alignItems: 'center',
-  },
-  imageTutorial: {
+  safeArea: {
+    flex: 1,
     width: '100%',
-    aspectRatio: 296 / 171,
-    borderRadius: Spacing.three,
+    maxWidth: MaxContentWidth,
+  },
+  listContent: {
+    paddingHorizontal: Spacing.three,
+    paddingBottom: BottomTabInset + Spacing.three,
+  },
+  header: {
+    paddingTop: Spacing.four,
+    paddingBottom: Spacing.two,
+    gap: Spacing.one,
+  },
+  exportRow: {
     marginTop: Spacing.two,
   },
-  imageReact: {
-    width: 100,
-    height: 100,
-    alignSelf: 'center',
+  title: {
+    fontSize: 34,
+    lineHeight: 40,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+    marginTop: Spacing.three,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.five,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  filterChipIcon: {
+    fontSize: 13,
+  },
+  sectionHeader: {
+    paddingVertical: Spacing.two,
+  },
+  separator: {
+    height: Spacing.two,
+  },
+  sectionSeparator: {
+    height: Spacing.one,
   },
 });
