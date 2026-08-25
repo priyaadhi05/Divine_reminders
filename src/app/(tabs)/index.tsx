@@ -9,9 +9,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
-import { DEITIES, formatEventDate, getDeityById, relativeDayLabel, type DeityEvent } from '@/data/events';
+import { DEITIES, formatEventDate, getDeityById, relativeDayLabel, type Deity, type DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
-import { getFollowedUpcomingEvents } from '@/lib/notifications';
+import { getDeityFollowState, getFollowedUpcomingEvents } from '@/lib/notifications';
 
 // Rotating accent per deity card, since there's no per-deity artwork yet to
 // tell them apart visually - just symbol + name + this border color.
@@ -25,6 +25,8 @@ const DEITY_ACCENTS: Record<string, ThemeColor> = {
 export default function HomeScreen() {
   const theme = useTheme();
   const [sacredDays, setSacredDays] = useState<DeityEvent[]>([]);
+  const [otherDeities, setOtherDeities] = useState<Deity[]>([]);
+  const [showBrowse, setShowBrowse] = useState(false);
 
   // Reload whenever Home regains focus (e.g. coming back from "Manage my
   // deities" or a deity's notify toggles), so the feed always reflects the
@@ -32,6 +34,10 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       getFollowedUpcomingEvents(8).then(setSacredDays);
+      Promise.all(DEITIES.map(async (d) => ((await getDeityFollowState(d.id)) === 'none' ? d : null))).then((results) =>
+        setOtherDeities(results.filter((d): d is Deity => d !== null))
+      );
+      setShowBrowse(false); // collapse again each time Home regains focus
     }, [])
   );
 
@@ -74,14 +80,21 @@ export default function HomeScreen() {
           renderItem={({ item }) => <SacredDayRow event={item} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
           ListFooterComponent={
-            <ThemedView style={styles.browseSection}>
-              <ThemedText type="smallBold">Browse all deities</ThemedText>
-              {DEITIES.map((deity) => (
-                <ThemedView key={deity.id} style={styles.browseCardWrap}>
-                  <DeityCard deity={deity} accentColor={DEITY_ACCENTS[deity.id] ?? 'primary'} />
-                </ThemedView>
-              ))}
-            </ThemedView>
+            otherDeities.length > 0 ? (
+              <ThemedView style={styles.browseSection}>
+                <Pressable onPress={() => setShowBrowse((v) => !v)}>
+                  <ThemedText type="linkPrimary">
+                    {showBrowse ? '← Hide' : 'Browse other deities →'}
+                  </ThemedText>
+                </Pressable>
+                {showBrowse &&
+                  otherDeities.map((deity) => (
+                    <ThemedView key={deity.id} style={styles.browseCardWrap}>
+                      <DeityCard deity={deity} accentColor={DEITY_ACCENTS[deity.id] ?? 'primary'} />
+                    </ThemedView>
+                  ))}
+              </ThemedView>
+            ) : null
           }
         />
         {Platform.OS === 'web' && <WebBadge />}
