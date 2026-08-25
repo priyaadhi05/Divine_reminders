@@ -2,15 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { getUpcomingEvents, type DeityEvent } from '@/data/events';
+import { getDeityById, getUpcomingEvents, type DeityEvent } from '@/data/events';
 
 // Local (on-device) reminders only - no push server, no account, no cost.
 // Not supported on web (expo-notifications has no web implementation).
 const SUPPORTED = Platform.OS !== 'web';
 
 const STORAGE_KEY = 'divine-calendar:reminders-enabled';
-const NOTIFICATION_PREFIX = 'murugan-reminder-';
-const CHANNEL_ID = 'murugan-reminders';
+const NOTIFICATION_PREFIX = 'divine-calendar-reminder-';
+const CHANNEL_ID = 'divine-calendar-reminders';
 const REMINDER_HOUR = 7; // fires at 7am local device time, on the event's date
 
 // iOS caps pending local notifications at ~64; stay well under that so
@@ -30,8 +30,9 @@ if (SUPPORTED) {
   });
 }
 
-// First-person, Murugan-"voiced" reminder line - short enough to read as a
-// notification and to speak aloud via the mascot's text-to-speech.
+// First-person reminder line, "voiced" as whichever deity the event belongs
+// to - short enough to read as a notification and to speak aloud via the
+// companion card's text-to-speech.
 export function reminderLine(event: DeityEvent): string {
   const day = new Date(`${event.date}T00:00:00Z`).toLocaleDateString('en-US', {
     weekday: 'long',
@@ -39,7 +40,10 @@ export function reminderLine(event: DeityEvent): string {
     day: 'numeric',
     timeZone: 'UTC',
   });
-  return `Vel Vel! I'm Murugan, reminding you - ${event.name} (${event.tamilName}) falls on ${day}. ${event.significance}`;
+  const deity = getDeityById(event.deity);
+  const greeting = deity?.greeting ?? 'Vel Vel!';
+  const speaker = deity?.name ?? 'the divine calendar';
+  return `${greeting} I'm ${speaker}, reminding you - ${event.name} (${event.tamilName}) falls on ${day}. ${event.significance}`;
 }
 
 export async function areRemindersEnabled(): Promise<boolean> {
@@ -50,7 +54,7 @@ export async function areRemindersEnabled(): Promise<boolean> {
 async function ensureChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-    name: 'Murugan reminders',
+    name: 'Divine Calendar reminders',
     importance: Notifications.AndroidImportance.DEFAULT,
   });
 }

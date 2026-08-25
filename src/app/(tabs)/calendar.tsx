@@ -20,12 +20,16 @@ const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorK
   { key: 'monthly-sashti', label: CATEGORY_LABELS['monthly-sashti'], ...CATEGORY_STYLE['monthly-sashti'] },
   { key: 'monthly-krithigai', label: CATEGORY_LABELS['monthly-krithigai'], ...CATEGORY_STYLE['monthly-krithigai'] },
   { key: 'theipirai-sashti', label: CATEGORY_LABELS['theipirai-sashti'], ...CATEGORY_STYLE['theipirai-sashti'] },
+  { key: 'ekadashi', label: CATEGORY_LABELS.ekadashi, ...CATEGORY_STYLE.ekadashi },
+  { key: 'pradosham', label: CATEGORY_LABELS.pradosham, ...CATEGORY_STYLE.pradosham },
+  { key: 'monthly-shivaratri', label: CATEGORY_LABELS['monthly-shivaratri'], ...CATEGORY_STYLE['monthly-shivaratri'] },
+  { key: 'monthly-durgashtami', label: CATEGORY_LABELS['monthly-durgashtami'], ...CATEGORY_STYLE['monthly-durgashtami'] },
 ];
 
 async function exportAllToCalendar() {
   try {
-    const ics = buildICS(getAllEvents(), 'Murugan Events 2026-2035');
-    await shareICS(ics, 'murugan-events-2026-2035.ics');
+    const ics = buildICS(getAllEvents(), 'Divine Calendar Events 2026-2035');
+    await shareICS(ics, 'divine-calendar-events-2026-2035.ics');
   } catch (err) {
     Alert.alert('Could not export calendar', err instanceof Error ? err.message : 'Please try again.');
   }
@@ -54,7 +58,7 @@ export default function CalendarScreen() {
                 Calendar
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                All Murugan events, 2026–2035 · festivals, vrathams &amp; monthly observances
+                All events across every deity, 2026–2035 · festivals, vrathams &amp; monthly observances
               </ThemedText>
               <ThemedView style={styles.filterRow}>
                 {FILTERS.map((f) => {

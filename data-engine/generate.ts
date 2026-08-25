@@ -7,9 +7,34 @@ import {
   generateMuruganEvents,
   generateTheipiraiSashtiEvents,
 } from './deities/murugan';
+import { generateMonthlyEkadashiEvents, generateVishnuEvents } from './deities/vishnu';
+import { generateMonthlyPradoshamEvents, generateMonthlyShivaratriEvents, generateShivaEvents } from './deities/shiva';
+import { generateMonthlyDurgashtamiEvents, generateDurgaEvents } from './deities/durga';
+import type { BaseDeityEvent } from './deity-utils';
 
 const START_YEAR = 2026;
 const END_YEAR = 2035;
+
+const ASSUMPTIONS = {
+  location: 'Chennai, Tamil Nadu (13.0827N, 80.2707E)',
+  ayanamsa: 'Lahiri (linear approximation, ~1 arcmin accuracy)',
+  dayBoundary: 'Local sunrise (panchangam value prevailing at sunrise defines the calendar day)',
+  note: 'Astronomically computed. May occasionally differ by ±1 day from a specific temple\'s published panchangam near tithi/nakshatra boundary edge cases.',
+};
+
+function writeDataset(deity: string, events: BaseDeityEvent[]) {
+  const output = {
+    deity,
+    range: { startYear: START_YEAR, endYear: END_YEAR },
+    assumptions: ASSUMPTIONS,
+    generatedAt: new Date().toISOString(),
+    events,
+  };
+  const outPath = join(__dirname, '..', 'assets', 'data', `${deity}-events.json`);
+  mkdirSync(dirname(outPath), { recursive: true });
+  writeFileSync(outPath, JSON.stringify(output, null, 2));
+  console.log(`Wrote ${outPath} (${events.length} events)`);
+}
 
 function main() {
   const days: DayPanchangam[] = [];
@@ -18,38 +43,45 @@ function main() {
   }
   console.log(`Computed panchangam for ${days.length} days (${START_YEAR}-${END_YEAR}).`);
 
-  const annualEvents = generateMuruganEvents(days, START_YEAR, END_YEAR);
-  const festivalDates = new Set(annualEvents.map((e) => e.date));
-  const monthlySashti = generateMonthlySashtiEvents(days, festivalDates);
-  const monthlyKrithigai = generateMonthlyKrithigaiEvents(days, festivalDates);
-  const theipiraiSashti = generateTheipiraiSashtiEvents(days);
+  // Murugan
+  const muruganAnnual = generateMuruganEvents(days, START_YEAR, END_YEAR);
+  const muruganFestivalDates = new Set(muruganAnnual.map((e) => e.date));
+  const muruganEvents = [
+    ...muruganAnnual,
+    ...generateMonthlySashtiEvents(days, muruganFestivalDates),
+    ...generateMonthlyKrithigaiEvents(days, muruganFestivalDates),
+    ...generateTheipiraiSashtiEvents(days),
+  ].sort((a, b) => a.date.localeCompare(b.date));
+  writeDataset('murugan', muruganEvents);
 
-  const events = [...annualEvents, ...monthlySashti, ...monthlyKrithigai, ...theipiraiSashti].sort((a, b) =>
+  // Vishnu
+  const vishnuAnnual = generateVishnuEvents(days, START_YEAR, END_YEAR);
+  const vishnuFestivalDates = new Set(vishnuAnnual.map((e) => e.date));
+  const vishnuEvents = [...vishnuAnnual, ...generateMonthlyEkadashiEvents(days, vishnuFestivalDates)].sort((a, b) =>
     a.date.localeCompare(b.date)
   );
-  console.log(
-    `Generated ${events.length} Murugan events ` +
-      `(${annualEvents.length} annual festival/vratham, ${monthlySashti.length} monthly Sashti, ` +
-      `${monthlyKrithigai.length} monthly Krithigai, ${theipiraiSashti.length} Theipirai Sashti).`
+  writeDataset('vishnu', vishnuEvents);
+
+  // Shiva
+  const shivaAnnual = generateShivaEvents(days, START_YEAR, END_YEAR);
+  const shivaFestivalDates = new Set(shivaAnnual.map((e) => e.date));
+  const shivaEvents = [
+    ...shivaAnnual,
+    ...generateMonthlyPradoshamEvents(days, shivaFestivalDates),
+    ...generateMonthlyShivaratriEvents(days, shivaFestivalDates),
+  ].sort((a, b) => a.date.localeCompare(b.date));
+  writeDataset('shiva', shivaEvents);
+
+  // Durga
+  const durgaAnnual = generateDurgaEvents(days, START_YEAR, END_YEAR);
+  const durgaFestivalDates = new Set(durgaAnnual.map((e) => e.date));
+  const durgaEvents = [...durgaAnnual, ...generateMonthlyDurgashtamiEvents(days, durgaFestivalDates)].sort((a, b) =>
+    a.date.localeCompare(b.date)
   );
+  writeDataset('durga', durgaEvents);
 
-  const output = {
-    deity: 'murugan',
-    range: { startYear: START_YEAR, endYear: END_YEAR },
-    assumptions: {
-      location: 'Chennai, Tamil Nadu (13.0827N, 80.2707E)',
-      ayanamsa: 'Lahiri (linear approximation, ~1 arcmin accuracy)',
-      dayBoundary: 'Local sunrise (panchangam value prevailing at sunrise defines the calendar day)',
-      note: 'Astronomically computed. May occasionally differ by ±1 day from a specific temple\'s published panchangam near tithi/nakshatra boundary edge cases.',
-    },
-    generatedAt: new Date().toISOString(),
-    events,
-  };
-
-  const outPath = join(__dirname, '..', 'assets', 'data', 'murugan-events.json');
-  mkdirSync(dirname(outPath), { recursive: true });
-  writeFileSync(outPath, JSON.stringify(output, null, 2));
-  console.log(`Wrote ${outPath}`);
+  const total = muruganEvents.length + vishnuEvents.length + shivaEvents.length + durgaEvents.length;
+  console.log(`Generated ${total} events across 4 deities.`);
 }
 
 main();

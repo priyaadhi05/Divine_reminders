@@ -54,7 +54,7 @@ export function buildICS(events: DeityEvent[], calendarName: string): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Divine Calendar//Murugan Events//EN',
+    'PRODID:-//Divine Calendar//Events//EN',
     'CALSCALE:GREGORIAN',
     foldLine(`X-WR-CALNAME:${escapeText(calendarName)}`),
     ...events.map((e) => eventToVEVENT(e, dtstamp)),

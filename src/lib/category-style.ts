@@ -7,4 +7,8 @@ export const CATEGORY_STYLE: Record<EventCategory, { colorKey: ThemeColor; icon:
   'monthly-sashti': { colorKey: 'accent', icon: '🌔' },
   'theipirai-sashti': { colorKey: 'accent', icon: '🌘' },
   'monthly-krithigai': { colorKey: 'secondary', icon: '✨' },
+  ekadashi: { colorKey: 'secondary', icon: '🪷' },
+  pradosham: { colorKey: 'accent', icon: '🌙' },
+  'monthly-shivaratri': { colorKey: 'maroon', icon: '🌑' },
+  'monthly-durgashtami': { colorKey: 'primary', icon: '🦁' },
 };

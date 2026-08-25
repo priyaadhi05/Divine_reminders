@@ -1,11 +1,18 @@
+import durgaData from '@/assets/data/durga-events.json';
 import muruganData from '@/assets/data/murugan-events.json';
+import shivaData from '@/assets/data/shiva-events.json';
+import vishnuData from '@/assets/data/vishnu-events.json';
 
 export type EventCategory =
   | 'festival'
   | 'vratham'
   | 'monthly-sashti'
   | 'monthly-krithigai'
-  | 'theipirai-sashti';
+  | 'theipirai-sashti'
+  | 'ekadashi'
+  | 'pradosham'
+  | 'monthly-shivaratri'
+  | 'monthly-durgashtami';
 
 export const CATEGORY_LABELS: Record<EventCategory, string> = {
   festival: 'Festival',
@@ -13,6 +20,10 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
   'monthly-sashti': 'Valarpirai Sashti',
   'monthly-krithigai': 'Monthly Krithigai',
   'theipirai-sashti': 'Theipirai Sashti',
+  ekadashi: 'Ekadashi',
+  pradosham: 'Pradosham',
+  'monthly-shivaratri': 'Masa Shivaratri',
+  'monthly-durgashtami': 'Durgashtami',
 };
 
 export interface DeityEvent {
@@ -45,22 +56,58 @@ export interface Deity {
   id: string;
   name: string;
   tamilName: string;
+  symbol: string; // emoji used as a stand-in identity mark - no artwork asset yet
+  greeting: string; // devotional exclamation used to open a reminder line, e.g. "Vel Vel!"
   dataset: DeityDataset;
 }
 
-// Adding a second deity later: generate its dataset with the same shape via
+// Adding a further deity: generate its dataset with the same shape via
 // data-engine/deities/<name>.ts, then register it here.
 export const DEITIES: Deity[] = [
   {
     id: 'murugan',
     name: 'Murugan',
     tamilName: 'முருகன்',
+    symbol: '🦚',
+    greeting: 'Vel Vel!',
     dataset: muruganData as DeityDataset,
+  },
+  {
+    id: 'vishnu',
+    name: 'Vishnu',
+    tamilName: 'விஷ்ணு',
+    symbol: '🪷',
+    greeting: 'Om Namo Narayanaya!',
+    dataset: vishnuData as DeityDataset,
+  },
+  {
+    id: 'shiva',
+    name: 'Shiva',
+    tamilName: 'சிவன்',
+    symbol: '🔱',
+    greeting: 'Om Namah Shivaya!',
+    dataset: shivaData as DeityDataset,
+  },
+  {
+    id: 'durga',
+    name: 'Durga Devi',
+    tamilName: 'துர்கை',
+    symbol: '🦁',
+    greeting: 'Om Shakti!',
+    dataset: durgaData as DeityDataset,
   },
 ];
 
+export function getDeityById(id: string): Deity | undefined {
+  return DEITIES.find((d) => d.id === id);
+}
+
 export function getAllEvents(): DeityEvent[] {
   return DEITIES.flatMap((d) => d.dataset.events);
+}
+
+export function getEventsForDeity(deityId: string): DeityEvent[] {
+  return getDeityById(deityId)?.dataset.events ?? [];
 }
 
 export function getEventById(id: string): DeityEvent | undefined {
@@ -73,11 +120,10 @@ function todayISTDateStr(): string {
   return shifted.toISOString().slice(0, 10);
 }
 
-export function getUpcomingEvents(limit?: number): DeityEvent[] {
+export function getUpcomingEvents(limit?: number, deityId?: string): DeityEvent[] {
   const today = todayISTDateStr();
-  const upcoming = getAllEvents()
-    .filter((e) => e.date >= today)
-    .sort((a, b) => a.date.localeCompare(b.date));
+  const pool = deityId ? getEventsForDeity(deityId) : getAllEvents();
+  const upcoming = pool.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   return limit ? upcoming.slice(0, limit) : upcoming;
 }
 

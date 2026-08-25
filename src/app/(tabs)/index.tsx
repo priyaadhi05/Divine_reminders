@@ -1,77 +1,55 @@
-import { FlatList, Platform, Pressable, StyleSheet } from 'react-native';
-import { Link, router } from 'expo-router';
+import { FlatList, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { EventCard } from '@/components/event-card';
+import { DeityCard } from '@/components/deity-card';
 import { MuruganMascot } from '@/components/murugan-mascot';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { formatEventDate, getUpcomingEvents } from '@/data/events';
+import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { DEITIES, getUpcomingEvents } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
-import { CATEGORY_STYLE } from '@/lib/category-style';
+
+// Rotating accent per deity card, since there's no per-deity artwork yet to
+// tell them apart visually - just symbol + name + this border color.
+const DEITY_ACCENTS: Record<string, ThemeColor> = {
+  murugan: 'primary',
+  vishnu: 'secondary',
+  shiva: 'maroon',
+  durga: 'accent',
+};
 
 export default function HomeScreen() {
-  const upcoming = getUpcomingEvents(8);
-  const [next, ...rest] = upcoming;
+  const [nextOverall] = getUpcomingEvents(1);
   const theme = useTheme();
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <FlatList
-          data={rest}
+          data={DEITIES}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
-                <ThemedText style={[styles.heroTamil, { color: theme.primaryText }]}>முருகன்</ThemedText>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
-                  Murugan
+                  Divine Calendar
                 </ThemedText>
                 <ThemedText type="small" style={[styles.heroSubtitle, { color: theme.primaryText }]}>
                   Festivals, vrathams &amp; auspicious days · 2026–2035
                 </ThemedText>
               </ThemedView>
 
-              <MuruganMascot nextEvent={next} />
+              <MuruganMascot nextEvent={nextOverall} />
 
-              {next && (
-                <Pressable onPress={() => router.push({ pathname: '/event/[id]', params: { id: next.id } })}>
-                  <ThemedView
-                    type="backgroundElement"
-                    style={[styles.nextCard, { borderColor: theme[CATEGORY_STYLE[next.category].colorKey] }]}>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      NEXT UP {CATEGORY_STYLE[next.category].icon}
-                    </ThemedText>
-                    <ThemedText type="subtitle" style={styles.nextName}>
-                      {next.name}
-                    </ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {formatEventDate(next.date)}
-                    </ThemedText>
-                  </ThemedView>
-                </Pressable>
-              )}
-
-              {rest.length > 0 && (
-                <ThemedText type="smallBold" style={styles.sectionLabel}>
-                  Also coming up
-                </ThemedText>
-              )}
+              <ThemedText type="smallBold" style={styles.sectionLabel}>
+                Choose a deity
+              </ThemedText>
             </ThemedView>
           }
-          renderItem={({ item }) => <EventCard event={item} />}
+          renderItem={({ item }) => <DeityCard deity={item} accentColor={DEITY_ACCENTS[item.id] ?? 'primary'} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
-          ListFooterComponent={
-            <ThemedView style={styles.footer}>
-              <Link href="/calendar">
-                <ThemedText type="linkPrimary">View the full 10-year calendar →</ThemedText>
-              </Link>
-            </ThemedView>
-          }
         />
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>
@@ -105,11 +83,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.half,
   },
-  heroTamil: {
-    fontSize: 22,
-    fontWeight: '700',
-    opacity: 0.9,
-  },
   heroTitle: {
     fontSize: 40,
     lineHeight: 46,
@@ -118,24 +91,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.9,
   },
-  nextCard: {
-    padding: Spacing.four,
-    borderRadius: Spacing.four,
-    borderWidth: 2,
-    gap: Spacing.half,
-  },
-  nextName: {
-    fontSize: 26,
-    lineHeight: 32,
-  },
   sectionLabel: {
     marginTop: Spacing.one,
   },
   separator: {
     height: Spacing.two,
-  },
-  footer: {
-    paddingVertical: Spacing.four,
-    alignItems: 'center',
   },
 });

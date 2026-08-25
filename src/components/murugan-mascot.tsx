@@ -10,11 +10,12 @@ import type { DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } from '@/lib/notifications';
 
-// A reminder "companion" card: shows the next event as a first-person
-// Murugan-voiced line, speaks it aloud (on-device TTS) when tapped, and
-// hosts the toggle for real OS-level scheduled reminders in
-// src/lib/notifications.ts. No face/character graphic for now - just the
-// text and a small pulse on the icon while speaking.
+// A reminder "companion" card: shows the next event (across any deity) as a
+// first-person line voiced as whichever deity it belongs to (see
+// reminderLine in src/lib/notifications.ts), speaks it aloud (on-device TTS)
+// when tapped, and hosts the toggle for real OS-level scheduled reminders.
+// No face/character graphic for now - just the text and a small pulse on the
+// icon while speaking.
 interface MuruganMascotProps {
   nextEvent?: DeityEvent;
 }

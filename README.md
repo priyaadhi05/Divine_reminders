@@ -55,17 +55,30 @@ Join our community of developers creating universal apps.
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 
-Yes, it's React Native — built with Expo + Expo Router (react-native, expo, expo-router in package.json), running as a genuine native app on iOS/Android (and also compiles to web via react-native-web).
+## How this app works
 
-The data is fully static, not server-fetched. The flow is:
+Divine Calendar is a React Native app (Expo + Expo Router) covering multiple
+deities (Murugan, Vishnu, Shiva, Durga Devi), each with their own festivals,
+vrathams, and monthly observances for 2026–2035.
 
-1. data-engine/ (astronomy/panchangam calculations) runs offline, once, as a build-time script — not inside the app.
-2. It writes its output to assets/data/murugan-events.json — a plain JSON file checked into the repo/bundle.
-3. src/data/events.ts does a direct static import:
-   import muruganData from '@/assets/data/murugan-events.json';
-   That file gets bundled into the app binary at build time, like any other asset (an image, a font).
+All event data is fully static, not server-fetched:
 
-So at runtime there's no API, no backend, no network request for event data — it's all baked into the app and works fully offline. Same story for everything we added: the reminder notifications are scheduled locally
-on-device (expo-notifications), and the mascot's voice uses the phone's own TTS engine (expo-speech) — nothing calls out to a server for those either.
+1. `data-engine/` (astronomy/panchangam calculations) runs offline, once, as
+   a build-time script (`npx tsx data-engine/generate.ts`) - not inside the
+   app.
+2. It writes one JSON file per deity to `assets/data/` (e.g.
+   `murugan-events.json`, `vishnu-events.json`), checked into the repo.
+3. `src/data/events.ts` statically imports each dataset and registers it in
+   the `DEITIES` array. Adding another deity means writing its rules in
+   `data-engine/deities/<name>.ts` and registering the generated dataset
+   there.
 
-The only place this app talks to anything external is the "Export to Calendar (.ics)" / "Add to Calendar" feature, which hands off to the device's own Calendar/Sharing system — not a network call either.
+So at runtime there's no API, no backend, no network request for event data -
+it's all baked into the app and works fully offline. Same story for the
+reminder companion: notifications are scheduled locally on-device
+(`expo-notifications`), and its voice uses the phone's own TTS engine
+(`expo-speech`) - nothing calls out to a server for those either.
+
+The only place this app talks to anything external is "Add to
+Calendar"/"Export to Calendar (.ics)", which hands off to the device's own
+Calendar/Sharing system - not a network call either.
