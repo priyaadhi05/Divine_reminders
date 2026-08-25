@@ -2,7 +2,6 @@ import { ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AddToCalendarButton } from '@/components/add-to-calendar-button';
 import { RegionSelector } from '@/components/region-selector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -50,8 +49,6 @@ export default function EventDetailScreen() {
           </ThemedText>
           <ThemedText type="smallBold">{formatEventDate(event.date)}</ThemedText>
         </ThemedView>
-
-        <AddToCalendarButton event={event} />
 
         {timing && (
           <ThemedView type="backgroundElement" style={styles.timingCard}>

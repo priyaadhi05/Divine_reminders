@@ -34,13 +34,6 @@
         }
       ],
       [
-        "expo-calendar",
-        {
-          "calendarPermission": "Divine Calendar adds festival reminders to your calendar."
-        }
-      ],
-      "expo-sharing",
-      [
         "expo-notifications",
         {
           "color": "#B0301F"

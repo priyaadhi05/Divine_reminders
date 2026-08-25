@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Platform, Pressable, SectionList, StyleSheet } from 'react-native';
+import { Platform, Pressable, SectionList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EventCard } from '@/components/event-card';
@@ -9,9 +9,7 @@ import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import { CATEGORY_LABELS, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
-import { buildICS } from '@/lib/ics';
 import { CATEGORY_STYLE } from '@/lib/category-style';
-import { shareICS } from '@/lib/share-ics';
 
 const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
   { key: 'all', label: 'All', icon: '📿', colorKey: 'primary' },
@@ -25,15 +23,6 @@ const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorK
   { key: 'monthly-shivaratri', label: CATEGORY_LABELS['monthly-shivaratri'], ...CATEGORY_STYLE['monthly-shivaratri'] },
   { key: 'monthly-durgashtami', label: CATEGORY_LABELS['monthly-durgashtami'], ...CATEGORY_STYLE['monthly-durgashtami'] },
 ];
-
-async function exportAllToCalendar() {
-  try {
-    const ics = buildICS(getAllEvents(), 'Divine Calendar Events 2026-2035');
-    await shareICS(ics, 'divine-calendar-events-2026-2035.ics');
-  } catch (err) {
-    Alert.alert('Could not export calendar', err instanceof Error ? err.message : 'Please try again.');
-  }
-}
 
 export default function CalendarScreen() {
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
@@ -83,9 +72,6 @@ export default function CalendarScreen() {
                   );
                 })}
               </ThemedView>
-              <Pressable onPress={exportAllToCalendar} style={styles.exportRow}>
-                <ThemedText type="linkPrimary">Export all 10 years to Calendar (.ics) →</ThemedText>
-              </Pressable>
             </ThemedView>
           }
           renderSectionHeader={({ section }) => (
@@ -124,9 +110,6 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.four,
     paddingBottom: Spacing.two,
     gap: Spacing.one,
-  },
-  exportRow: {
-    marginTop: Spacing.two,
   },
   title: {
     fontSize: 34,
