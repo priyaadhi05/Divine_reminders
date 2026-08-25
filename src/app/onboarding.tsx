@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -35,13 +35,35 @@ export default function OnboardingScreen() {
   const handleFinish = async () => {
     if (busy) return;
     setBusy(true);
+    // Each step is isolated: a failure requesting OS permission (or saving
+    // one deity's follow state) shouldn't cascade into skipping the rest -
+    // the user picked these deities, they should end up followed even if
+    // something else on the device hiccups.
     try {
-      await enableReminders();
-      for (const id of selected) {
-        await setDeityFollowed(id, true);
+      try {
+        await enableReminders();
+      } catch (err) {
+        console.warn('enableReminders failed during onboarding', err);
       }
-      await setReminderStyle(style);
+      for (const id of selected) {
+        try {
+          await setDeityFollowed(id, true);
+        } catch (err) {
+          console.warn(`setDeityFollowed(${id}) failed during onboarding`, err);
+        }
+      }
+      try {
+        await setReminderStyle(style);
+      } catch (err) {
+        console.warn('setReminderStyle failed during onboarding', err);
+      }
       await markOnboarded();
+      router.replace('/');
+    } catch (err) {
+      Alert.alert(
+        'Something went wrong',
+        err instanceof Error ? err.message : 'You can try again anytime from "Manage my deities" on Home.'
+      );
       router.replace('/');
     } finally {
       setBusy(false);
