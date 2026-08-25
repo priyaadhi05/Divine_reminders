@@ -2,6 +2,7 @@ import { FlatList, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeityCard } from '@/components/deity-card';
+import { EverythingToggle } from '@/components/everything-toggle';
 import { MuruganMascot } from '@/components/murugan-mascot';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -42,6 +43,8 @@ export default function HomeScreen() {
               </ThemedView>
 
               <MuruganMascot nextEvent={nextOverall} />
+
+              <EverythingToggle />
 
               <ThemedText type="smallBold" style={styles.sectionLabel}>
                 Choose a deity

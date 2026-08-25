@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Platform, Pressable, SectionList, StyleSheet } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, SectionList, StyleSheet } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EventCard } from '@/components/event-card';
+import { NotifyPanel } from '@/components/notify-panel';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
@@ -18,37 +19,15 @@ import {
 } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORY_STYLE } from '@/lib/category-style';
-import { areRemindersEnabled, enableReminders, isDeityFollowed, setDeityFollowed } from '@/lib/notifications';
 
 export default function DeityScreen() {
   const { deityId } = useLocalSearchParams<{ deityId: string }>();
   const deity = getDeityById(deityId);
   const theme = useTheme();
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
-  const [followed, setFollowed] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   const allEvents = useMemo(() => getEventsForDeity(deityId), [deityId]);
   const [next] = useMemo(() => getUpcomingEvents(1, deityId), [deityId]);
-
-  useEffect(() => {
-    isDeityFollowed(deityId).then(setFollowed);
-  }, [deityId]);
-
-  const handleToggleFollow = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const nextFollowed = !followed;
-      if (nextFollowed && !(await areRemindersEnabled())) {
-        await enableReminders(); // requests OS permission if not already granted
-      }
-      await setDeityFollowed(deityId, nextFollowed);
-      setFollowed(nextFollowed);
-    } finally {
-      setBusy(false);
-    }
-  };
 
   // Only show filter chips for categories this deity's dataset actually uses.
   const categoriesPresent = useMemo(
@@ -109,22 +88,11 @@ export default function DeityScreen() {
                 </Pressable>
               )}
 
-              <Pressable
-                onPress={handleToggleFollow}
-                disabled={busy}
-                style={[styles.notifyButton, { borderColor: theme.accent, opacity: busy ? 0.6 : 1 }]}
-                accessibilityRole="button">
-                <ThemedText type="smallBold">
-                  {followed ? `🔔 Notified for ${deity.name}` : `🔕 Notify me for ${deity.name}`}
-                  {Platform.OS === 'web' ? ' (mobile only)' : ''}
-                </ThemedText>
-              </Pressable>
-              {followed && (
-                <ThemedText type="small" themeColor="textSecondary">
-                  You'll get a notification 3 days, 2 days, and 1 day before each upcoming {deity.name} event.
-                </ThemedText>
-              )}
+              <NotifyPanel deityId={deityId} deityName={deity.name} />
 
+              <ThemedText type="smallBold" style={styles.browseLabel}>
+                Browse the calendar
+              </ThemedText>
               <ThemedView style={styles.filterRow}>
                 <FilterChip label="All" icon="📿" colorKey="primary" selected={filter === 'all'} onPress={() => setFilter('all')} />
                 {categoriesPresent.map((cat) => (
@@ -237,6 +205,9 @@ const styles = StyleSheet.create({
     fontSize: 26,
     lineHeight: 32,
   },
+  browseLabel: {
+    marginTop: Spacing.one,
+  },
   filterRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -254,13 +225,6 @@ const styles = StyleSheet.create({
   },
   filterChipIcon: {
     fontSize: 13,
-  },
-  notifyButton: {
-    alignSelf: 'flex-start',
-    borderWidth: 1.5,
-    borderRadius: Spacing.four,
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
   },
   sectionHeader: {
     paddingVertical: Spacing.two,

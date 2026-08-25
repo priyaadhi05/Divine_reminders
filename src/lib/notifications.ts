@@ -2,14 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { DEITIES, getDeityById, getUpcomingEvents, type DeityEvent } from '@/data/events';
+import { DEITIES, getCategoriesForDeity, getDeityById, getUpcomingEvents, type DeityEvent } from '@/data/events';
 
 // Local (on-device) reminders only - no push server, no account, no cost.
 // Not supported on web (expo-notifications has no web implementation).
 const SUPPORTED = Platform.OS !== 'web';
 
 const ENABLED_KEY = 'divine-calendar:reminders-enabled';
-const FOLLOWED_KEY = 'divine-calendar:followed-deities';
+const FOLLOWED_TOPICS_KEY = 'divine-calendar:followed-topics';
 const NOTIFICATION_PREFIX = 'divine-calendar-reminder-';
 const CHANNEL_ID = 'divine-calendar-reminders';
 const REMINDER_HOUR = 9; // fires at 9am local device time on each countdown day
@@ -67,33 +67,96 @@ export async function areRemindersEnabled(): Promise<boolean> {
   return (await AsyncStorage.getItem(ENABLED_KEY)) === 'true';
 }
 
-// Which deities the user wants notified about. Defaults to "all of them" the
-// first time (before the user has ever touched a follow toggle), so turning
-// on reminders behaves sensibly out of the box.
-export async function getFollowedDeities(): Promise<string[]> {
-  if (!SUPPORTED) return [];
-  const raw = await AsyncStorage.getItem(FOLLOWED_KEY);
-  if (raw === null) return DEITIES.map((d) => d.id);
+// --- Follow preferences ------------------------------------------------
+//
+// Three tiers of granularity, all backed by one flat set of "topics"
+// (`${deityId}:${category}` strings) so scheduling only ever needs one
+// membership check:
+//   - Everything:   every topic across every deity (followEverything)
+//   - A whole deity: every topic for that one deity (setDeityFollowed)
+//   - One category:  a single (deity, category) pair (setTopicFollowed) -
+//     e.g. "only Pradosham", "only Valarpirai Sashti"
+// Defaults to "everything" the first time, before the user has touched any
+// toggle, so turning reminders on behaves sensibly out of the box.
+
+function topicKey(deityId: string, category: string): string {
+  return `${deityId}:${category}`;
+}
+
+function allTopics(): string[] {
+  return DEITIES.flatMap((d) => getCategoriesForDeity(d.id).map((c) => topicKey(d.id, c)));
+}
+
+export async function getFollowedTopics(): Promise<Set<string>> {
+  if (!SUPPORTED) return new Set();
+  const raw = await AsyncStorage.getItem(FOLLOWED_TOPICS_KEY);
+  if (raw === null) return new Set(allTopics());
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : DEITIES.map((d) => d.id);
+    return new Set(Array.isArray(parsed) ? parsed : allTopics());
   } catch {
-    return DEITIES.map((d) => d.id);
+    return new Set(allTopics());
   }
 }
 
-export async function isDeityFollowed(deityId: string): Promise<boolean> {
-  return (await getFollowedDeities()).includes(deityId);
-}
-
-export async function setDeityFollowed(deityId: string, follow: boolean): Promise<void> {
-  if (!SUPPORTED) return;
-  const current = new Set(await getFollowedDeities());
-  if (follow) current.add(deityId);
-  else current.delete(deityId);
-  await AsyncStorage.setItem(FOLLOWED_KEY, JSON.stringify(Array.from(current)));
+async function saveFollowedTopics(topics: Set<string>): Promise<void> {
+  await AsyncStorage.setItem(FOLLOWED_TOPICS_KEY, JSON.stringify(Array.from(topics)));
   await scheduleUpcomingReminders();
 }
+
+export async function isTopicFollowed(deityId: string, category: string): Promise<boolean> {
+  return (await getFollowedTopics()).has(topicKey(deityId, category));
+}
+
+export async function setTopicFollowed(deityId: string, category: string, follow: boolean): Promise<void> {
+  if (!SUPPORTED) return;
+  const topics = await getFollowedTopics();
+  if (follow) topics.add(topicKey(deityId, category));
+  else topics.delete(topicKey(deityId, category));
+  await saveFollowedTopics(topics);
+}
+
+export type DeityFollowState = 'all' | 'some' | 'none';
+
+export async function getDeityFollowState(deityId: string): Promise<DeityFollowState> {
+  const categories = getCategoriesForDeity(deityId);
+  if (categories.length === 0) return 'none';
+  const followed = await getFollowedTopics();
+  const count = categories.filter((c) => followed.has(topicKey(deityId, c))).length;
+  if (count === 0) return 'none';
+  if (count === categories.length) return 'all';
+  return 'some';
+}
+
+// Bulk follow/unfollow every category for one deity at once - the "notify me
+// for all of Shiva" toggle.
+export async function setDeityFollowed(deityId: string, follow: boolean): Promise<void> {
+  if (!SUPPORTED) return;
+  const topics = await getFollowedTopics();
+  for (const category of getCategoriesForDeity(deityId)) {
+    if (follow) topics.add(topicKey(deityId, category));
+    else topics.delete(topicKey(deityId, category));
+  }
+  await saveFollowedTopics(topics);
+}
+
+export async function isEverythingFollowed(): Promise<boolean> {
+  const all = allTopics();
+  const followed = await getFollowedTopics();
+  return all.length > 0 && all.every((t) => followed.has(t));
+}
+
+export async function followEverything(): Promise<void> {
+  if (!SUPPORTED) return;
+  await saveFollowedTopics(new Set(allTopics()));
+}
+
+export async function unfollowEverything(): Promise<void> {
+  if (!SUPPORTED) return;
+  await saveFollowedTopics(new Set());
+}
+
+// --- Scheduling ----------------------------------------------------------
 
 async function ensureChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
@@ -131,9 +194,10 @@ export async function disableReminders(): Promise<void> {
 }
 
 // Re-syncs the rolling window of scheduled reminders for every followed
-// deity's upcoming events, each getting its 3/2/1-day-before countdown.
+// topic's upcoming events, each getting its 3/2/1-day-before countdown.
 // Cheap enough to just cancel-and-reschedule outright rather than diffing;
-// call this on app launch/foreground and whenever a follow toggle changes.
+// call this on app launch/foreground and whenever a follow preference
+// changes.
 export async function scheduleUpcomingReminders(): Promise<void> {
   if (!SUPPORTED) return;
   if (!(await areRemindersEnabled())) return;
@@ -141,9 +205,9 @@ export async function scheduleUpcomingReminders(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
   await ensureChannel();
 
-  const followed = await getFollowedDeities();
+  const followed = await getFollowedTopics();
   const upcoming = getUpcomingEvents()
-    .filter((e) => followed.includes(e.deity))
+    .filter((e) => followed.has(topicKey(e.deity, e.category)))
     .slice(0, MAX_SCHEDULED_EVENTS);
 
   for (const event of upcoming) {

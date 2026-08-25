@@ -110,6 +110,21 @@ export function getEventsForDeity(deityId: string): DeityEvent[] {
   return getDeityById(deityId)?.dataset.events ?? [];
 }
 
+// Distinct categories a deity's dataset actually uses, in a stable order -
+// used both to render "notify me about just X" toggles and to know the full
+// set of (deity, category) topics that exist, for notification preferences.
+export function getCategoriesForDeity(deityId: string): EventCategory[] {
+  const seen = new Set<EventCategory>();
+  const ordered: EventCategory[] = [];
+  for (const e of getEventsForDeity(deityId)) {
+    if (!seen.has(e.category)) {
+      seen.add(e.category);
+      ordered.push(e.category);
+    }
+  }
+  return ordered;
+}
+
 export function getEventById(id: string): DeityEvent | undefined {
   return getAllEvents().find((e) => e.id === id);
 }
