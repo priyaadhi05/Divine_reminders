@@ -10,6 +10,8 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import {
   CATEGORY_LABELS,
+  CURRENT_YEAR,
+  CURRENT_YEAR_MONTH,
   EventCategory,
   formatEventDate,
   getDeityById,
@@ -25,6 +27,7 @@ export default function DeityScreen() {
   const deity = getDeityById(deityId);
   const theme = useTheme();
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
+  const [showAllYears, setShowAllYears] = useState(false);
 
   const allEvents = useMemo(() => getEventsForDeity(deityId), [deityId]);
   const [next] = useMemo(() => getUpcomingEvents(1, deityId), [deityId]);
@@ -35,10 +38,18 @@ export default function DeityScreen() {
     [allEvents]
   );
 
-  const sections = useMemo(() => {
+  const allGroups = useMemo(() => {
     const events = filter === 'all' ? allEvents : allEvents.filter((e) => e.category === filter);
-    return getEventsByYearMonth(events).map((group) => ({ title: group.label, data: group.events }));
+    return getEventsByYearMonth(events);
   }, [allEvents, filter]);
+
+  // Only the current year's upcoming months by default - see Calendar tab
+  // for the same treatment and why.
+  const visibleGroups = showAllYears
+    ? allGroups
+    : allGroups.filter((g) => g.key.startsWith(String(CURRENT_YEAR)) && g.key >= CURRENT_YEAR_MONTH);
+  const sections = visibleGroups.map((group) => ({ title: group.label, data: group.events }));
+  const hiddenCount = allGroups.length - visibleGroups.length;
 
   if (!deity) {
     return (
@@ -106,6 +117,14 @@ export default function DeityScreen() {
                   />
                 ))}
               </ThemedView>
+
+              {hiddenCount > 0 || showAllYears ? (
+                <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
+                  <ThemedText type="linkPrimary">
+                    {showAllYears ? `← Show ${CURRENT_YEAR} only` : `Show all years (2026–2035) →`}
+                  </ThemedText>
+                </Pressable>
+              ) : null}
             </ThemedView>
           }
           renderSectionHeader={({ section }) => (
@@ -225,6 +244,9 @@ const styles = StyleSheet.create({
   },
   filterChipIcon: {
     fontSize: 13,
+  },
+  yearToggle: {
+    marginTop: Spacing.one,
   },
   sectionHeader: {
     paddingVertical: Spacing.two,

@@ -166,6 +166,13 @@ export function relativeDayLabel(dateStr: string): string {
   return `In ${n} days`;
 }
 
+// Used to collapse long year-by-year calendar lists (Calendar tab, a
+// deity's page) down to just the current year's remaining months by
+// default, since 2026-2035 all at once on one screen is overwhelming.
+const now = new Date();
+export const CURRENT_YEAR = now.getFullYear();
+export const CURRENT_YEAR_MONTH = `${CURRENT_YEAR}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
 export function getEventsByYear(): Map<string, DeityEvent[]> {
   const byYear = new Map<string, DeityEvent[]>();
   for (const e of getAllEvents().sort((a, b) => a.date.localeCompare(b.date))) {

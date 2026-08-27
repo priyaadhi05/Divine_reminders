@@ -7,7 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
-import { CATEGORY_LABELS, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
+import { CATEGORY_LABELS, CURRENT_YEAR, CURRENT_YEAR_MONTH, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 
@@ -26,12 +26,23 @@ const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorK
 
 export default function CalendarScreen() {
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
+  const [showAllYears, setShowAllYears] = useState(false);
   const theme = useTheme();
 
-  const sections = useMemo(() => {
+  const allGroups = useMemo(() => {
     const events = filter === 'all' ? getAllEvents() : getAllEvents().filter((e) => e.category === filter);
-    return getEventsByYearMonth(events).map((group) => ({ title: group.label, data: group.events }));
+    return getEventsByYearMonth(events);
   }, [filter]);
+
+  // Only the current year's upcoming months by default - ten years of every
+  // deity's events on one page is overwhelming. Past months and other years
+  // stay a tap away via "Show all years".
+  const visibleGroups = showAllYears
+    ? allGroups
+    : allGroups.filter((g) => g.key.startsWith(String(CURRENT_YEAR)) && g.key >= CURRENT_YEAR_MONTH);
+
+  const sections = visibleGroups.map((group) => ({ title: group.label, data: group.events }));
+  const hiddenCount = allGroups.length - visibleGroups.length;
 
   return (
     <ThemedView style={styles.container}>
@@ -72,6 +83,14 @@ export default function CalendarScreen() {
                   );
                 })}
               </ThemedView>
+
+              {hiddenCount > 0 || showAllYears ? (
+                <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
+                  <ThemedText type="linkPrimary">
+                    {showAllYears ? `← Show ${CURRENT_YEAR} only` : `Show all years (2026–2035) →`}
+                  </ThemedText>
+                </Pressable>
+              ) : null}
             </ThemedView>
           }
           renderSectionHeader={({ section }) => (
@@ -133,6 +152,9 @@ const styles = StyleSheet.create({
   },
   filterChipIcon: {
     fontSize: 13,
+  },
+  yearToggle: {
+    marginTop: Spacing.three,
   },
   sectionHeader: {
     paddingVertical: Spacing.two,
