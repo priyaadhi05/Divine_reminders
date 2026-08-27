@@ -8,19 +8,23 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { DEITIES } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
-import { enableReminders, markOnboarded, setDeityFollowed, setReminderStyle, type ReminderStyle } from '@/lib/notifications';
+import { enableReminders, markOnboarded, setDeityFollowed } from '@/lib/notifications';
 
-// First-run flow: Choose your deities -> Choose your reminder style -> the
+// First-run flow: just "choose your deities" - straight into the
 // personalized "Your Sacred Days" home screen. Re-run any time from Home via
-// "Manage my deities". Only offers the deities we actually have real,
-// astronomically-computed calendars for today (Murugan, Vishnu, Shiva,
+// "Manage my deities" to add more. Only offers the deities we actually have
+// real, astronomically-computed calendars for today (Murugan, Vishnu, Shiva,
 // Amman) - more are on the roadmap, but a selectable card with no data
 // behind it would be a dead end.
+//
+// Reminder *timing* (3 days before / 1 day before / day of) isn't chosen
+// here anymore - every followed topic starts on the full countdown, and can
+// be dialed down per deity or per event afterward (see NotifyPanel and the
+// event detail screen's LeadDaysRow), since that choice is easier to make
+// looking at a specific event than guessed upfront for everything at once.
 export default function OnboardingScreen() {
   const theme = useTheme();
-  const [step, setStep] = useState<1 | 2>(1);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [style, setStyle] = useState<ReminderStyle>('full');
   const [busy, setBusy] = useState(false);
 
   const toggleDeity = (id: string) => {
@@ -52,11 +56,6 @@ export default function OnboardingScreen() {
           console.warn(`setDeityFollowed(${id}) failed during onboarding`, err);
         }
       }
-      try {
-        await setReminderStyle(style);
-      } catch (err) {
-        console.warn('setReminderStyle failed during onboarding', err);
-      }
       await markOnboarded();
       router.replace('/');
     } catch (err) {
@@ -74,105 +73,44 @@ export default function OnboardingScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {step === 1 ? (
-            <>
-              <ThemedText type="title" style={styles.heading}>
-                Which deities are meaningful to you?
-              </ThemedText>
-              <ThemedText themeColor="textSecondary" style={styles.subheading}>
-                Your home screen will only show sacred days for the deities you choose here.
-              </ThemedText>
+          <ThemedText type="title" style={styles.heading}>
+            Which deities are meaningful to you?
+          </ThemedText>
+          <ThemedText themeColor="textSecondary" style={styles.subheading}>
+            Your home screen will only show sacred days for the deities you choose here.
+          </ThemedText>
 
-              <ThemedView style={styles.grid}>
-                {DEITIES.map((deity) => {
-                  const isSelected = selected.has(deity.id);
-                  return (
-                    <Pressable key={deity.id} onPress={() => toggleDeity(deity.id)} style={styles.cardWrap}>
-                      <ThemedView
-                        type="backgroundElement"
-                        style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
-                        <ThemedText style={styles.cardSymbol}>{deity.symbol}</ThemedText>
-                        <ThemedText type="smallBold">{deity.name}</ThemedText>
-                        <ThemedText type="small" themeColor="textSecondary">
-                          {deity.tamilName}
-                        </ThemedText>
-                        <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
-                      </ThemedView>
-                    </Pressable>
-                  );
-                })}
-              </ThemedView>
+          <ThemedView style={styles.grid}>
+            {DEITIES.map((deity) => {
+              const isSelected = selected.has(deity.id);
+              return (
+                <Pressable key={deity.id} onPress={() => toggleDeity(deity.id)} style={styles.cardWrap}>
+                  <ThemedView
+                    type="backgroundElement"
+                    style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
+                    <ThemedText style={styles.cardSymbol}>{deity.symbol}</ThemedText>
+                    <ThemedText type="smallBold">{deity.name}</ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {deity.tamilName}
+                    </ThemedText>
+                    <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
+                  </ThemedView>
+                </Pressable>
+              );
+            })}
+          </ThemedView>
 
-              <Pressable
-                onPress={() => setStep(2)}
-                disabled={selected.size === 0}
-                style={[styles.primaryButton, { backgroundColor: theme.primary, opacity: selected.size === 0 ? 0.5 : 1 }]}>
-                <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
-                  ❤️ My Deities
-                </ThemedText>
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <ThemedText type="title" style={styles.heading}>
-                Choose your reminder style
-              </ThemedText>
-              <ThemedText themeColor="textSecondary" style={styles.subheading}>
-                We'll remind you before the day arrives, wherever you are.
-              </ThemedText>
-
-              <StyleOption
-                title="Full countdown (Recommended)"
-                description="A heads-up 3 days before, a nudge 1 day before, and a blessing on the day itself."
-                selected={style === 'full'}
-                onPress={() => setStyle('full')}
-              />
-              <StyleOption
-                title="Just today"
-                description="One quiet reminder, only on the day itself - nothing before."
-                selected={style === 'quiet'}
-                onPress={() => setStyle('quiet')}
-              />
-
-              <Pressable
-                onPress={handleFinish}
-                disabled={busy}
-                style={[styles.primaryButton, { backgroundColor: theme.primary, opacity: busy ? 0.6 : 1 }]}>
-                <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
-                  {busy ? 'Setting up…' : 'Continue'}
-                </ThemedText>
-              </Pressable>
-            </>
-          )}
+          <Pressable
+            onPress={handleFinish}
+            disabled={selected.size === 0 || busy}
+            style={[styles.primaryButton, { backgroundColor: theme.primary, opacity: selected.size === 0 || busy ? 0.5 : 1 }]}>
+            <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
+              {busy ? 'Saving…' : '❤️ Save my deities'}
+            </ThemedText>
+          </Pressable>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
-  );
-}
-
-function StyleOption({
-  title,
-  description,
-  selected,
-  onPress,
-}: {
-  title: string;
-  description: string;
-  selected: boolean;
-  onPress: () => void;
-}) {
-  const theme = useTheme();
-  return (
-    <Pressable onPress={onPress}>
-      <ThemedView
-        type="backgroundElement"
-        style={[styles.styleCard, selected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
-        <ThemedText type="smallBold">{title}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {description}
-        </ThemedText>
-      </ThemedView>
-    </Pressable>
   );
 }
 
@@ -220,13 +158,6 @@ const styles = StyleSheet.create({
   heart: {
     fontSize: 18,
     marginTop: Spacing.one,
-  },
-  styleCard: {
-    borderRadius: Spacing.four,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    padding: Spacing.three,
-    gap: Spacing.half,
   },
   primaryButton: {
     marginTop: Spacing.three,

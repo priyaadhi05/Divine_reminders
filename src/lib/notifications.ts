@@ -10,33 +10,19 @@ const SUPPORTED = Platform.OS !== 'web';
 
 const ENABLED_KEY = 'divine-calendar:reminders-enabled';
 const FOLLOWED_TOPICS_KEY = 'divine-calendar:followed-topics';
+const LEAD_DAYS_KEY = 'divine-calendar:reminder-lead-days';
 const ONBOARDED_KEY = 'divine-calendar:onboarded';
-const REMINDER_STYLE_KEY = 'divine-calendar:reminder-style';
 const NOTIFICATION_PREFIX = 'divine-calendar-reminder-';
 const CHANNEL_ID = 'divine-calendar-reminders';
 const REMINDER_HOUR = 9; // fires at 9am local device time on each countdown day
 
-// The "full" countdown per followed event: a heads-up 3 days out, a nudge
-// the day before, and a blessing on the day itself. "Quiet" style (chosen at
-// onboarding) drops the two heads-ups and keeps just the day-of blessing.
-// Either way this is the app's whole reminder mechanism - never a calendar
-// entry, always a notification.
-const FULL_LEAD_DAYS = [3, 1, 0] as const;
-const QUIET_LEAD_DAYS = [0] as const;
-
-export type ReminderStyle = 'full' | 'quiet';
-
-export async function getReminderStyle(): Promise<ReminderStyle> {
-  if (!SUPPORTED) return 'full';
-  const raw = await AsyncStorage.getItem(REMINDER_STYLE_KEY);
-  return raw === 'quiet' ? 'quiet' : 'full';
-}
-
-export async function setReminderStyle(style: ReminderStyle): Promise<void> {
-  if (!SUPPORTED) return;
-  await AsyncStorage.setItem(REMINDER_STYLE_KEY, style);
-  await scheduleUpcomingReminders();
-}
+// The countdown per followed event: a heads-up 3 days out, a nudge the day
+// before, and a blessing on the day itself. Every followed topic gets this
+// by default, but it's customizable per topic (see "Lead days" below) - e.g.
+// someone can want the full countdown for Thaipusam but just a day-of nudge
+// for a monthly Pradosham. Either way this is the app's whole reminder
+// mechanism - never a calendar entry, always a notification.
+const DEFAULT_LEAD_DAYS: readonly number[] = [3, 1, 0];
 
 // --- Onboarding ------------------------------------------------------------
 
@@ -138,7 +124,6 @@ function allTopics(): string[] {
 }
 
 export async function getFollowedTopics(): Promise<Set<string>> {
-  if (!SUPPORTED) return new Set();
   const raw = await AsyncStorage.getItem(FOLLOWED_TOPICS_KEY);
   if (raw === null) return new Set();
   try {
@@ -168,7 +153,6 @@ export async function getFollowedUpcomingEvents(limit?: number): Promise<DeityEv
 }
 
 export async function setTopicFollowed(deityId: string, category: string, follow: boolean): Promise<void> {
-  if (!SUPPORTED) return;
   const topics = await getFollowedTopics();
   if (follow) topics.add(topicKey(deityId, category));
   else topics.delete(topicKey(deityId, category));
@@ -190,7 +174,6 @@ export async function getDeityFollowState(deityId: string): Promise<DeityFollowS
 // Bulk follow/unfollow every category for one deity at once - the "notify me
 // for all of Shiva" toggle.
 export async function setDeityFollowed(deityId: string, follow: boolean): Promise<void> {
-  if (!SUPPORTED) return;
   const topics = await getFollowedTopics();
   for (const category of getCategoriesForDeity(deityId)) {
     if (follow) topics.add(topicKey(deityId, category));
@@ -206,13 +189,53 @@ export async function isEverythingFollowed(): Promise<boolean> {
 }
 
 export async function followEverything(): Promise<void> {
-  if (!SUPPORTED) return;
   await saveFollowedTopics(new Set(allTopics()));
 }
 
 export async function unfollowEverything(): Promise<void> {
-  if (!SUPPORTED) return;
   await saveFollowedTopics(new Set());
+}
+
+// Every deity the user follows at least one topic for, in the app's stable
+// deity order - drives the Home screen's list of deity cards.
+export async function getFollowedDeities(): Promise<typeof DEITIES> {
+  const followed = await getFollowedTopics();
+  const followedDeityIds = new Set(Array.from(followed).map((t) => t.split(':')[0]));
+  return DEITIES.filter((d) => followedDeityIds.has(d.id));
+}
+
+// --- Lead-day preferences ------------------------------------------------
+//
+// How many days before a followed topic's date each nudge fires, e.g. [3, 1,
+// 0] for the full countdown or just [0] for a single day-of blessing.
+// Customizable per topic (deity + category) - the same granularity following
+// already works at - via the deity page's NotifyPanel and an event's own
+// "Set reminder" control. Topics with no explicit choice get
+// DEFAULT_LEAD_DAYS, so following something new just works without an extra
+// setup step.
+
+async function getLeadDaysMap(): Promise<Record<string, number[]>> {
+  const raw = await AsyncStorage.getItem(LEAD_DAYS_KEY);
+  if (raw === null) return {};
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export async function getTopicLeadDays(deityId: string, category: string): Promise<number[]> {
+  const map = await getLeadDaysMap();
+  return map[topicKey(deityId, category)] ?? [...DEFAULT_LEAD_DAYS];
+}
+
+export async function setTopicLeadDays(deityId: string, category: string, days: number[]): Promise<void> {
+  if (days.length === 0) return; // a topic must keep at least one nudge - see LeadDaysRow
+  const map = await getLeadDaysMap();
+  map[topicKey(deityId, category)] = [...days].sort((a, b) => b - a);
+  await AsyncStorage.setItem(LEAD_DAYS_KEY, JSON.stringify(map));
+  await scheduleUpcomingReminders();
 }
 
 // --- Scheduling ----------------------------------------------------------
@@ -253,11 +276,11 @@ export async function disableReminders(): Promise<void> {
 }
 
 // Re-syncs the rolling window of scheduled reminders for every followed
-// topic's upcoming events, each getting the countdown its reminder style
-// calls for (full 3/1/0-day, or just the day-of blessing for "quiet").
-// Cheap enough to just cancel-and-reschedule outright rather than diffing;
-// call this on app launch/foreground and whenever a follow preference or
-// style changes.
+// topic's upcoming events, each getting whichever countdown that topic's
+// lead-day preference calls for (see getTopicLeadDays). Cheap enough to just
+// cancel-and-reschedule outright rather than diffing; call this on app
+// launch/foreground and whenever a follow preference or lead-day choice
+// changes.
 export async function scheduleUpcomingReminders(): Promise<void> {
   if (!SUPPORTED) return;
   if (!(await areRemindersEnabled())) return;
@@ -266,13 +289,14 @@ export async function scheduleUpcomingReminders(): Promise<void> {
   await ensureChannel();
 
   const followed = await getFollowedTopics();
-  const leadDays = (await getReminderStyle()) === 'quiet' ? QUIET_LEAD_DAYS : FULL_LEAD_DAYS;
+  const leadDaysMap = await getLeadDaysMap();
   const upcoming = getUpcomingEvents()
     .filter((e) => followed.has(topicKey(e.deity, e.category)))
     .slice(0, MAX_SCHEDULED_EVENTS);
 
   for (const event of upcoming) {
     const [y, m, d] = event.date.split('-').map(Number);
+    const leadDays = leadDaysMap[topicKey(event.deity, event.category)] ?? DEFAULT_LEAD_DAYS;
 
     for (const daysBefore of leadDays) {
       const fireDate = new Date(y, m - 1, d, REMINDER_HOUR, 0, 0); // device-local time

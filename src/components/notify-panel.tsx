@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet } from 'react-native';
 
+import { LeadDaysRow } from '@/components/lead-days-row';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -11,9 +12,11 @@ import {
   areRemindersEnabled,
   enableReminders,
   getDeityFollowState,
+  getTopicLeadDays,
   isTopicFollowed,
   setDeityFollowed,
   setTopicFollowed,
+  setTopicLeadDays,
   type DeityFollowState,
 } from '@/lib/notifications';
 
@@ -27,12 +30,15 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
   const categories = getCategoriesForDeity(deityId);
   const [deityState, setDeityState] = useState<DeityFollowState>('none');
   const [topicState, setTopicState] = useState<Record<string, boolean>>({});
+  const [leadDaysState, setLeadDaysState] = useState<Record<string, number[]>>({});
   const [busy, setBusy] = useState(false);
 
   const refresh = async () => {
     setDeityState(await getDeityFollowState(deityId));
     const entries = await Promise.all(categories.map(async (c) => [c, await isTopicFollowed(deityId, c)] as const));
     setTopicState(Object.fromEntries(entries));
+    const leadEntries = await Promise.all(categories.map(async (c) => [c, await getTopicLeadDays(deityId, c)] as const));
+    setLeadDaysState(Object.fromEntries(leadEntries));
   };
 
   useEffect(() => {
@@ -73,10 +79,28 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
         </ThemedText>
       </Pressable>
 
-      {deityState !== 'none' && (
-        <ThemedText type="small" themeColor="textSecondary">
-          You'll get a notification 3 days, 2 days, and 1 day before each followed event.
-        </ThemedText>
+      {categories.filter((c) => topicState[c]).length > 0 && (
+        <ThemedView style={styles.leadDaysSection}>
+          <ThemedText type="small" themeColor="textSecondary">
+            Remind me:
+          </ThemedText>
+          {categories
+            .filter((c) => topicState[c])
+            .map((c) => (
+              <ThemedView key={c} style={styles.leadDaysGroup}>
+                {categories.length > 1 && (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {CATEGORY_LABELS[c]}
+                  </ThemedText>
+                )}
+                <LeadDaysRow
+                  days={leadDaysState[c] ?? [3, 1, 0]}
+                  disabled={busy}
+                  onChange={(days) => withPermission(() => setTopicLeadDays(deityId, c, days))}
+                />
+              </ThemedView>
+            ))}
+        </ThemedView>
       )}
 
       {categories.length > 1 && (
@@ -122,6 +146,12 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.four,
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.three,
+  },
+  leadDaysSection: {
+    gap: Spacing.two,
+  },
+  leadDaysGroup: {
+    gap: Spacing.one,
   },
   orLabel: {
     marginTop: Spacing.one,

@@ -3,35 +3,44 @@ import { FlatList, Platform, Pressable, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DeityCard } from '@/components/deity-card';
 import { MuruganMascot } from '@/components/murugan-mascot';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { formatEventDate, getDeityById, relativeDayLabel, type DeityEvent } from '@/data/events';
+import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { DEITIES, type Deity, type DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
-import { getFollowedUpcomingEvents } from '@/lib/notifications';
+import { getFollowedDeities, getFollowedUpcomingEvents } from '@/lib/notifications';
+
+// One accent color per deity, cycling through the palette by the deity's
+// position in DEITIES - stable regardless of which subset is followed or
+// what order they're rendered in.
+const ACCENT_CYCLE: ThemeColor[] = ['primary', 'secondary', 'accent', 'maroon'];
+const DEITY_ACCENTS: Record<string, ThemeColor> = Object.fromEntries(
+  DEITIES.map((d, i) => [d.id, ACCENT_CYCLE[i % ACCENT_CYCLE.length]])
+);
 
 export default function HomeScreen() {
   const theme = useTheme();
-  const [sacredDays, setSacredDays] = useState<DeityEvent[]>([]);
+  const [followedDeities, setFollowedDeities] = useState<Deity[]>([]);
+  const [nextOverall, setNextOverall] = useState<DeityEvent | undefined>();
 
   // Reload whenever Home regains focus (e.g. coming back from "Manage my
-  // deities" or a deity's notify toggles), so the feed always reflects the
-  // current follow selection.
+  // deities" or a deity's notify toggles), so the list of deities and the
+  // companion card's countdown always reflect the current follow selection.
   useFocusEffect(
     useCallback(() => {
-      getFollowedUpcomingEvents(8).then(setSacredDays);
+      getFollowedDeities().then(setFollowedDeities);
+      getFollowedUpcomingEvents(1).then(([first]) => setNextOverall(first));
     }, [])
   );
-
-  const [nextOverall] = sacredDays;
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <FlatList
-          data={sacredDays}
+          data={followedDeities}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={
@@ -55,46 +64,22 @@ export default function HomeScreen() {
                 <ThemedText type="linkPrimary">❤️ Manage my deities →</ThemedText>
               </Pressable>
 
-              {sacredDays.length === 0 && (
+              {followedDeities.length === 0 && (
                 <ThemedView type="backgroundElement" style={styles.emptyCard}>
                   <ThemedText type="smallBold">No sacred days yet</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
-                    Choose which deities are meaningful to you and this screen will fill up with what's coming next.
+                    Choose which deities are meaningful to you and they'll show up here, each with what's coming next.
                   </ThemedText>
                 </ThemedView>
               )}
             </ThemedView>
           }
-          renderItem={({ item }) => <SacredDayRow event={item} />}
+          renderItem={({ item }) => <DeityCard deity={item} accentColor={DEITY_ACCENTS[item.id]} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
         />
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>
     </ThemedView>
-  );
-}
-
-function SacredDayRow({ event }: { event: DeityEvent }) {
-  const theme = useTheme();
-  const deity = getDeityById(event.deity);
-
-  return (
-    <Pressable onPress={() => router.push({ pathname: '/event/[id]', params: { id: event.id } })}>
-      <ThemedView type="backgroundElement" style={[styles.row, { borderLeftColor: theme.primary }]}>
-        <ThemedText style={styles.rowSymbol}>{deity?.symbol ?? '🪔'}</ThemedText>
-        <ThemedView type="backgroundElement" style={styles.rowText}>
-          <ThemedText type="smallBold" themeColor="primary">
-            {relativeDayLabel(event.date)}
-          </ThemedText>
-          <ThemedText type="subtitle" style={styles.rowName}>
-            {event.name}
-          </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {formatEventDate(event.date)}
-          </ThemedText>
-        </ThemedView>
-      </ThemedView>
-    </Pressable>
   );
 }
 
@@ -136,25 +121,6 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     borderRadius: Spacing.four,
     gap: Spacing.one,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
-    borderLeftWidth: 4,
-  },
-  rowSymbol: {
-    fontSize: 28,
-  },
-  rowText: {
-    flex: 1,
-    gap: Spacing.half,
-  },
-  rowName: {
-    fontSize: 22,
-    lineHeight: 28,
   },
   separator: {
     height: Spacing.two,
