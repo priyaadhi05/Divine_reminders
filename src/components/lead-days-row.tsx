@@ -12,11 +12,14 @@ const OPTIONS = [
   { days: 1, key: 'leadDays.1' } as const,
 ];
 
-// Lets someone pick which of the 3/2/1-day countdown nudges they want for
-// one followed topic (deity + category) - the same granularity following
-// already works at, so this customizes *when* a reminder fires without
-// adding a separate "which events" axis. Multi-select; always keeps at
-// least one option on so a followed topic never goes silent by accident.
+// Lets someone pick how early the countdown for one followed topic (deity +
+// category) starts. Picking "3 days before" is a countdown, not a single
+// nudge - it cascades down to also include 2 and 1, same as picking "2"
+// cascades to include 1. So this reads as one choice of starting point
+// rather than three independent toggles: tapping any pill selects it and
+// everything below it (all shown green), which is also what keeps a
+// followed topic from ever going silent - there's always at least the
+// tapped pill itself active.
 export function LeadDaysRow({
   days,
   onChange,
@@ -28,19 +31,18 @@ export function LeadDaysRow({
 }) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const maxSelected = days.length ? Math.max(...days) : 0;
 
-  const toggle = (d: number) => {
-    const on = days.includes(d);
-    if (on && days.length === 1) return;
-    onChange(on ? days.filter((x) => x !== d) : [...days, d]);
+  const selectFrom = (d: number) => {
+    onChange(OPTIONS.map((o) => o.days).filter((x) => x <= d));
   };
 
   return (
     <ThemedView style={styles.row}>
       {OPTIONS.map(({ days: d, key }) => {
-        const on = days.includes(d);
+        const on = d <= maxSelected;
         return (
-          <Pressable key={d} onPress={() => toggle(d)} disabled={disabled} accessibilityRole="button" accessibilityState={{ selected: on }}>
+          <Pressable key={d} onPress={() => selectFrom(d)} disabled={disabled} accessibilityRole="button" accessibilityState={{ selected: on }}>
             <ThemedView
               type="backgroundElement"
               style={[styles.pill, on && { backgroundColor: theme.success, borderColor: theme.success }]}>

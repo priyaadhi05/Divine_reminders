@@ -10,9 +10,11 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
-import { CATEGORY_LABELS, daysUntil, formatEventDate, formatPeriodTiming, getDeityById, getEventById } from '@/data/events';
+import { CATEGORY_LABELS, formatEventDate, formatPeriodTiming, getDeityById, getEventById } from '@/data/events';
+import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { APP_INSTALL_URL } from '@/lib/app-info';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import { getDevotionalContent } from '@/lib/devotional-content';
 import {
@@ -20,10 +22,9 @@ import {
   enableReminders,
   getTopicLeadDays,
   isTopicFollowed,
-  notificationBody,
-  notificationTitle,
   setTopicFollowed,
   setTopicLeadDays,
+  shareMessage,
 } from '@/lib/notifications';
 import { resolveRegionTimeZone } from '@/lib/regions';
 
@@ -33,6 +34,7 @@ export default function EventDetailScreen() {
   const { regionId: homeRegionId } = useRegion();
   const theme = useTheme();
   const { t, categoryLabel, deityName: translatedDeityName } = useTranslation();
+  const playNotifySound = useNotifySound();
   const [reminderOn, setReminderOn] = useState(false);
   const [leadDays, setLeadDays] = useState<number[]>([3, 2, 1]);
   const [busy, setBusy] = useState(false);
@@ -75,7 +77,10 @@ export default function EventDetailScreen() {
     setBusy(true);
     try {
       const next = !reminderOn;
-      if (next && !(await areRemindersEnabled())) await enableReminders();
+      if (next) {
+        if (!(await areRemindersEnabled())) await enableReminders();
+        playNotifySound();
+      }
       await setTopicFollowed(event.deity, event.category, next);
       setReminderOn(next);
     } finally {
@@ -94,9 +99,15 @@ export default function EventDetailScreen() {
     }
   };
 
-  const shareMessage = `${notificationTitle(event, Math.max(daysUntil(event.date), 0))}\n\n${notificationBody(event, Math.max(daysUntil(event.date), 0))}`;
   const owningDeity = getDeityById(event.deity);
   const localizedDeityName = owningDeity ? translatedDeityName(owningDeity.id, owningDeity.name) : undefined;
+  // Every share carries the app's own name, and an install link once one
+  // actually exists (see lib/app-info.ts) - sharing is how this app grows,
+  // so it shouldn't read as an anonymous forwarded text.
+  const fullShareMessage = [
+    shareMessage(event),
+    APP_INSTALL_URL ? `${t('share.sentWith')}\n${t('share.getTheApp', { url: APP_INSTALL_URL })}` : t('share.sentWith'),
+  ].join('\n\n');
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -140,7 +151,7 @@ export default function EventDetailScreen() {
           </ThemedText>
         )}
 
-        {shareOpen && <SharePanel deityId={event.deity} message={shareMessage} />}
+        {shareOpen && <SharePanel deityId={event.deity} message={fullShareMessage} />}
 
         {reminderOn && (
           <ThemedView style={styles.leadDaysSection}>

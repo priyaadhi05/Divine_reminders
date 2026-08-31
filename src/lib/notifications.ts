@@ -3,7 +3,9 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import {
+  daysUntil,
   DEITIES,
+  formatEventDate,
   GENERAL_DEITY_ID,
   getCategoriesForDeity,
   getDeityById,
@@ -100,6 +102,23 @@ export function notificationBody(event: DeityEvent, daysBefore: number): string 
     timeZone: 'UTC',
   });
   return `${event.name} is coming up on ${shortDate} - a good time to start planning. 🙏`;
+}
+
+// Message used for manual sharing (see SharePanel) - unlike a scheduled
+// reminder, which only ever fires exactly 3/2/1/0 days before, a share can
+// happen on any day. Reusing the countdown wording for that would have
+// clamped a genuinely past or far-off event to "Today is X" (negative
+// daysUntil floored to 0), which is simply wrong. "Today" wording only
+// applies when the event's date really is today; every other day states the
+// actual date instead of guessing at a countdown.
+export function shareMessage(event: DeityEvent): string {
+  const n = daysUntil(event.date);
+  if (n === 0) {
+    return `${notificationTitle(event, 0)}\n\n${notificationBody(event, 0)}`;
+  }
+  const deity = getDeityById(event.deity);
+  const symbol = deity?.symbol ?? (event.category === 'pournami' ? '🌕' : event.category === 'amavasai' ? '🌚' : '🪔');
+  return `${symbol} ${event.name} (${event.tamilName}) - ${formatEventDate(event.date)}\n\n${event.significance} 🙏`;
 }
 
 // First-person countdown line, voiced as whichever deity the event belongs

@@ -11,7 +11,6 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import {
   CATEGORY_LABELS,
-  CURRENT_YEAR,
   CURRENT_YEAR_MONTH,
   EventCategory,
   formatEventDate,
@@ -46,11 +45,11 @@ export default function DeityScreen() {
     return getEventsByYearMonth(events);
   }, [allEvents, filter]);
 
-  // Only the current year's upcoming months by default - see Calendar tab
-  // for the same treatment and why.
-  const visibleGroups = showAllYears
-    ? allGroups
-    : allGroups.filter((g) => g.key.startsWith(String(CURRENT_YEAR)) && g.key >= CURRENT_YEAR_MONTH);
+  // Just the nearest upcoming month by default - a whole year of one
+  // deity's events (unlike the Calendar tab, which is meant to be browsed)
+  // was too much to land on. "Show all upcoming years" reveals everything.
+  const upcomingGroups = useMemo(() => allGroups.filter((g) => g.key >= CURRENT_YEAR_MONTH), [allGroups]);
+  const visibleGroups = showAllYears ? allGroups : upcomingGroups.slice(0, 1);
   const sections = visibleGroups.map((group) => ({ title: group.label, data: group.events }));
   const hiddenCount = allGroups.length - visibleGroups.length;
 
@@ -134,7 +133,7 @@ export default function DeityScreen() {
               {hiddenCount > 0 || showAllYears ? (
                 <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
                   <ThemedText type="linkPrimary">
-                    {showAllYears ? t('deity.showCurrentYearOnly', { year: CURRENT_YEAR }) : t('deity.showAllYears')}
+                    {showAllYears ? t('deity.showNextMonthOnly') : t('deity.showAllYears')}
                   </ThemedText>
                 </Pressable>
               ) : null}

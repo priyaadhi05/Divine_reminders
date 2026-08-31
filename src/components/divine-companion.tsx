@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import type { DeityEvent } from '@/data/events';
+import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } from '@/lib/notifications';
@@ -16,14 +17,17 @@ import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } 
 // reminderLine in src/lib/notifications.ts), speaks it aloud (on-device TTS)
 // when tapped, and hosts the toggle for real OS-level scheduled reminders.
 // No face/character graphic for now - just the text and a small pulse on the
-// icon while speaking.
-interface MuruganMascotProps {
+// icon while speaking. (Named for what it does, not "MuruganMascot" as it
+// was originally - it's always voiced whichever deity the next event
+// belongs to, never Murugan specifically.)
+interface DivineCompanionProps {
   nextEvent?: DeityEvent;
 }
 
-export function MuruganMascot({ nextEvent }: MuruganMascotProps) {
+export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
   const theme = useTheme();
   const { t } = useTranslation();
+  const playNotifySound = useNotifySound();
   const [speaking, setSpeaking] = useState(false);
   const [remindersOn, setRemindersOn] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -71,6 +75,7 @@ export function MuruganMascot({ nextEvent }: MuruganMascotProps) {
         setRemindersOn(false);
       } else {
         const granted = await enableReminders();
+        if (granted) playNotifySound();
         setRemindersOn(granted);
       }
     } finally {

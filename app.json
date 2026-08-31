@@ -42,7 +42,9 @@
         {
           "photosPermission": "Divine Calendar accesses your photos so you can quickly share a deity photo or short video with family."
         }
-      ]
+      ],
+      "expo-audio",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

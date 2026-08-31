@@ -6,6 +6,7 @@ import * as Sharing from 'expo-sharing';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { getDeityCardUri, hasDeityCard } from '@/lib/deity-cards';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media';
@@ -15,14 +16,14 @@ import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media
 //  - WhatsApp: opens directly with the message pre-filled via its own URL
 //    scheme - the one platform of the three that actually supports this.
 //  - Instagram / Facebook: neither accepts pre-filled text through a URL
-//    scheme, so these route through the OS share sheet instead (with the
-//    attached photo/video if one is picked below, which is what Instagram
-//    in particular needs to have anything to share at all).
+//    scheme, so these route through the OS share sheet instead, with
+//    whatever image/video is active below (the bundled card by default, or
+//    a photo/video someone attached) - Instagram in particular needs an
+//    image to have anything to share at all.
 //  - "More": the plain OS share sheet, same as this button did before.
-// Below that, an optional photo/video attach step - this app has no stock
-// deity photography of its own, so instead of a photo library it lets
-// someone pull in their own (a home altar, a temple visit) and remembers it
-// per deity so the next share is a single tap.
+// Below that: this app has no real deity photography of its own (see
+// lib/deity-cards.ts for why), so it defaults to a plain branded card and
+// lets someone swap in their own photo or video instead if they'd rather.
 interface SharePanelProps {
   deityId: string;
   message: string;
@@ -31,12 +32,18 @@ interface SharePanelProps {
 export function SharePanel({ deityId, message }: SharePanelProps) {
   const theme = useTheme();
   const { t } = useTranslation();
-  const [media, setMedia] = useState<ShareMedia | null>(null);
+  const [customMedia, setCustomMedia] = useState<ShareMedia | null>(null);
+  const [cardUri, setCardUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    getShareMedia(deityId).then(setMedia);
+    getShareMedia(deityId).then(setCustomMedia);
+    if (hasDeityCard(deityId)) getDeityCardUri(deityId).then(setCardUri);
+    else setCardUri(null);
   }, [deityId]);
+
+  const media: ShareMedia | null = customMedia ?? (cardUri ? { uri: cardUri, type: 'image' } : null);
+  const isDefaultCard = !customMedia && !!cardUri;
 
   const shareViaSheet = async () => {
     try {
@@ -92,15 +99,17 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       if (!asset) return;
       const next: ShareMedia = { uri: asset.uri, type: asset.type === 'video' ? 'video' : 'image' };
       await setShareMedia(deityId, next);
-      setMedia(next);
+      setCustomMedia(next);
     } finally {
       setBusy(false);
     }
   };
 
+  // Reverts to the bundled card (if this deity has one) rather than to
+  // nothing - there's always something reasonable to share.
   const removeMedia = async () => {
     await setShareMedia(deityId, null);
-    setMedia(null);
+    setCustomMedia(null);
   };
 
   return (
@@ -118,17 +127,19 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
             <Image source={{ uri: media.uri }} style={styles.thumbnail} />
             <ThemedView type="backgroundElement" style={styles.mediaInfo}>
               <ThemedText type="small" themeColor="textSecondary">
-                {media.type === 'video' ? t('share.videoReady') : t('share.photoReady')}
+                {isDefaultCard ? t('share.cardReady') : media.type === 'video' ? t('share.videoReady') : t('share.photoReady')}
               </ThemedText>
               <ThemedView type="backgroundElement" style={styles.mediaActions}>
                 <Pressable onPress={pickMedia} disabled={busy}>
-                  <ThemedText type="linkPrimary">{t('common.change')}</ThemedText>
+                  <ThemedText type="linkPrimary">{isDefaultCard ? t('share.useOwnInstead') : t('common.change')}</ThemedText>
                 </Pressable>
-                <Pressable onPress={removeMedia} disabled={busy}>
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {t('common.remove')}
-                  </ThemedText>
-                </Pressable>
+                {!isDefaultCard && (
+                  <Pressable onPress={removeMedia} disabled={busy}>
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {t('common.remove')}
+                    </ThemedText>
+                  </Pressable>
+                )}
               </ThemedView>
             </ThemedView>
           </ThemedView>

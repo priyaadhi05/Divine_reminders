@@ -32,7 +32,7 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
       {
         label: 'Parayanam',
         title: 'Kandha Sashti Kavasam',
-        note: 'A protective hymn traditionally recited daily, especially through the six days leading to Skanda Sashti.',
+        note: 'A "kavasam" (armor) composed by Devaraya Swamigal - a protective hymn that invokes Murugan\'s weapons, vehicle, and attendants over each part of the body, traditionally recited daily and especially through the six days leading to Skanda Sashti.',
       },
       {
         label: 'Tiruppugazh',
@@ -59,7 +59,7 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
         label: 'Parayanam',
         title: 'Vishnu Sahasranamam',
         script: 'शुक्लाम्बरधरं विष्णुं शशिवर्णं चतुर्भुजम् । प्रसन्नवदनं ध्यायेत् सर्वविघ्नोपशान्तये ॥',
-        note: 'The 1,000 names of Vishnu; the verse above is its traditional opening invocation.',
+        note: 'The 1,000 names of Vishnu, recited by Bhishma to Yudhishthira in the Mahabharata; the verse above is its traditional opening invocation.',
       },
     ],
   },
@@ -80,7 +80,9 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
       {
         label: 'Parayanam',
         title: 'Lingashtakam',
-        note: 'Eight verses in praise of the Shiva Lingam, commonly chanted during abhishekam.',
+        script:
+          '1. ब्रह्ममुरारी सुरार्चित लिङ्गं\n2. देवमुनि प्रवरार्चित लिङ्गं\n3. सर्व सुगन्ध सुलेपित लिङ्गं\n4. कनक महामणि भूषित लिङ्गं\n5. कुमकुम चंदन लेपित लिङ्गं\n6. देवगणार्चित सेवित लिङ्गं\n7. अष्टदलोपरिवेष्टित लिङ्गं\n8. सुरगुरु सुरवर पूजित लिङ्गं\n\nफलश्रुति:\nलिङ्गाष्टकमिदं पुण्यं यः पठेत् शिवसन्निधौ ।\nशिवलोकमवाप्नोति शिवेन सह मोदते ॥',
+        note: 'Eight verses in praise of the Shiva Lingam (each opens as shown above and closes with "tat praṇamāmi sadāśiva lingam"), commonly chanted during abhishekam. Attributed to Adi Shankara.',
       },
     ],
   },
@@ -102,7 +104,7 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
         label: 'Parayanam',
         title: 'Devi Mahatmyam (Durga Saptashati)',
         script: 'सर्वमङ्गलमाङ्गल्ये शिवे सर्वार्थसाधिके । शरण्ये त्र्यम्बके गौरि नारायणि नमोऽस्तुते ॥',
-        note: 'The core scripture of Durga worship, especially during Navratri; the verse above is among its most quoted.',
+        note: '700 verses across 13 chapters of the Markandeya Purana ("Saptashati" - "of the 700") - the core scripture of Durga worship, recited especially during Navratri; the verse above is among its most quoted.',
       },
     ],
   },
@@ -122,7 +124,8 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
       {
         label: 'Parayanam',
         title: 'Ganapati Atharvashirsha',
-        note: 'An Upanishadic hymn to Ganesha, traditionally recited on Sankashti Chaturthi and before undertaking new ventures.',
+        script: 'हरिः ॐ नमस्ते गणपतये ।',
+        note: 'An Upanishadic hymn to Ganesha (opens as shown above: "Hail Om, salutations to you, Ganapati"), traditionally recited on Sankashti Chaturthi and before undertaking new ventures.',
       },
     ],
   },
@@ -142,7 +145,7 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
       {
         label: 'Parayanam',
         title: 'Harivarasanam',
-        note: "The devotional song sung nightly as the sanctum closes at Sabarimala - considered Ayyappan's lullaby.",
+        note: 'An ashtakam (eight verses) in Sanskritised Malayalam, sung nightly just before the Sabarimala sanctum closes for the night - considered a lullaby for Ayyappan.',
       },
     ],
   },

@@ -4,10 +4,10 @@ import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeityCard } from '@/components/deity-card';
+import { DivineCompanion } from '@/components/divine-companion';
 import { LanguageSelector } from '@/components/language-selector';
 import { LogoMark } from '@/components/logo-mark';
 import { LunarDaysCard } from '@/components/lunar-days-card';
-import { MuruganMascot } from '@/components/murugan-mascot';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
@@ -63,7 +63,7 @@ export default function HomeScreen() {
                 </ThemedText>
               </ThemedView>
 
-              <MuruganMascot nextEvent={nextOverall} />
+              <DivineCompanion nextEvent={nextOverall} />
 
               <LunarDaysCard />
 

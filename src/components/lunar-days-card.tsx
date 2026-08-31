@@ -16,6 +16,7 @@ import {
   type DeityEvent,
   type EventCategory,
 } from '@/data/events';
+import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
@@ -36,6 +37,7 @@ export function LunarDaysCard() {
   const [followed, setFollowed] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
+  const playNotifySound = useNotifySound();
 
   const categories = useMemo(() => getGeneralCategories(), []);
 
@@ -67,7 +69,10 @@ export function LunarDaysCard() {
     setBusy(true);
     try {
       const next = !followed[category];
-      if (next && !(await areRemindersEnabled())) await enableReminders();
+      if (next) {
+        if (!(await areRemindersEnabled())) await enableReminders();
+        playNotifySound();
+      }
       await setTopicFollowed(GENERAL_DEITY_ID, category, next);
       setFollowed((f) => ({ ...f, [category]: next }));
     } finally {

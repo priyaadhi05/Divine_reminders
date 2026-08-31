@@ -55,6 +55,7 @@ const EN = {
   'deity.browseCalendar': 'Browse the calendar',
   'deity.showAllYears': 'Show all upcoming years →',
   'deity.showCurrentYearOnly': '← Show {{year}} only',
+  'deity.showNextMonthOnly': '← Show upcoming month only',
   'deity.sacredVerses': 'Sacred verses',
 
   'notify.notifyMeFor': 'Notify me for {{name}}',
@@ -90,9 +91,14 @@ const EN = {
   'share.addMedia': 'Add a deity photo or short video',
   'share.photoReady': 'Photo ready to share',
   'share.videoReady': 'Video ready to share',
+  'share.cardReady': 'Our card - ready to share',
+  'share.useOwnInstead': 'Use my own photo or video instead',
 
   'calendar.title': 'Calendar',
   'calendar.subtitle': 'All events across every deity · festivals, vrathams & monthly observances',
+
+  'share.sentWith': '🪔 Sent with Divine Calendar',
+  'share.getTheApp': 'Get the app: {{url}}',
 } as const;
 
 const TA: Record<TranslationKey, string> = {
@@ -143,6 +149,7 @@ const TA: Record<TranslationKey, string> = {
   'deity.browseCalendar': 'நாட்காட்டியைப் பார்வையிடு',
   'deity.showAllYears': 'அனைத்து ஆண்டுகளையும் காட்டு →',
   'deity.showCurrentYearOnly': '← {{year}} மட்டும் காட்டு',
+  'deity.showNextMonthOnly': '← அடுத்த மாதம் மட்டும் காட்டு',
   'deity.sacredVerses': 'புனித சுலோகங்கள்',
 
   'notify.notifyMeFor': '{{name}} க்கு எனக்குத் தெரிவி',
@@ -178,9 +185,14 @@ const TA: Record<TranslationKey, string> = {
   'share.addMedia': 'தெய்வப் புகைப்படம் அல்லது சிறு வீடியோவைச் சேர்',
   'share.photoReady': 'புகைப்படம் பகிரத் தயார்',
   'share.videoReady': 'வீடியோ பகிரத் தயார்',
+  'share.cardReady': 'எங்கள் அட்டை - பகிரத் தயார்',
+  'share.useOwnInstead': 'எனது சொந்த புகைப்படம்/வீடியோவைப் பயன்படுத்து',
 
   'calendar.title': 'நாட்காட்டி',
   'calendar.subtitle': 'ஒவ்வொரு தெய்வத்தின் அனைத்து நிகழ்வுகளும் · திருவிழாக்கள், விரதங்கள் & மாதாந்திர நாட்கள்',
+
+  'share.sentWith': '🪔 திவ்ய நாட்காட்டி மூலம் அனுப்பப்பட்டது',
+  'share.getTheApp': 'ஆப்ஸைப் பெற: {{url}}',
 };
 
 const TE: Record<TranslationKey, string> = {
@@ -231,6 +243,7 @@ const TE: Record<TranslationKey, string> = {
   'deity.browseCalendar': 'క్యాలెండర్‌ను చూడండి',
   'deity.showAllYears': 'అన్ని రాబోయే సంవత్సరాలను చూపించు →',
   'deity.showCurrentYearOnly': '← {{year}} మాత్రమే చూపించు',
+  'deity.showNextMonthOnly': '← వచ్చే నెల మాత్రమే చూపించు',
   'deity.sacredVerses': 'పవిత్ర శ్లోకాలు',
 
   'notify.notifyMeFor': '{{name}} కోసం నాకు తెలియజేయి',
@@ -266,9 +279,14 @@ const TE: Record<TranslationKey, string> = {
   'share.addMedia': 'దేవుని ఫోటో లేదా చిన్న వీడియో జోడించండి',
   'share.photoReady': 'ఫోటో పంచుకోవడానికి సిద్ధంగా ఉంది',
   'share.videoReady': 'వీడియో పంచుకోవడానికి సిద్ధంగా ఉంది',
+  'share.cardReady': 'మా కార్డ్ - పంచుకోవడానికి సిద్ధం',
+  'share.useOwnInstead': 'నా సొంత ఫోటో లేదా వీడియోను ఉపయోగించు',
 
   'calendar.title': 'క్యాలెండర్',
   'calendar.subtitle': 'ప్రతి దేవత యొక్క అన్ని వేడుకలు · పండుగలు, వ్రతాలు & నెలవారీ దినాలు',
+
+  'share.sentWith': '🪔 దివ్య క్యాలెండర్ ద్వారా పంపబడింది',
+  'share.getTheApp': 'యాప్‌ను పొందండి: {{url}}',
 };
 
 const KN: Record<TranslationKey, string> = {
@@ -319,6 +337,7 @@ const KN: Record<TranslationKey, string> = {
   'deity.browseCalendar': 'ಕ್ಯಾಲೆಂಡರ್ ನೋಡಿ',
   'deity.showAllYears': 'ಎಲ್ಲಾ ಮುಂಬರುವ ವರ್ಷಗಳನ್ನು ತೋರಿಸಿ →',
   'deity.showCurrentYearOnly': '← {{year}} ಮಾತ್ರ ತೋರಿಸಿ',
+  'deity.showNextMonthOnly': '← ಮುಂದಿನ ತಿಂಗಳು ಮಾತ್ರ ತೋರಿಸಿ',
   'deity.sacredVerses': 'ಪವಿತ್ರ ಶ್ಲೋಕಗಳು',
 
   'notify.notifyMeFor': '{{name}} ಗಾಗಿ ನನಗೆ ತಿಳಿಸಿ',
@@ -354,9 +373,14 @@ const KN: Record<TranslationKey, string> = {
   'share.addMedia': 'ದೇವರ ಫೋಟೋ ಅಥವಾ ಸಣ್ಣ ವೀಡಿಯೊ ಸೇರಿಸಿ',
   'share.photoReady': 'ಫೋಟೋ ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧವಾಗಿದೆ',
   'share.videoReady': 'ವೀಡಿಯೊ ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧವಾಗಿದೆ',
+  'share.cardReady': 'ನಮ್ಮ ಕಾರ್ಡ್ - ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧ',
+  'share.useOwnInstead': 'ನನ್ನ ಸ್ವಂತ ಫೋಟೋ ಅಥವಾ ವೀಡಿಯೊ ಬಳಸಿ',
 
   'calendar.title': 'ಕ್ಯಾಲೆಂಡರ್',
   'calendar.subtitle': 'ಪ್ರತಿ ದೇವರ ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳು · ಹಬ್ಬಗಳು, ವ್ರತಗಳು & ಮಾಸಿಕ ದಿನಗಳು',
+
+  'share.sentWith': '🪔 ದಿವ್ಯ ಕ್ಯಾಲೆಂಡರ್ ಮೂಲಕ ಕಳುಹಿಸಲಾಗಿದೆ',
+  'share.getTheApp': 'ಆ್ಯಪ್ ಪಡೆಯಿರಿ: {{url}}',
 };
 
 const HI: Record<TranslationKey, string> = {
@@ -407,6 +431,7 @@ const HI: Record<TranslationKey, string> = {
   'deity.browseCalendar': 'कैलेंडर देखें',
   'deity.showAllYears': 'सभी आगामी वर्ष दिखाएं →',
   'deity.showCurrentYearOnly': '← केवल {{year}} दिखाएं',
+  'deity.showNextMonthOnly': '← केवल अगला महीना दिखाएं',
   'deity.sacredVerses': 'पवित्र श्लोक',
 
   'notify.notifyMeFor': '{{name}} के लिए मुझे सूचित करें',
@@ -442,9 +467,14 @@ const HI: Record<TranslationKey, string> = {
   'share.addMedia': 'देवता की फोटो या छोटा वीडियो जोड़ें',
   'share.photoReady': 'फोटो साझा करने के लिए तैयार है',
   'share.videoReady': 'वीडियो साझा करने के लिए तैयार है',
+  'share.cardReady': 'हमारा कार्ड - साझा करने के लिए तैयार',
+  'share.useOwnInstead': 'मेरी अपनी फोटो या वीडियो का उपयोग करें',
 
   'calendar.title': 'कैलेंडर',
   'calendar.subtitle': 'हर देवता के सभी आयोजन · त्योहार, व्रत और मासिक दिन',
+
+  'share.sentWith': '🪔 दिव्य कैलेंडर के साथ भेजा गया',
+  'share.getTheApp': 'ऐप पाएं: {{url}}',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = {
