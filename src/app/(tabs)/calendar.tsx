@@ -22,6 +22,8 @@ const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorK
   { key: 'pradosham', label: CATEGORY_LABELS.pradosham, ...CATEGORY_STYLE.pradosham },
   { key: 'monthly-shivaratri', label: CATEGORY_LABELS['monthly-shivaratri'], ...CATEGORY_STYLE['monthly-shivaratri'] },
   { key: 'monthly-durgashtami', label: CATEGORY_LABELS['monthly-durgashtami'], ...CATEGORY_STYLE['monthly-durgashtami'] },
+  { key: 'pournami', label: CATEGORY_LABELS.pournami, ...CATEGORY_STYLE.pournami },
+  { key: 'amavasai', label: CATEGORY_LABELS.amavasai, ...CATEGORY_STYLE.amavasai },
 ];
 
 export default function CalendarScreen() {

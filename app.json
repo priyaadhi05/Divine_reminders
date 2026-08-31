@@ -7,12 +7,9 @@
     "icon": "./assets/images/icon.png",
     "scheme": "divinecalendar",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#FDF8F3",
+        "backgroundColor": "#9B2A1C",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -30,13 +27,20 @@
         {
           "backgroundColor": "#B0301F",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 140
         }
       ],
       [
         "expo-notifications",
         {
           "color": "#B0301F"
+        }
+      ],
+      "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Divine Calendar accesses your photos so you can quickly share a deity photo or short video with family."
         }
       ]
     ],

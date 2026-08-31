@@ -4,6 +4,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeityCard } from '@/components/deity-card';
+import { LogoMark } from '@/components/logo-mark';
+import { LunarDaysCard } from '@/components/lunar-days-card';
 import { MuruganMascot } from '@/components/murugan-mascot';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -46,6 +48,10 @@ export default function HomeScreen() {
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
+                <LogoMark ringColor={theme.primary} />
+                <ThemedText type="smallBold" style={[styles.heroEyebrow, { color: theme.primaryText }]}>
+                  DIVINE CALENDAR
+                </ThemedText>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
                   Your Sacred Days
                 </ThemedText>
@@ -55,6 +61,8 @@ export default function HomeScreen() {
               </ThemedView>
 
               <MuruganMascot nextEvent={nextOverall} />
+
+              <LunarDaysCard />
 
               {/* Sole entry point for changing which deities are followed - the
                   onboarding screen already lists every available deity with
@@ -108,6 +116,11 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     alignItems: 'center',
     gap: Spacing.half,
+  },
+  heroEyebrow: {
+    marginTop: Spacing.two,
+    letterSpacing: 2,
+    opacity: 0.85,
   },
   heroTitle: {
     fontSize: 36,

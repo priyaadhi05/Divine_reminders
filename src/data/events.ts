@@ -1,4 +1,5 @@
 import durgaData from '@/assets/data/durga-events.json';
+import generalData from '@/assets/data/general-events.json';
 import muruganData from '@/assets/data/murugan-events.json';
 import shivaData from '@/assets/data/shiva-events.json';
 import vishnuData from '@/assets/data/vishnu-events.json';
@@ -12,7 +13,9 @@ export type EventCategory =
   | 'ekadashi'
   | 'pradosham'
   | 'monthly-shivaratri'
-  | 'monthly-durgashtami';
+  | 'monthly-durgashtami'
+  | 'amavasai'
+  | 'pournami';
 
 export const CATEGORY_LABELS: Record<EventCategory, string> = {
   festival: 'Festival',
@@ -24,6 +27,8 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
   pradosham: 'Pradosham',
   'monthly-shivaratri': 'Masa Shivaratri',
   'monthly-durgashtami': 'Durgashtami',
+  amavasai: 'Amavasai',
+  pournami: 'Pournami',
 };
 
 export interface DeityEvent {
@@ -107,8 +112,34 @@ export function getDeityById(id: string): Deity | undefined {
   return DEITIES.find((d) => d.id === id);
 }
 
+// Amavasai (new moon) and Pournami (full moon) - generated the same way as
+// every deity's dataset, but deliberately not registered as a followable
+// "deity" in DEITIES: these are shown on Home regardless of which deities
+// someone follows (see LunarDaysCard), not chosen at onboarding.
+export const GENERAL_DEITY_ID = 'general';
+const GENERAL_DATASET = generalData as DeityDataset;
+
+export function getGeneralEvents(): DeityEvent[] {
+  return GENERAL_DATASET.events;
+}
+
+// Same shape as getCategoriesForDeity, for the general dataset's own topics
+// (`general:amavasai`, `general:pournami`) so they can be followed and
+// scheduled through the exact same reminder system every deity uses.
+export function getGeneralCategories(): EventCategory[] {
+  const seen = new Set<EventCategory>();
+  const ordered: EventCategory[] = [];
+  for (const e of getGeneralEvents()) {
+    if (!seen.has(e.category)) {
+      seen.add(e.category);
+      ordered.push(e.category);
+    }
+  }
+  return ordered;
+}
+
 export function getAllEvents(): DeityEvent[] {
-  return DEITIES.flatMap((d) => d.dataset.events);
+  return [...DEITIES.flatMap((d) => d.dataset.events), ...getGeneralEvents()];
 }
 
 export function getEventsForDeity(deityId: string): DeityEvent[] {
@@ -144,6 +175,16 @@ export function getUpcomingEvents(limit?: number, deityId?: string): DeityEvent[
   const today = todayISTDateStr();
   const pool = deityId ? getEventsForDeity(deityId) : getAllEvents();
   const upcoming = pool.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
+  return limit ? upcoming.slice(0, limit) : upcoming;
+}
+
+// Same as getUpcomingEvents, scoped to just the general (deity-agnostic)
+// dataset - used by LunarDaysCard's "next Amavasai / next Pournami" teaser.
+export function getUpcomingGeneralEvents(limit?: number): DeityEvent[] {
+  const today = todayISTDateStr();
+  const upcoming = getGeneralEvents()
+    .filter((e) => e.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date));
   return limit ? upcoming.slice(0, limit) : upcoming;
 }
 

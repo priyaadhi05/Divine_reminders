@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LogoMark } from '@/components/logo-mark';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -17,7 +18,7 @@ import { enableReminders, markOnboarded, setDeityFollowed } from '@/lib/notifica
 // Amman) - more are on the roadmap, but a selectable card with no data
 // behind it would be a dead end.
 //
-// Reminder *timing* (3 days before / 1 day before / day of) isn't chosen
+// Reminder *timing* (3 days before / 2 days before / 1 day before) isn't chosen
 // here anymore - every followed topic starts on the full countdown, and can
 // be dialed down per deity or per event afterward (see NotifyPanel and the
 // event detail screen's LeadDaysRow), since that choice is easier to make
@@ -73,6 +74,9 @@ export default function OnboardingScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
+          <ThemedView style={styles.brandRow}>
+            <LogoMark size={56} />
+          </ThemedView>
           <ThemedText type="title" style={styles.heading}>
             Which deities are meaningful to you?
           </ThemedText>
@@ -128,6 +132,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.four,
     gap: Spacing.three,
+  },
+  brandRow: {
+    alignItems: 'center',
   },
   heading: {
     fontSize: 30,

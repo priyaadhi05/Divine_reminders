@@ -79,10 +79,16 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
         </ThemedText>
       </Pressable>
 
+      {deityState === 'none' && (
+        <ThemedText type="small" themeColor="textSecondary">
+          Requires notification permission — you'll be asked to allow it once.
+        </ThemedText>
+      )}
+
       {categories.filter((c) => topicState[c]).length > 0 && (
         <ThemedView style={styles.leadDaysSection}>
           <ThemedText type="small" themeColor="textSecondary">
-            Remind me:
+            Notify me this many days before:
           </ThemedText>
           {categories
             .filter((c) => topicState[c])
@@ -94,7 +100,7 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
                   </ThemedText>
                 )}
                 <LeadDaysRow
-                  days={leadDaysState[c] ?? [3, 1, 0]}
+                  days={leadDaysState[c] ?? [3, 2, 1]}
                   disabled={busy}
                   onChange={(days) => withPermission(() => setTopicLeadDays(deityId, c, days))}
                 />
@@ -106,7 +112,7 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
       {categories.length > 1 && (
         <>
           <ThemedText type="small" themeColor="textSecondary" style={styles.orLabel}>
-            Or pick specific events:
+            Or follow specific occasions only:
           </ThemedText>
           <ThemedView style={styles.chipRow}>
             {categories.map((cat) => {

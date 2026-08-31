@@ -49,6 +49,14 @@ const CATEGORY_CONTENT: Record<EventCategory, DevotionalContent> = {
     practice: 'Light a lamp for the Devi and, if possible, offer a small act of protection or courage to someone who needs it.',
     prayer: 'Om Shakti - lend me your strength today.',
   },
+  amavasai: {
+    practice: 'Many observe a partial fast and perform tarpanam (ancestor remembrance); others simply keep the day quiet and reflective.',
+    prayer: 'On this moonless night, let go of what weighs on me and welcome a fresh cycle.',
+  },
+  pournami: {
+    practice: 'Visit a temple if you can, or sit in quiet reflection under the full moon - many also observe a light fast.',
+    prayer: 'Under this full moon, fill my heart with clarity, peace, and gratitude.',
+  },
 };
 
 // Overrides for specific, well-known festivals that deserve their own words

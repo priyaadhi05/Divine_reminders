@@ -10,6 +10,7 @@ import {
 import { generateMonthlyEkadashiEvents, generateVishnuEvents } from './deities/vishnu';
 import { generateMonthlyPradoshamEvents, generateMonthlyShivaratriEvents, generateShivaEvents } from './deities/shiva';
 import { generateMonthlyDurgashtamiEvents, generateDurgaEvents } from './deities/durga';
+import { generateMonthlyAmavasaiPournamiEvents } from './deities/general';
 import type { BaseDeityEvent } from './deity-utils';
 
 const START_YEAR = 2026;
@@ -80,8 +81,13 @@ function main() {
   );
   writeDataset('durga', durgaEvents);
 
-  const total = muruganEvents.length + vishnuEvents.length + shivaEvents.length + durgaEvents.length;
-  console.log(`Generated ${total} events across 4 deities.`);
+  // General (not deity-specific): Amavasai & Pournami, every lunar month -
+  // shown on Home regardless of which deities someone follows.
+  const generalEvents = generateMonthlyAmavasaiPournamiEvents(days).sort((a, b) => a.date.localeCompare(b.date));
+  writeDataset('general', generalEvents);
+
+  const total = muruganEvents.length + vishnuEvents.length + shivaEvents.length + durgaEvents.length + generalEvents.length;
+  console.log(`Generated ${total} events across 4 deities + general lunar days.`);
 }
 
 main();

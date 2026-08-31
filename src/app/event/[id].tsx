@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Share, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LeadDaysRow } from '@/components/lead-days-row';
 import { RegionSelector } from '@/components/region-selector';
+import { SharePanel } from '@/components/share-panel';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -31,8 +32,9 @@ export default function EventDetailScreen() {
   const { regionId } = useRegion();
   const theme = useTheme();
   const [reminderOn, setReminderOn] = useState(false);
-  const [leadDays, setLeadDays] = useState<number[]>([3, 1, 0]);
+  const [leadDays, setLeadDays] = useState<number[]>([3, 2, 1]);
   const [busy, setBusy] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (!event) return;
@@ -78,15 +80,8 @@ export default function EventDetailScreen() {
     }
   };
 
-  const handleShare = async () => {
-    const n = Math.max(daysUntil(event.date), 0);
-    const message = `${notificationTitle(event, n)}\n\n${notificationBody(event, n)}`;
-    try {
-      await Share.share({ message });
-    } catch {
-      // user dismissed the share sheet - nothing to do
-    }
-  };
+  const shareMessage = `${notificationTitle(event, Math.max(daysUntil(event.date), 0))}\n\n${notificationBody(event, Math.max(daysUntil(event.date), 0))}`;
+  const deityName = getDeityById(event.deity)?.name;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -115,7 +110,7 @@ export default function EventDetailScreen() {
               </ThemedText>
             </ThemedView>
           </Pressable>
-          <Pressable onPress={handleShare} style={styles.buttonFlex}>
+          <Pressable onPress={() => setShareOpen((v) => !v)} style={styles.buttonFlex}>
             <ThemedView style={[styles.button, styles.buttonOutline, { borderColor: theme.primary }]}>
               <ThemedText type="smallBold" style={{ color: theme.primary }}>
                 Share with family
@@ -124,10 +119,18 @@ export default function EventDetailScreen() {
           </Pressable>
         </ThemedView>
 
+        {!reminderOn && (
+          <ThemedText type="small" themeColor="textSecondary" style={styles.permissionHint}>
+            Requires notification permission — you'll be asked to allow it once.
+          </ThemedText>
+        )}
+
+        {shareOpen && <SharePanel deityId={event.deity} message={shareMessage} />}
+
         {reminderOn && (
           <ThemedView style={styles.leadDaysSection}>
             <ThemedText type="small" themeColor="textSecondary">
-              Remind me — applies to every {CATEGORY_LABELS[event.category]} day for {getDeityById(event.deity)?.name}
+              Applies to every {CATEGORY_LABELS[event.category]} day{deityName ? ` for ${deityName}` : ''}
             </ThemedText>
             <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
           </ThemedView>
@@ -230,6 +233,9 @@ const styles = StyleSheet.create({
   },
   leadDaysSection: {
     gap: Spacing.two,
+  },
+  permissionHint: {
+    marginTop: -Spacing.three,
   },
   button: {
     paddingVertical: Spacing.two,

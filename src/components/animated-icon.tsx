@@ -128,12 +128,12 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   image: {
-    width: 76,
-    height: 71,
+    width: 84,
+    height: 84,
   },
   background: {
     borderRadius: 40,
-    experimental_backgroundImage: `linear-gradient(180deg, #3C9FFE, #0274DF)`,
+    experimental_backgroundImage: `linear-gradient(180deg, #C6462F, #6B1E14)`,
     width: 128,
     height: 128,
     position: 'absolute',

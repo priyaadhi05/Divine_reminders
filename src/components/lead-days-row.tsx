@@ -7,11 +7,11 @@ import { useTheme } from '@/hooks/use-theme';
 
 const OPTIONS: { days: number; label: string }[] = [
   { days: 3, label: '3 days before' },
+  { days: 2, label: '2 days before' },
   { days: 1, label: '1 day before' },
-  { days: 0, label: 'Day of' },
 ];
 
-// Lets someone pick which of the 3/1/0-day countdown nudges they want for
+// Lets someone pick which of the 3/2/1-day countdown nudges they want for
 // one followed topic (deity + category) - the same granularity following
 // already works at, so this customizes *when* a reminder fires without
 // adding a separate "which events" axis. Multi-select; always keeps at

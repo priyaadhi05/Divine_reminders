@@ -10,7 +10,7 @@
     "dayBoundary": "Local sunrise (panchangam value prevailing at sunrise defines the calendar day)",
     "note": "Astronomically computed. May occasionally differ by ±1 day from a specific temple's published panchangam near tithi/nakshatra boundary edge cases."
   },
-  "generatedAt": "2026-08-25T18:26:42.610Z",
+  "generatedAt": "2026-08-31T09:33:00.569Z",
   "events": [
     {
       "id": "durga-monthly-ashtami-2026-01-26",
