@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EventCard } from '@/components/event-card';
 import { NotifyPanel } from '@/components/notify-panel';
+import { SacredVerses } from '@/components/sacred-verses';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
@@ -20,12 +21,14 @@ import {
   getUpcomingEvents,
 } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 
 export default function DeityScreen() {
   const { deityId } = useLocalSearchParams<{ deityId: string }>();
   const deity = getDeityById(deityId);
   const theme = useTheme();
+  const { t, categoryLabel, deityName: translatedDeityName } = useTranslation();
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
   const [showAllYears, setShowAllYears] = useState(false);
 
@@ -59,9 +62,11 @@ export default function DeityScreen() {
     );
   }
 
+  const localizedName = translatedDeityName(deity.id, deity.name);
+
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: deity.name }} />
+      <Stack.Screen options={{ title: localizedName }} />
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         <SectionList
           sections={sections}
@@ -74,10 +79,10 @@ export default function DeityScreen() {
                 <ThemedText style={styles.heroSymbol}>{deity.symbol}</ThemedText>
                 <ThemedText style={[styles.heroTamil, { color: theme.primaryText }]}>{deity.tamilName}</ThemedText>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
-                  {deity.name}
+                  {localizedName}
                 </ThemedText>
                 <ThemedText type="small" style={[styles.heroSubtitle, { color: theme.primaryText }]}>
-                  Festivals &amp; auspicious days · 2026–2035
+                  {t('deity.tagline')}
                 </ThemedText>
               </ThemedView>
 
@@ -87,7 +92,7 @@ export default function DeityScreen() {
                     type="backgroundElement"
                     style={[styles.nextCard, { borderColor: theme[CATEGORY_STYLE[next.category].colorKey] }]}>
                     <ThemedText type="small" themeColor="textSecondary">
-                      NEXT UP {CATEGORY_STYLE[next.category].icon}
+                      {t('deity.nextUp')} {CATEGORY_STYLE[next.category].icon}
                     </ThemedText>
                     <ThemedText type="subtitle" style={styles.nextName}>
                       {next.name}
@@ -99,17 +104,25 @@ export default function DeityScreen() {
                 </Pressable>
               )}
 
-              <NotifyPanel deityId={deityId} deityName={deity.name} />
+              <NotifyPanel deityId={deityId} deityName={localizedName} />
+
+              <SacredVerses deityId={deityId} />
 
               <ThemedText type="smallBold" style={styles.browseLabel}>
-                Browse the calendar
+                {t('deity.browseCalendar')}
               </ThemedText>
               <ThemedView style={styles.filterRow}>
-                <FilterChip label="All" icon="📿" colorKey="primary" selected={filter === 'all'} onPress={() => setFilter('all')} />
+                <FilterChip
+                  label={t('common.all')}
+                  icon="📿"
+                  colorKey="primary"
+                  selected={filter === 'all'}
+                  onPress={() => setFilter('all')}
+                />
                 {categoriesPresent.map((cat) => (
                   <FilterChip
                     key={cat}
-                    label={CATEGORY_LABELS[cat]}
+                    label={categoryLabel(cat, CATEGORY_LABELS[cat])}
                     icon={CATEGORY_STYLE[cat].icon}
                     colorKey={CATEGORY_STYLE[cat].colorKey}
                     selected={filter === cat}
@@ -121,7 +134,7 @@ export default function DeityScreen() {
               {hiddenCount > 0 || showAllYears ? (
                 <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
                   <ThemedText type="linkPrimary">
-                    {showAllYears ? `← Show ${CURRENT_YEAR} only` : `Show all years (2026–2035) →`}
+                    {showAllYears ? t('deity.showCurrentYearOnly', { year: CURRENT_YEAR }) : t('deity.showAllYears')}
                   </ThemedText>
                 </Pressable>
               ) : null}

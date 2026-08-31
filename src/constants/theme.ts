@@ -22,6 +22,7 @@ export const Colors = {
     accent: '#D4A017',
     secondary: '#0F6B5C',
     maroon: '#6B1E14',
+    success: '#2E7D32',
   },
   dark: {
     text: '#F5EBE0',
@@ -34,6 +35,7 @@ export const Colors = {
     accent: '#E6B84D',
     secondary: '#3FA593',
     maroon: '#A6452F',
+    success: '#5FBF6B',
   },
 } as const;
 

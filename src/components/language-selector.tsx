@@ -5,33 +5,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { AUTO_REGION_ID, REGIONS, resolveRegionTimeZone } from '@/lib/regions';
+import { useLanguage } from '@/contexts/language-context';
+import { LANGUAGES, getLanguageById } from '@/lib/i18n/languages';
+import { useTranslation } from '@/hooks/use-translation';
 
-// Controlled, not tied to a persisted "home" region itself - the event page
-// initializes `regionId` from the person's onboarding country (see
-// useRegion) but changes made here are a one-off "what would this look like
-// in Germany?" peek, not a change to that home setting. Onboarding is the
-// only place that actually persists a region choice.
-export function RegionSelector({
-  regionId,
-  onChange,
-  label = 'Region',
-}: {
-  regionId: string;
-  onChange: (id: string) => void;
-  label?: string;
-}) {
+// Mirrors RegionSelector's trigger+modal shape - a small pill that opens a
+// full-screen list of the five supported languages, shown in each
+// language's own script. Persists via LanguageContext, same as region.
+export function LanguageSelector() {
+  const { languageId, setLanguageId } = useLanguage();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const current = resolveRegionTimeZone(regionId);
+  const current = getLanguageById(languageId);
 
   return (
     <>
       <Pressable onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
         <ThemedView type="backgroundElement" style={styles.trigger}>
           <ThemedText type="small" themeColor="textSecondary">
-            {label}
+            {t('home.language')}
           </ThemedText>
-          <ThemedText type="smallBold">{current.label}</ThemedText>
+          <ThemedText type="smallBold">{current.nativeLabel}</ThemedText>
         </ThemedView>
       </Pressable>
 
@@ -41,24 +35,22 @@ export function RegionSelector({
             <ThemedView type="background" style={styles.sheet}>
               <SafeAreaView edges={['bottom']}>
                 <ThemedText type="smallBold" style={styles.sheetTitle}>
-                  See timing for another country
+                  {t('onboarding.languageHeading')}
                 </ThemedText>
                 <FlatList
-                  data={[{ id: AUTO_REGION_ID, label: resolveRegionTimeZone(AUTO_REGION_ID).label }, ...REGIONS]}
+                  data={LANGUAGES}
                   keyExtractor={(item) => item.id}
                   style={styles.list}
                   renderItem={({ item }) => {
-                    const selected = item.id === regionId;
+                    const selected = item.id === languageId;
                     return (
                       <Pressable
                         onPress={() => {
-                          onChange(item.id);
+                          setLanguageId(item.id);
                           setOpen(false);
                         }}>
-                        <ThemedView
-                          type={selected ? 'backgroundSelected' : 'background'}
-                          style={styles.option}>
-                          <ThemedText type={selected ? 'smallBold' : 'small'}>{item.label}</ThemedText>
+                        <ThemedView type={selected ? 'backgroundSelected' : 'background'} style={styles.option}>
+                          <ThemedText type={selected ? 'smallBold' : 'small'}>{item.nativeLabel}</ThemedText>
                         </ThemedView>
                       </Pressable>
                     );

@@ -12,6 +12,7 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
 import { CATEGORY_LABELS, daysUntil, formatEventDate, formatPeriodTiming, getDeityById, getEventById } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import { getDevotionalContent } from '@/lib/devotional-content';
 import {
@@ -29,18 +30,31 @@ import { resolveRegionTimeZone } from '@/lib/regions';
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const event = getEventById(id);
-  const { regionId } = useRegion();
+  const { regionId: homeRegionId } = useRegion();
   const theme = useTheme();
+  const { t, categoryLabel, deityName: translatedDeityName } = useTranslation();
   const [reminderOn, setReminderOn] = useState(false);
   const [leadDays, setLeadDays] = useState<number[]>([3, 2, 1]);
   const [busy, setBusy] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  // Starts on the home country/region chosen at onboarding, but switching
+  // it here (see RegionSelector) only changes what this page shows - it's a
+  // one-off "what would this look like elsewhere?" peek, not a change to
+  // that home setting.
+  const [viewingRegionId, setViewingRegionId] = useState(homeRegionId);
 
   useEffect(() => {
     if (!event) return;
     isTopicFollowed(event.deity, event.category).then(setReminderOn);
     getTopicLeadDays(event.deity, event.category).then(setLeadDays);
   }, [event]);
+
+  // Home region loads from storage asynchronously (see RegionProvider), so
+  // sync once it resolves - this only fires again later if the home region
+  // itself changes, not from a peek made on this page.
+  useEffect(() => {
+    setViewingRegionId(homeRegionId);
+  }, [homeRegionId]);
 
   if (!event) {
     return (
@@ -50,7 +64,7 @@ export default function EventDetailScreen() {
     );
   }
 
-  const { timeZone, label: regionLabel } = resolveRegionTimeZone(regionId);
+  const { timeZone, label: regionLabel } = resolveRegionTimeZone(viewingRegionId);
   const timing = formatPeriodTiming(event, timeZone, regionLabel);
   const { colorKey, icon } = CATEGORY_STYLE[event.category];
   const accentColor = theme[colorKey];
@@ -81,7 +95,8 @@ export default function EventDetailScreen() {
   };
 
   const shareMessage = `${notificationTitle(event, Math.max(daysUntil(event.date), 0))}\n\n${notificationBody(event, Math.max(daysUntil(event.date), 0))}`;
-  const deityName = getDeityById(event.deity)?.name;
+  const owningDeity = getDeityById(event.deity);
+  const localizedDeityName = owningDeity ? translatedDeityName(owningDeity.id, owningDeity.name) : undefined;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
@@ -90,7 +105,7 @@ export default function EventDetailScreen() {
           <ThemedView style={styles.categoryRow}>
             <ThemedText style={styles.categoryIcon}>{icon}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {CATEGORY_LABELS[event.category]} · {event.tamilMonth}
+              {categoryLabel(event.category, CATEGORY_LABELS[event.category])} · {event.tamilMonth}
             </ThemedText>
           </ThemedView>
           <ThemedText type="title" style={styles.title}>
@@ -106,14 +121,14 @@ export default function EventDetailScreen() {
           <Pressable onPress={handleSetReminder} disabled={busy} style={styles.buttonFlex}>
             <ThemedView style={[styles.button, { backgroundColor: reminderOn ? theme.backgroundSelected : theme.primary }]}>
               <ThemedText type="smallBold" style={{ color: reminderOn ? theme.text : theme.primaryText }}>
-                {reminderOn ? '🔔 Reminder set' : 'Set reminder'}
+                {reminderOn ? t('event.reminderSet') : t('event.setReminder')}
               </ThemedText>
             </ThemedView>
           </Pressable>
           <Pressable onPress={() => setShareOpen((v) => !v)} style={styles.buttonFlex}>
             <ThemedView style={[styles.button, styles.buttonOutline, { borderColor: theme.primary }]}>
               <ThemedText type="smallBold" style={{ color: theme.primary }}>
-                Share with family
+                {t('event.share')}
               </ThemedText>
             </ThemedView>
           </Pressable>
@@ -121,7 +136,7 @@ export default function EventDetailScreen() {
 
         {!reminderOn && (
           <ThemedText type="small" themeColor="textSecondary" style={styles.permissionHint}>
-            Requires notification permission — you'll be asked to allow it once.
+            {t('notify.requiresPermission')}
           </ThemedText>
         )}
 
@@ -130,7 +145,8 @@ export default function EventDetailScreen() {
         {reminderOn && (
           <ThemedView style={styles.leadDaysSection}>
             <ThemedText type="small" themeColor="textSecondary">
-              Applies to every {CATEGORY_LABELS[event.category]} day{deityName ? ` for ${deityName}` : ''}
+              {t('event.appliesTo', { category: categoryLabel(event.category, CATEGORY_LABELS[event.category]) })}
+              {localizedDeityName ? t('event.forDeity', { name: localizedDeityName }) : ''}
             </ThemedText>
             <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
           </ThemedView>
@@ -139,45 +155,45 @@ export default function EventDetailScreen() {
         {timing && (
           <ThemedView type="backgroundElement" style={styles.timingCard}>
             <ThemedView style={styles.timingHeader}>
-              <ThemedText type="smallBold">Precise timing</ThemedText>
-              <RegionSelector />
+              <ThemedText type="smallBold">{t('event.preciseTiming')}</ThemedText>
+              <RegionSelector regionId={viewingRegionId} onChange={setViewingRegionId} label="See in" />
             </ThemedView>
             <ThemedView type="backgroundElement" style={styles.timingRow}>
               <ThemedText type="small" themeColor="textSecondary">
-                Begins
+                {t('event.begins')}
               </ThemedText>
               <ThemedText type="small">{timing.startLocal}</ThemedText>
             </ThemedView>
             <ThemedView type="backgroundElement" style={styles.timingRow}>
               <ThemedText type="small" themeColor="textSecondary">
-                Ends
+                {t('event.ends')}
               </ThemedText>
               <ThemedText type="small">{timing.endLocal}</ThemedText>
             </ThemedView>
             <ThemedText type="small" themeColor="textSecondary" style={styles.timingNote}>
-              Shown for {timing.regionLabel}. Panchangam reference (IST): {timing.startIST} → {timing.endIST}
+              {t('event.timingNote', { region: timing.regionLabel, startIST: timing.startIST, endIST: timing.endIST })}
             </ThemedText>
           </ThemedView>
         )}
 
         <ThemedView style={styles.section}>
-          <ThemedText type="smallBold">Why this day matters</ThemedText>
+          <ThemedText type="smallBold">{t('event.whyMatters')}</ThemedText>
           <ThemedText>{event.description}</ThemedText>
           <ThemedText style={styles.significance}>{event.significance}</ThemedText>
         </ThemedView>
 
         <ThemedView style={styles.section}>
-          <ThemedText type="smallBold">What devotees traditionally do</ThemedText>
+          <ThemedText type="smallBold">{t('event.whatDevoteesDo')}</ThemedText>
           <ThemedText>{practice}</ThemedText>
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={[styles.prayerCard, { borderLeftColor: accentColor }]}>
-          <ThemedText type="smallBold">Simple prayer</ThemedText>
+          <ThemedText type="smallBold">{t('event.simplePrayer')}</ThemedText>
           <ThemedText style={styles.prayerText}>{prayer}</ThemedText>
         </ThemedView>
 
         <ThemedView style={styles.section}>
-          <ThemedText type="smallBold">Panchangam basis</ThemedText>
+          <ThemedText type="smallBold">{t('event.panchangamBasis')}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {event.basis}
           </ThemedText>

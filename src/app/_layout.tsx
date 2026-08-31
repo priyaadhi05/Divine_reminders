@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Platform, useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { LanguageProvider } from '@/contexts/language-context';
 import { RegionProvider } from '@/contexts/region-context';
 import { getNotificationEventId, hasOnboarded, scheduleUpcomingReminders } from '@/lib/notifications';
 
@@ -50,14 +51,16 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <RegionProvider>
-        <AnimatedSplashOverlay />
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="event/[id]" options={{ title: '' }} />
-        </Stack>
-      </RegionProvider>
+      <LanguageProvider>
+        <RegionProvider>
+          <AnimatedSplashOverlay />
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            <Stack.Screen name="event/[id]" options={{ title: '' }} />
+          </Stack>
+        </RegionProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

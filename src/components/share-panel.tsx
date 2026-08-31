@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media';
 
 // Quick-share row for a single event, shown once someone taps "Share with
@@ -29,6 +30,7 @@ interface SharePanelProps {
 
 export function SharePanel({ deityId, message }: SharePanelProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [media, setMedia] = useState<ShareMedia | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -104,10 +106,10 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.platformRow}>
-        <PlatformButton label="WhatsApp" icon="💬" onPress={shareToWhatsApp} />
-        <PlatformButton label="Instagram" icon="📸" onPress={shareToInstagram} />
-        <PlatformButton label="Facebook" icon="📘" onPress={shareViaSheet} />
-        <PlatformButton label="More" icon="↗️" onPress={shareViaSheet} />
+        <PlatformButton label={t('share.whatsapp')} icon="💬" onPress={shareToWhatsApp} />
+        <PlatformButton label={t('share.instagram')} icon="📸" onPress={shareToInstagram} />
+        <PlatformButton label={t('share.facebook')} icon="📘" onPress={shareViaSheet} />
+        <PlatformButton label={t('share.more')} icon="↗️" onPress={shareViaSheet} />
       </ThemedView>
 
       <ThemedView type="backgroundElement" style={styles.mediaCard}>
@@ -116,15 +118,15 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
             <Image source={{ uri: media.uri }} style={styles.thumbnail} />
             <ThemedView type="backgroundElement" style={styles.mediaInfo}>
               <ThemedText type="small" themeColor="textSecondary">
-                {media.type === 'video' ? 'Video ready to share' : 'Photo ready to share'}
+                {media.type === 'video' ? t('share.videoReady') : t('share.photoReady')}
               </ThemedText>
               <ThemedView type="backgroundElement" style={styles.mediaActions}>
                 <Pressable onPress={pickMedia} disabled={busy}>
-                  <ThemedText type="linkPrimary">Change</ThemedText>
+                  <ThemedText type="linkPrimary">{t('common.change')}</ThemedText>
                 </Pressable>
                 <Pressable onPress={removeMedia} disabled={busy}>
                   <ThemedText type="small" themeColor="textSecondary">
-                    Remove
+                    {t('common.remove')}
                   </ThemedText>
                 </Pressable>
               </ThemedView>
@@ -133,7 +135,8 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
         ) : (
           <Pressable onPress={pickMedia} disabled={busy} accessibilityRole="button">
             <ThemedText type="small" style={{ color: theme.primary }}>
-              📷 Add a deity photo or short video{Platform.OS === 'web' ? ' (mobile only)' : ''}
+              📷 {t('share.addMedia')}
+              {Platform.OS === 'web' ? t('mascot.mobileOnly') : ''}
             </ThemedText>
           </Pressable>
         )}

@@ -8,15 +8,16 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import {
   CATEGORY_LABELS,
+  daysUntil,
   formatEventDate,
   GENERAL_DEITY_ID,
   getGeneralCategories,
   getUpcomingGeneralEvents,
-  relativeDayLabel,
   type DeityEvent,
   type EventCategory,
 } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import { areRemindersEnabled, enableReminders, isTopicFollowed, setTopicFollowed } from '@/lib/notifications';
 
@@ -31,6 +32,7 @@ const UPCOMING_PREVIEW_COUNT = 6;
 
 export function LunarDaysCard() {
   const theme = useTheme();
+  const { t, categoryLabel, relativeDay } = useTranslation();
   const [followed, setFollowed] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -76,9 +78,9 @@ export function LunarDaysCard() {
   return (
     <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.secondary }]}>
       <ThemedView type="backgroundElement" style={styles.headingRow}>
-        <ThemedText type="smallBold">🌕 Amavasai &amp; Pournami 🌚</ThemedText>
+        <ThemedText type="smallBold">🌕 {t('lunar.heading')} 🌚</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Every month, for everyone
+          {t('lunar.subtitle')}
         </ThemedText>
       </ThemedView>
 
@@ -92,12 +94,12 @@ export function LunarDaysCard() {
               <ThemedText type="small">
                 {icon}{' '}
                 {next
-                  ? `Next ${next.name}: ${formatEventDate(next.date).split(',').slice(0, 2).join(',')}`
-                  : `No upcoming ${CATEGORY_LABELS[category]}`}
+                  ? t('lunar.next', { name: next.name, date: formatEventDate(next.date).split(',').slice(0, 2).join(',') })
+                  : t('lunar.noUpcoming', { category: categoryLabel(category, CATEGORY_LABELS[category]) })}
               </ThemedText>
               {next && (
                 <ThemedText type="small" themeColor="textSecondary">
-                  {relativeDayLabel(next.date)}
+                  {relativeDay(daysUntil(next.date))}
                 </ThemedText>
               )}
             </ThemedView>
@@ -115,7 +117,7 @@ export function LunarDaysCard() {
       })}
 
       <Pressable onPress={() => setExpanded((v) => !v)} accessibilityRole="button">
-        <ThemedText type="linkPrimary">{expanded ? '← Show less' : 'See more dates →'}</ThemedText>
+        <ThemedText type="linkPrimary">{expanded ? t('lunar.showLess') : t('lunar.seeMore')}</ThemedText>
       </Pressable>
 
       {expanded && (
@@ -124,7 +126,7 @@ export function LunarDaysCard() {
             <EventCard key={event.id} event={event} />
           ))}
           <Pressable onPress={() => router.push('/calendar')} accessibilityRole="button">
-            <ThemedText type="linkPrimary">Browse the full calendar →</ThemedText>
+            <ThemedText type="linkPrimary">{t('lunar.browseFullCalendar')}</ThemedText>
           </Pressable>
         </ThemedView>
       )}

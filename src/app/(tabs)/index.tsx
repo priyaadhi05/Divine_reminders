@@ -4,6 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeityCard } from '@/components/deity-card';
+import { LanguageSelector } from '@/components/language-selector';
 import { LogoMark } from '@/components/logo-mark';
 import { LunarDaysCard } from '@/components/lunar-days-card';
 import { MuruganMascot } from '@/components/murugan-mascot';
@@ -13,6 +14,7 @@ import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import { DEITIES, type Deity, type DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { getFollowedDeities, getFollowedUpcomingEvents } from '@/lib/notifications';
 
 // One accent color per deity, cycling through the palette by the deity's
@@ -25,6 +27,7 @@ const DEITY_ACCENTS: Record<string, ThemeColor> = Object.fromEntries(
 
 export default function HomeScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [followedDeities, setFollowedDeities] = useState<Deity[]>([]);
   const [nextOverall, setNextOverall] = useState<DeityEvent | undefined>();
 
@@ -50,13 +53,13 @@ export default function HomeScreen() {
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
                 <LogoMark ringColor={theme.primary} />
                 <ThemedText type="smallBold" style={[styles.heroEyebrow, { color: theme.primaryText }]}>
-                  DIVINE CALENDAR
+                  {t('home.eyebrow')}
                 </ThemedText>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
-                  Your Sacred Days
+                  {t('home.title')}
                 </ThemedText>
                 <ThemedText type="small" style={[styles.heroSubtitle, { color: theme.primaryText }]}>
-                  Personalized to the deities you follow
+                  {t('home.subtitle')}
                 </ThemedText>
               </ThemedView>
 
@@ -64,19 +67,22 @@ export default function HomeScreen() {
 
               <LunarDaysCard />
 
-              {/* Sole entry point for changing which deities are followed - the
-                  onboarding screen already lists every available deity with
-                  hearts to pick from, so a separate "browse" list here would
-                  just repeat it. */}
-              <Pressable onPress={() => router.push('/onboarding')}>
-                <ThemedText type="linkPrimary">❤️ Manage my deities →</ThemedText>
-              </Pressable>
+              <ThemedView style={styles.settingsRow}>
+                {/* Sole entry point for changing which deities are followed - the
+                    onboarding screen already lists every available deity with
+                    hearts to pick from, so a separate "browse" list here would
+                    just repeat it. */}
+                <Pressable onPress={() => router.push('/onboarding')}>
+                  <ThemedText type="linkPrimary">{t('home.manageDeities')}</ThemedText>
+                </Pressable>
+                <LanguageSelector />
+              </ThemedView>
 
               {followedDeities.length === 0 && (
                 <ThemedView type="backgroundElement" style={styles.emptyCard}>
-                  <ThemedText type="smallBold">No sacred days yet</ThemedText>
+                  <ThemedText type="smallBold">{t('home.emptyTitle')}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
-                    Choose which deities are meaningful to you and they'll show up here, each with what's coming next.
+                    {t('home.emptySubtitle')}
                   </ThemedText>
                 </ThemedView>
               )}
@@ -129,6 +135,11 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     textAlign: 'center',
     opacity: 0.9,
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   emptyCard: {
     padding: Spacing.four,

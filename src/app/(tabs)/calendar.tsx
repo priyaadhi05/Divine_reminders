@@ -9,27 +9,39 @@ import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import { CATEGORY_LABELS, CURRENT_YEAR, CURRENT_YEAR_MONTH, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 
-const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
-  { key: 'all', label: 'All', icon: '📿', colorKey: 'primary' },
-  { key: 'festival', label: CATEGORY_LABELS.festival, ...CATEGORY_STYLE.festival },
-  { key: 'vratham', label: CATEGORY_LABELS.vratham, ...CATEGORY_STYLE.vratham },
-  { key: 'monthly-sashti', label: CATEGORY_LABELS['monthly-sashti'], ...CATEGORY_STYLE['monthly-sashti'] },
-  { key: 'monthly-krithigai', label: CATEGORY_LABELS['monthly-krithigai'], ...CATEGORY_STYLE['monthly-krithigai'] },
-  { key: 'theipirai-sashti', label: CATEGORY_LABELS['theipirai-sashti'], ...CATEGORY_STYLE['theipirai-sashti'] },
-  { key: 'ekadashi', label: CATEGORY_LABELS.ekadashi, ...CATEGORY_STYLE.ekadashi },
-  { key: 'pradosham', label: CATEGORY_LABELS.pradosham, ...CATEGORY_STYLE.pradosham },
-  { key: 'monthly-shivaratri', label: CATEGORY_LABELS['monthly-shivaratri'], ...CATEGORY_STYLE['monthly-shivaratri'] },
-  { key: 'monthly-durgashtami', label: CATEGORY_LABELS['monthly-durgashtami'], ...CATEGORY_STYLE['monthly-durgashtami'] },
-  { key: 'pournami', label: CATEGORY_LABELS.pournami, ...CATEGORY_STYLE.pournami },
-  { key: 'amavasai', label: CATEGORY_LABELS.amavasai, ...CATEGORY_STYLE.amavasai },
+// Categories only - labels are resolved per-render via categoryLabel() so
+// they follow the selected language.
+const FILTER_CATEGORIES: EventCategory[] = [
+  'festival',
+  'vratham',
+  'monthly-sashti',
+  'monthly-krithigai',
+  'theipirai-sashti',
+  'ekadashi',
+  'pradosham',
+  'monthly-shivaratri',
+  'monthly-durgashtami',
+  'pournami',
+  'amavasai',
 ];
 
 export default function CalendarScreen() {
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
   const [showAllYears, setShowAllYears] = useState(false);
   const theme = useTheme();
+  const { t, categoryLabel } = useTranslation();
+
+  const filters: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
+    { key: 'all', label: t('common.all'), icon: '📿', colorKey: 'primary' },
+    ...FILTER_CATEGORIES.map((key) => ({
+      key,
+      label: categoryLabel(key, CATEGORY_LABELS[key]),
+      ...CATEGORY_STYLE[key],
+    })),
+  ];
 
   const allGroups = useMemo(() => {
     const events = filter === 'all' ? getAllEvents() : getAllEvents().filter((e) => e.category === filter);
@@ -57,13 +69,13 @@ export default function CalendarScreen() {
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedText type="title" style={styles.title} themeColor="primary">
-                Calendar
+                {t('calendar.title')}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                All events across every deity, 2026–2035 · festivals, vrathams &amp; monthly observances
+                {t('calendar.subtitle')}
               </ThemedText>
               <ThemedView style={styles.filterRow}>
-                {FILTERS.map((f) => {
+                {filters.map((f) => {
                   const selected = filter === f.key;
                   const chipColor = theme[f.colorKey];
                   return (
@@ -89,7 +101,7 @@ export default function CalendarScreen() {
               {hiddenCount > 0 || showAllYears ? (
                 <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
                   <ThemedText type="linkPrimary">
-                    {showAllYears ? `← Show ${CURRENT_YEAR} only` : `Show all years (2026–2035) →`}
+                    {showAllYears ? t('deity.showCurrentYearOnly', { year: CURRENT_YEAR }) : t('deity.showAllYears')}
                   </ThemedText>
                 </Pressable>
               ) : null}

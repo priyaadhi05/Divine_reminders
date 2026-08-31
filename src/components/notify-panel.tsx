@@ -7,6 +7,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { CATEGORY_LABELS, getCategoriesForDeity } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import {
   areRemindersEnabled,
@@ -28,6 +29,7 @@ import {
 // tidy row instead of a wall of always-visible chips.
 export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName: string }) {
   const theme = useTheme();
+  const { t, categoryLabel } = useTranslation();
   const categories = getCategoriesForDeity(deityId);
   const [open, setOpen] = useState(false);
   const [deityState, setDeityState] = useState<DeityFollowState>('none');
@@ -63,10 +65,10 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
 
   const summaryLabel =
     deityState === 'all'
-      ? `Notified for all ${deityName} events`
+      ? t('notify.all', { name: deityName })
       : deityState === 'some'
-        ? `Notified for some ${deityName} events`
-        : `Notify me for ${deityName}`;
+        ? t('notify.some', { name: deityName })
+        : t('notify.notifyMeFor', { name: deityName });
 
   return (
     <ThemedView style={styles.container}>
@@ -77,7 +79,7 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
           </ThemedView>
           <ThemedText type="smallBold" style={styles.summaryText}>
             {summaryLabel}
-            {Platform.OS === 'web' ? ' (mobile only)' : ''}
+            {Platform.OS === 'web' ? t('mascot.mobileOnly') : ''}
           </ThemedText>
           <ThemedText themeColor="textSecondary">{open ? '︿' : '﹀'}</ThemedText>
         </ThemedView>
@@ -87,12 +89,12 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
         <ThemedView type="backgroundElement" style={[styles.dropdown, { borderColor: theme.accent }]}>
           {deityState === 'none' && (
             <ThemedText type="small" themeColor="textSecondary">
-              Requires notification permission — you'll be asked to allow it once.
+              {t('notify.requiresPermission')}
             </ThemedText>
           )}
 
           <ToggleRow
-            label={`Every ${deityName} event`}
+            label={t('notify.everyEvent', { name: deityName })}
             icon="🙏"
             on={deityState === 'all'}
             disabled={busy}
@@ -103,14 +105,14 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
             <>
               <ThemedView style={[styles.divider, { backgroundColor: theme.accent }]} />
               <ThemedText type="small" themeColor="textSecondary">
-                Or just specific occasions:
+                {t('notify.orSpecific')}
               </ThemedText>
               {categories.map((cat) => {
                 const on = !!topicState[cat];
                 return (
                   <ThemedView key={cat} style={styles.categoryGroup}>
                     <ToggleRow
-                      label={CATEGORY_LABELS[cat]}
+                      label={categoryLabel(cat, CATEGORY_LABELS[cat])}
                       icon={CATEGORY_STYLE[cat].icon}
                       on={on}
                       disabled={busy}
