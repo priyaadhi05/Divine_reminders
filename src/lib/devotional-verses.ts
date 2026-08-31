@@ -106,6 +106,46 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
       },
     ],
   },
+  ganesha: {
+    entries: [
+      {
+        label: 'Slogan',
+        title: 'Ganapati Bappa Morya',
+        note: 'The joyful chant called out during Ganesha idol processions and immersion.',
+      },
+      {
+        label: 'Mantra',
+        title: 'Om Gam Ganapataye Namaha',
+        script: 'ॐ गं गणपतये नमः',
+        note: "Ganesha's beej (seed) mantra, chanted before starting anything new to remove obstacles.",
+      },
+      {
+        label: 'Parayanam',
+        title: 'Ganapati Atharvashirsha',
+        note: 'An Upanishadic hymn to Ganesha, traditionally recited on Sankashti Chaturthi and before undertaking new ventures.',
+      },
+    ],
+  },
+  ayyappan: {
+    entries: [
+      {
+        label: 'Slogan',
+        title: 'Swamiye Saranam Ayyappa',
+        note: 'The chant carried by devotees throughout the Sabarimala pilgrimage - "I take refuge in you, Swami Ayyappa."',
+      },
+      {
+        label: 'Mantra',
+        title: 'Om Sri Hariharaputraya Namaha',
+        script: 'ॐ श्री हरिहरपुत्राय नमः',
+        note: 'Invokes Ayyappan as the son of Hari (Vishnu) and Hara (Shiva).',
+      },
+      {
+        label: 'Parayanam',
+        title: 'Harivarasanam',
+        note: "The devotional song sung nightly as the sanctum closes at Sabarimala - considered Ayyappan's lullaby.",
+      },
+    ],
+  },
 };
 
 export function getVersesForDeity(deityId: string): VerseEntry[] {

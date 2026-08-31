@@ -14,6 +14,7 @@ const CATEGORY_LABEL_TRANSLATIONS: Record<EventCategory, Record<string, string>>
   pradosham: { en: 'Pradosham', ta: 'பிரதோஷம்', te: 'ప్రదోషం', kn: 'ಪ್ರದೋಷ', hi: 'प्रदोष' },
   'monthly-shivaratri': { en: 'Masa Shivaratri', ta: 'மாத சிவராத்திரி', te: 'మాస శివరాత్రి', kn: 'ಮಾಸ ಶಿವರಾತ್ರಿ', hi: 'मासिक शिवरात्रि' },
   'monthly-durgashtami': { en: 'Durgashtami', ta: 'துர்காஷ்டமி', te: 'దుర్గాష్టమి', kn: 'ದುರ್ಗಾಷ್ಟಮಿ', hi: 'दुर्गाष्टमी' },
+  'monthly-chaturthi': { en: 'Sankashti Chaturthi', ta: 'சங்கடஹர சதுர்த்தி', te: 'సంకష్ట చతుర్థి', kn: 'ಸಂಕಷ್ಟ ಚತುರ್ಥಿ', hi: 'संकष्टी चतुर्थी' },
   amavasai: { en: 'Amavasai', ta: 'அமாவாசை', te: 'అమావాస్య', kn: 'ಅಮಾವಾಸ್ಯೆ', hi: 'अमावस्या' },
   pournami: { en: 'Pournami', ta: 'பௌர்ணமி', te: 'పౌర్ణమి', kn: 'ಹುಣ್ಣಿಮೆ', hi: 'पूर्णिमा' },
 };
@@ -23,6 +24,8 @@ const DEITY_NAME_TRANSLATIONS: Record<string, Record<string, string>> = {
   vishnu: { en: 'Vishnu', ta: 'விஷ்ணு', te: 'విష్ణు', kn: 'ವಿಷ್ಣು', hi: 'विष्णु' },
   shiva: { en: 'Shiva', ta: 'சிவன்', te: 'శివుడు', kn: 'ಶಿವ', hi: 'शिव' },
   durga: { en: 'Amman', ta: 'அம்மன்', te: 'దుర్గ', kn: 'ದುರ್ಗಾ', hi: 'दुर्गा' },
+  ganesha: { en: 'Ganesha', ta: 'விநாயகர்', te: 'గణేశ్', kn: 'ಗಣೇಶ', hi: 'गणेश' },
+  ayyappan: { en: 'Ayyappan', ta: 'ஐயப்பன்', te: 'అయ్యప్ప', kn: 'ಅಯ್ಯಪ್ಪ', hi: 'अय्यप्पा' },
 };
 
 export function translatedCategoryLabel(languageId: string, category: EventCategory, fallback: string): string {

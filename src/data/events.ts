@@ -1,4 +1,6 @@
+import ayyappanData from '@/assets/data/ayyappan-events.json';
 import durgaData from '@/assets/data/durga-events.json';
+import ganeshaData from '@/assets/data/ganesha-events.json';
 import generalData from '@/assets/data/general-events.json';
 import muruganData from '@/assets/data/murugan-events.json';
 import shivaData from '@/assets/data/shiva-events.json';
@@ -14,6 +16,7 @@ export type EventCategory =
   | 'pradosham'
   | 'monthly-shivaratri'
   | 'monthly-durgashtami'
+  | 'monthly-chaturthi'
   | 'amavasai'
   | 'pournami';
 
@@ -27,6 +30,7 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
   pradosham: 'Pradosham',
   'monthly-shivaratri': 'Masa Shivaratri',
   'monthly-durgashtami': 'Durgashtami',
+  'monthly-chaturthi': 'Sankashti Chaturthi',
   amavasai: 'Amavasai',
   pournami: 'Pournami',
 };
@@ -105,6 +109,24 @@ export const DEITIES: Deity[] = [
     greeting: 'Om Shakti!',
     honorific: 'Goddess',
     dataset: durgaData as DeityDataset,
+  },
+  {
+    id: 'ganesha',
+    name: 'Ganesha',
+    tamilName: 'விநாயகர்',
+    symbol: '🐘',
+    greeting: 'Om Gam Ganapataye Namaha!',
+    honorific: 'Lord',
+    dataset: ganeshaData as DeityDataset,
+  },
+  {
+    id: 'ayyappan',
+    name: 'Ayyappan',
+    tamilName: 'ஐயப்பன்',
+    symbol: '🏹',
+    greeting: 'Swamiye Saranam Ayyappa!',
+    honorific: 'Lord',
+    dataset: ayyappanData as DeityDataset,
   },
 ];
 

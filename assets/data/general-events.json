@@ -10,7 +10,7 @@
     "dayBoundary": "Local sunrise (panchangam value prevailing at sunrise defines the calendar day)",
     "note": "Astronomically computed. May occasionally differ by ±1 day from a specific temple's published panchangam near tithi/nakshatra boundary edge cases."
   },
-  "generatedAt": "2026-08-31T09:33:00.917Z",
+  "generatedAt": "2026-08-31T13:44:19.262Z",
   "events": [
     {
       "id": "general-pournami-2026-01-03",
