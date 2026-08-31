@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 
 import { EventCard } from '@/components/event-card';
 import { ThemedText } from '@/components/themed-text';
@@ -8,13 +8,9 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import {
   CATEGORY_LABELS,
-  CURRENT_YEAR,
-  CURRENT_YEAR_MONTH,
   formatEventDate,
   GENERAL_DEITY_ID,
-  getEventsByYearMonth,
   getGeneralCategories,
-  getGeneralEvents,
   getUpcomingGeneralEvents,
   relativeDayLabel,
   type DeityEvent,
@@ -27,14 +23,16 @@ import { areRemindersEnabled, enableReminders, isTopicFollowed, setTopicFollowed
 // Amavasai (new moon) and Pournami (full moon) happen every lunar month
 // regardless of which deities someone follows, so - unlike the rest of
 // Home, which is scoped to followed deities - this card always shows. Only
-// the next occurrence of each is visible by default; the full 2026-2035
-// coverage stays a tap away (see `expanded`), same "current year first"
-// treatment as the Calendar and deity screens.
+// the next occurrence of each is visible by default; tapping "See more
+// dates" reveals a short, hand-picked list of what's coming up next rather
+// than dumping the full 2026-2035 dataset onto the home screen - that full
+// range is still one tap away, in the Calendar tab.
+const UPCOMING_PREVIEW_COUNT = 6;
+
 export function LunarDaysCard() {
   const theme = useTheme();
   const [followed, setFollowed] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState(false);
-  const [showAllYears, setShowAllYears] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const categories = useMemo(() => getGeneralCategories(), []);
@@ -50,20 +48,17 @@ export function LunarDaysCard() {
     }, [refresh])
   );
 
+  const upcoming = useMemo(() => getUpcomingGeneralEvents(), []);
+
   const nextByCategory = useMemo(() => {
-    const upcoming = getUpcomingGeneralEvents();
     const map: Partial<Record<EventCategory, DeityEvent>> = {};
     for (const e of upcoming) {
       if (!map[e.category]) map[e.category] = e;
     }
     return map;
-  }, []);
+  }, [upcoming]);
 
-  const allGroups = useMemo(() => getEventsByYearMonth(getGeneralEvents()), []);
-  const visibleGroups = showAllYears
-    ? allGroups
-    : allGroups.filter((g) => g.key.startsWith(String(CURRENT_YEAR)) && g.key >= CURRENT_YEAR_MONTH);
-  const hiddenCount = allGroups.length - visibleGroups.length;
+  const preview = upcoming.slice(0, UPCOMING_PREVIEW_COUNT);
 
   const toggleFollow = async (category: EventCategory) => {
     if (busy) return;
@@ -120,29 +115,17 @@ export function LunarDaysCard() {
       })}
 
       <Pressable onPress={() => setExpanded((v) => !v)} accessibilityRole="button">
-        <ThemedText type="linkPrimary">{expanded ? '← Hide full coverage' : 'View full coverage (2026–2035) →'}</ThemedText>
+        <ThemedText type="linkPrimary">{expanded ? '← Show less' : 'See more dates →'}</ThemedText>
       </Pressable>
 
       {expanded && (
         <ThemedView type="backgroundElement" style={styles.expanded}>
-          {visibleGroups.map((group) => (
-            <ThemedView key={group.key} type="backgroundElement" style={styles.monthGroup}>
-              <ThemedText type="smallBold" themeColor="primary">
-                {group.label}
-              </ThemedText>
-              {group.events.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))}
-            </ThemedView>
+          {preview.map((event) => (
+            <EventCard key={event.id} event={event} />
           ))}
-
-          {(hiddenCount > 0 || showAllYears) && (
-            <Pressable onPress={() => setShowAllYears((v) => !v)} accessibilityRole="button">
-              <ThemedText type="linkPrimary">
-                {showAllYears ? `← Show ${CURRENT_YEAR} only` : `Show all years (2026–2035) →`}
-              </ThemedText>
-            </Pressable>
-          )}
+          <Pressable onPress={() => router.push('/calendar')} accessibilityRole="button">
+            <ThemedText type="linkPrimary">Browse the full calendar →</ThemedText>
+          </Pressable>
         </ThemedView>
       )}
     </ThemedView>
@@ -177,10 +160,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   expanded: {
-    gap: Spacing.three,
-    marginTop: Spacing.one,
-  },
-  monthGroup: {
     gap: Spacing.two,
+    marginTop: Spacing.one,
   },
 });
