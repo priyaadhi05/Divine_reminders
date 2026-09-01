@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, SectionList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,7 +30,10 @@ const FILTER_CATEGORIES: EventCategory[] = [
 
 export default function CalendarScreen() {
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
-  const [showAllYears, setShowAllYears] = useState(false);
+  // One more year at a time rather than jumping straight to all 10 -
+  // starts at just the current year, same as before.
+  const [visibleYearCount, setVisibleYearCount] = useState(1);
+  useEffect(() => setVisibleYearCount(1), [filter]);
   const theme = useTheme();
   const { t, categoryLabel } = useTranslation();
 
@@ -49,14 +52,16 @@ export default function CalendarScreen() {
   }, [filter]);
 
   // Only the current year's upcoming months by default - ten years of every
-  // deity's events on one page is overwhelming. Past months and other years
-  // stay a tap away via "Show all years".
-  const visibleGroups = showAllYears
-    ? allGroups
-    : allGroups.filter((g) => g.key.startsWith(String(CURRENT_YEAR)) && g.key >= CURRENT_YEAR_MONTH);
+  // deity's events on one page is overwhelming. "Show more" reveals one
+  // additional year at a time rather than jumping straight to all of them.
+  const upcomingGroups = useMemo(() => allGroups.filter((g) => g.key >= CURRENT_YEAR_MONTH), [allGroups]);
+  const years = useMemo(() => Array.from(new Set(upcomingGroups.map((g) => g.key.slice(0, 4)))), [upcomingGroups]);
+  const visibleYears = new Set(years.slice(0, visibleYearCount));
+  const visibleGroups = upcomingGroups.filter((g) => visibleYears.has(g.key.slice(0, 4)));
 
   const sections = visibleGroups.map((group) => ({ title: group.label, data: group.events }));
-  const hiddenCount = allGroups.length - visibleGroups.length;
+  const hasMoreYears = visibleYearCount < years.length;
+  const isExpanded = visibleYearCount > 1;
 
   return (
     <ThemedView style={styles.container}>
@@ -98,11 +103,13 @@ export default function CalendarScreen() {
                 })}
               </ThemedView>
 
-              {hiddenCount > 0 || showAllYears ? (
-                <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">
-                    {showAllYears ? t('deity.showCurrentYearOnly', { year: CURRENT_YEAR }) : t('deity.showAllYears')}
-                  </ThemedText>
+              {hasMoreYears ? (
+                <Pressable onPress={() => setVisibleYearCount((c) => c + 1)} style={styles.yearToggle}>
+                  <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
+                </Pressable>
+              ) : isExpanded ? (
+                <Pressable onPress={() => setVisibleYearCount(1)} style={styles.yearToggle}>
+                  <ThemedText type="linkPrimary">{t('deity.showCurrentYearOnly', { year: CURRENT_YEAR })}</ThemedText>
                 </Pressable>
               ) : null}
             </ThemedView>

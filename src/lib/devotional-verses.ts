@@ -1,13 +1,17 @@
-// Slogans, mantras, and parayanam (recitation) texts per deity. Deliberately
-// limited to well-established, widely-printed verses/titles rather than
-// fabricated or uncertain ones - a wrong word in a mantra is worse than a
-// missing one. These are recited, not translated: shown in their original
-// script plus a Roman transliteration, unaffected by the app's UI language.
+// Slogans, mantras, and parayanam (recitation) texts per deity. Short
+// mantras are quoted here in full; long-form hymns (a 100+ line kavasam,
+// an ashtakam, a 1,000-name or 700-verse scripture) instead link out to a
+// complete, reliable source (Wikisource/Wikipedia) rather than guessing at
+// or truncating them here - a wrong word in a mantra, or a silently
+// incomplete "full text", is worse than pointing to the real thing. These
+// are recited, not translated: shown in their original script plus a Roman
+// transliteration, unaffected by the app's UI language.
 export interface VerseEntry {
   label: string; // what kind of verse this is
   title: string; // its name, in Roman transliteration
-  script?: string; // the verse itself, original script, when short/certain enough to quote
+  script?: string; // the verse itself, original script, when short/certain enough to quote in full
   note: string; // one line on when/why it's recited
+  link?: string; // complete text at a reliable source, for anything too long to safely quote here
 }
 
 export interface DeityVerses {
@@ -32,12 +36,14 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
       {
         label: 'Parayanam',
         title: 'Kandha Sashti Kavasam',
-        note: 'A "kavasam" (armor) composed by Devaraya Swamigal - a protective hymn that invokes Murugan\'s weapons, vehicle, and attendants over each part of the body, traditionally recited daily and especially through the six days leading to Skanda Sashti.',
+        note: 'A "kavasam" (armor) composed by Devaraya Swamigal - a protective hymn that invokes Murugan\'s weapons, vehicle, and attendants over each part of the body, traditionally recited daily and especially through the six days leading to Skanda Sashti. Tap to read the complete Tamil text.',
+        link: 'https://ta.wikisource.org/wiki/%E0%AE%95%E0%AE%A8%E0%AF%8D%E0%AE%A4_%E0%AE%9A%E0%AE%B7%E0%AF%8D%E0%AE%9F%E0%AE%BF_%E0%AE%95%E0%AE%B5%E0%AE%9A%E0%AE%AE%E0%AF%8D',
       },
       {
         label: 'Tiruppugazh',
         title: 'Muthai Tharu (and 1,300+ others)',
-        note: "Arunagirinathar's intricate Tamil hymns in praise of Murugan - sung at temples and in Carnatic music for their rhythm and devotion.",
+        note: "Arunagirinathar's intricate Tamil hymns in praise of Murugan - sung at temples and in Carnatic music for their rhythm and devotion. Tap to read more about the collection.",
+        link: 'https://en.wikipedia.org/wiki/Tiruppugazh',
       },
     ],
   },
@@ -59,7 +65,8 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
         label: 'Parayanam',
         title: 'Vishnu Sahasranamam',
         script: 'शुक्लाम्बरधरं विष्णुं शशिवर्णं चतुर्भुजम् । प्रसन्नवदनं ध्यायेत् सर्वविघ्नोपशान्तये ॥',
-        note: 'The 1,000 names of Vishnu, recited by Bhishma to Yudhishthira in the Mahabharata; the verse above is its traditional opening invocation.',
+        note: 'The 1,000 names of Vishnu, recited by Bhishma to Yudhishthira in the Mahabharata; the verse above is its traditional opening invocation. Tap to read all 1,000 names.',
+        link: 'https://en.wikipedia.org/wiki/Vishnu_sahasranama',
       },
     ],
   },
@@ -82,7 +89,8 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
         title: 'Lingashtakam',
         script:
           '1. ब्रह्ममुरारी सुरार्चित लिङ्गं\n2. देवमुनि प्रवरार्चित लिङ्गं\n3. सर्व सुगन्ध सुलेपित लिङ्गं\n4. कनक महामणि भूषित लिङ्गं\n5. कुमकुम चंदन लेपित लिङ्गं\n6. देवगणार्चित सेवित लिङ्गं\n7. अष्टदलोपरिवेष्टित लिङ्गं\n8. सुरगुरु सुरवर पूजित लिङ्गं\n\nफलश्रुति:\nलिङ्गाष्टकमिदं पुण्यं यः पठेत् शिवसन्निधौ ।\nशिवलोकमवाप्नोति शिवेन सह मोदते ॥',
-        note: 'Eight verses in praise of the Shiva Lingam (each opens as shown above and closes with "tat praṇamāmi sadāśiva lingam"), commonly chanted during abhishekam. Attributed to Adi Shankara.',
+        note: 'Eight verses in praise of the Shiva Lingam (each opens as shown above and closes with "tat praṇamāmi sadāśiva lingam"), commonly chanted during abhishekam. Attributed to Adi Shankara. Tap to read all eight verses in full.',
+        link: 'https://sa.wikisource.org/wiki/%E0%A4%B2%E0%A4%BF%E0%A4%99%E0%A5%8D%E0%A4%97%E0%A4%BE%E0%A4%B7%E0%A5%8D%E0%A4%9F%E0%A4%95%E0%A4%AE%E0%A5%8D',
       },
     ],
   },
@@ -104,7 +112,8 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
         label: 'Parayanam',
         title: 'Devi Mahatmyam (Durga Saptashati)',
         script: 'सर्वमङ्गलमाङ्गल्ये शिवे सर्वार्थसाधिके । शरण्ये त्र्यम्बके गौरि नारायणि नमोऽस्तुते ॥',
-        note: '700 verses across 13 chapters of the Markandeya Purana ("Saptashati" - "of the 700") - the core scripture of Durga worship, recited especially during Navratri; the verse above is among its most quoted.',
+        note: '700 verses across 13 chapters of the Markandeya Purana ("Saptashati" - "of the 700") - the core scripture of Durga worship, recited especially during Navratri; the verse above is among its most quoted. Tap to read the full text.',
+        link: 'https://en.wikipedia.org/wiki/Devi_Mahatmya',
       },
     ],
   },
@@ -125,7 +134,8 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
         label: 'Parayanam',
         title: 'Ganapati Atharvashirsha',
         script: 'हरिः ॐ नमस्ते गणपतये ।',
-        note: 'An Upanishadic hymn to Ganesha (opens as shown above: "Hail Om, salutations to you, Ganapati"), traditionally recited on Sankashti Chaturthi and before undertaking new ventures.',
+        note: 'An Upanishadic hymn to Ganesha (opens as shown above: "Hail Om, salutations to you, Ganapati"), traditionally recited on Sankashti Chaturthi and before undertaking new ventures. Tap to read the complete text.',
+        link: 'https://sa.wikisource.org/wiki/%E0%A4%97%E0%A4%A3%E0%A4%AA%E0%A4%A4%E0%A5%8D%E0%A4%AF%E0%A4%A5%E0%A4%B0%E0%A5%8D%E0%A4%B5%E0%A4%B6%E0%A5%80%E0%A4%B0%E0%A5%8D%E0%A4%B7%E0%A4%AE%E0%A5%8D',
       },
     ],
   },
@@ -145,7 +155,8 @@ export const DEVOTIONAL_VERSES: Record<string, DeityVerses> = {
       {
         label: 'Parayanam',
         title: 'Harivarasanam',
-        note: 'An ashtakam (eight verses) in Sanskritised Malayalam, sung nightly just before the Sabarimala sanctum closes for the night - considered a lullaby for Ayyappan.',
+        note: 'An ashtakam (eight verses) in Sanskritised Malayalam, sung nightly just before the Sabarimala sanctum closes for the night - considered a lullaby for Ayyappan. Tap to read the full lyrics.',
+        link: 'https://en.wikipedia.org/wiki/Harivarasanam',
       },
     ],
   },

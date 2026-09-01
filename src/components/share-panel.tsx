@@ -45,10 +45,29 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   const media: ShareMedia | null = customMedia ?? (cardUri ? { uri: cardUri, type: 'image' } : null);
   const isDefaultCard = !customMedia && !!cardUri;
 
-  const shareViaSheet = async () => {
+  // Neither expo-sharing nor Linking can force-open one specific app with an
+  // attachment - only the OS share sheet can attach a file, and only the
+  // person can pick which app receives it there. dialogTitle at least hints
+  // at that (shown on Android/web; iOS has no equivalent).
+  const shareViaSheet = async (dialogTitle?: string) => {
     try {
-      if (media && (await Sharing.isAvailableAsync())) {
-        await Sharing.shareAsync(media.uri, { mimeType: media.type === 'video' ? 'video/*' : 'image/*' });
+      if (media) {
+        if (!(await Sharing.isAvailableAsync())) {
+          Alert.alert(
+            'Sharing a photo isn’t supported here',
+            'This browser/device can’t attach a photo or video to a share. Open the app on your phone to share the image, or continue with text only.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Share text only', onPress: () => Share.share({ message }) },
+            ]
+          );
+          return;
+        }
+        await Sharing.shareAsync(media.uri, {
+          mimeType: media.type === 'video' ? 'video/*' : 'image/*',
+          UTI: media.type === 'video' ? 'public.movie' : 'public.image',
+          dialogTitle,
+        });
       } else {
         await Share.share({ message });
       }
@@ -60,7 +79,7 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   const shareToWhatsApp = async () => {
     // A photo/video can't ride along on WhatsApp's URL scheme - fall back to
     // the share sheet (with the media attached) and let WhatsApp be picked there.
-    if (media) return shareViaSheet();
+    if (media) return shareViaSheet('Choose WhatsApp to share');
     const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
     try {
       if (await Linking.canOpenURL(url)) {
@@ -78,8 +97,10 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       Alert.alert('Add a photo or video first', 'Instagram needs an image or video to share - add one below, then try again.');
       return;
     }
-    await shareViaSheet();
+    await shareViaSheet('Choose Instagram to share');
   };
+
+  const shareToFacebook = () => shareViaSheet('Choose Facebook to share');
 
   const pickMedia = async () => {
     if (busy) return;
@@ -117,8 +138,8 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       <ThemedView style={styles.platformRow}>
         <PlatformButton label={t('share.whatsapp')} icon="💬" onPress={shareToWhatsApp} />
         <PlatformButton label={t('share.instagram')} icon="📸" onPress={shareToInstagram} />
-        <PlatformButton label={t('share.facebook')} icon="📘" onPress={shareViaSheet} />
-        <PlatformButton label={t('share.more')} icon="↗️" onPress={shareViaSheet} />
+        <PlatformButton label={t('share.facebook')} icon="📘" onPress={shareToFacebook} />
+        <PlatformButton label={t('share.more')} icon="↗️" onPress={() => shareViaSheet()} />
       </ThemedView>
 
       <ThemedView type="backgroundElement" style={styles.mediaCard}>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,13 +23,18 @@ import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 
+const MONTHS_PER_PAGE = 3;
+
 export default function DeityScreen() {
   const { deityId } = useLocalSearchParams<{ deityId: string }>();
   const deity = getDeityById(deityId);
   const theme = useTheme();
   const { t, categoryLabel, deityName: translatedDeityName } = useTranslation();
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
-  const [showAllYears, setShowAllYears] = useState(false);
+  // Reveals a few more months at a time rather than jumping straight to
+  // everything - MONTHS_PER_PAGE more each tap of "Show more".
+  const [visibleMonthCount, setVisibleMonthCount] = useState(1);
+  useEffect(() => setVisibleMonthCount(1), [filter]);
 
   const allEvents = useMemo(() => getEventsForDeity(deityId), [deityId]);
   const [next] = useMemo(() => getUpcomingEvents(1, deityId), [deityId]);
@@ -47,11 +52,13 @@ export default function DeityScreen() {
 
   // Just the nearest upcoming month by default - a whole year of one
   // deity's events (unlike the Calendar tab, which is meant to be browsed)
-  // was too much to land on. "Show all upcoming years" reveals everything.
+  // was too much to land on. "Show more" reveals a few months at a time
+  // rather than jumping straight to the full decade.
   const upcomingGroups = useMemo(() => allGroups.filter((g) => g.key >= CURRENT_YEAR_MONTH), [allGroups]);
-  const visibleGroups = showAllYears ? allGroups : upcomingGroups.slice(0, 1);
+  const visibleGroups = upcomingGroups.slice(0, visibleMonthCount);
   const sections = visibleGroups.map((group) => ({ title: group.label, data: group.events }));
-  const hiddenCount = allGroups.length - visibleGroups.length;
+  const hasMoreMonths = visibleGroups.length < upcomingGroups.length;
+  const isExpanded = visibleMonthCount > 1;
 
   if (!deity) {
     return (
@@ -130,11 +137,13 @@ export default function DeityScreen() {
                 ))}
               </ThemedView>
 
-              {hiddenCount > 0 || showAllYears ? (
-                <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">
-                    {showAllYears ? t('deity.showNextMonthOnly') : t('deity.showAllYears')}
-                  </ThemedText>
+              {hasMoreMonths ? (
+                <Pressable onPress={() => setVisibleMonthCount((c) => c + MONTHS_PER_PAGE)} style={styles.yearToggle}>
+                  <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
+                </Pressable>
+              ) : isExpanded ? (
+                <Pressable onPress={() => setVisibleMonthCount(1)} style={styles.yearToggle}>
+                  <ThemedText type="linkPrimary">{t('deity.showNextMonthOnly')}</ThemedText>
                 </Pressable>
               ) : null}
             </ThemedView>

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { getVersesForDeity } from '@/lib/devotional-verses';
+import { getVersesForDeity, type VerseEntry } from '@/lib/devotional-verses';
 
 // Mantras, slogans, and parayanam (recitation) texts for one deity - see
 // devotional-verses.ts for why these stay in their original script rather
@@ -33,20 +34,38 @@ export function SacredVerses({ deityId }: { deityId: string }) {
       {open && (
         <ThemedView style={styles.list}>
           {verses.map((verse) => (
-            <ThemedView key={verse.title} type="backgroundElement" style={[styles.card, { borderLeftColor: theme.secondary }]}>
-              <ThemedText type="small" themeColor="textSecondary">
-                {verse.label}
-              </ThemedText>
-              <ThemedText type="smallBold">{verse.title}</ThemedText>
-              {verse.script && <ThemedText style={styles.script}>{verse.script}</ThemedText>}
-              <ThemedText type="small" themeColor="textSecondary">
-                {verse.note}
-              </ThemedText>
-            </ThemedView>
+            <VerseCard key={verse.title} verse={verse} />
           ))}
         </ThemedView>
       )}
     </ThemedView>
+  );
+}
+
+function VerseCard({ verse }: { verse: VerseEntry }) {
+  const theme = useTheme();
+  const { t } = useTranslation();
+
+  const card = (
+    <ThemedView type="backgroundElement" style={[styles.card, { borderLeftColor: theme.secondary }]}>
+      <ThemedText type="small" themeColor="textSecondary">
+        {verse.label}
+      </ThemedText>
+      <ThemedText type="smallBold">{verse.title}</ThemedText>
+      {verse.script && <ThemedText style={styles.script}>{verse.script}</ThemedText>}
+      <ThemedText type="small" themeColor="textSecondary">
+        {verse.note}
+      </ThemedText>
+      {verse.link && <ThemedText type="linkPrimary">{t('deity.readFullText')}</ThemedText>}
+    </ThemedView>
+  );
+
+  if (!verse.link) return card;
+
+  return (
+    <Pressable onPress={() => WebBrowser.openBrowserAsync(verse.link!)} accessibilityRole="link">
+      {card}
+    </Pressable>
   );
 }
 
