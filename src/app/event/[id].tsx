@@ -164,9 +164,12 @@ export default function EventDetailScreen() {
         )}
 
         {timing && (
-          <ThemedView type="backgroundElement" style={styles.timingCard}>
+          <ThemedView type="backgroundElement" style={[styles.timingCard, { borderLeftColor: accentColor }]}>
             <ThemedView style={styles.timingHeader}>
-              <ThemedText type="smallBold">{t('event.preciseTiming')}</ThemedText>
+              <ThemedView style={styles.timingHeaderLeft}>
+                <ThemedText style={styles.timingIcon}>🕐</ThemedText>
+                <ThemedText type="smallBold">{t('event.preciseTiming')}</ThemedText>
+              </ThemedView>
               <RegionSelector
                 regionId={viewingRegionId}
                 onChange={setViewingRegionId}
@@ -174,21 +177,40 @@ export default function EventDetailScreen() {
                 sheetTitle={t('region.seeAnother')}
               />
             </ThemedView>
-            <ThemedView type="backgroundElement" style={styles.timingRow}>
-              <ThemedText type="small" themeColor="textSecondary">
-                {t('event.begins')}
-              </ThemedText>
-              <ThemedText type="small">{timing.startLocal}</ThemedText>
+
+            <ThemedView style={styles.timingBody}>
+              <ThemedView style={styles.timingEntry}>
+                <ThemedText style={styles.timingEntryIcon}>🌅</ThemedText>
+                <ThemedView style={styles.timingEntryText}>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {t('event.begins')}
+                  </ThemedText>
+                  <ThemedText type="smallBold" style={styles.timingValue}>
+                    {timing.startLocal}
+                  </ThemedText>
+                </ThemedView>
+              </ThemedView>
+
+              <ThemedView style={[styles.timingDivider, { backgroundColor: accentColor }]} />
+
+              <ThemedView style={styles.timingEntry}>
+                <ThemedText style={styles.timingEntryIcon}>🌇</ThemedText>
+                <ThemedView style={styles.timingEntryText}>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {t('event.ends')}
+                  </ThemedText>
+                  <ThemedText type="smallBold" style={styles.timingValue}>
+                    {timing.endLocal}
+                  </ThemedText>
+                </ThemedView>
+              </ThemedView>
             </ThemedView>
-            <ThemedView type="backgroundElement" style={styles.timingRow}>
+
+            <ThemedView type="backgroundSelected" style={styles.timingNoteBadge}>
               <ThemedText type="small" themeColor="textSecondary">
-                {t('event.ends')}
+                {t('event.timingNote', { region: timing.regionLabel, startIST: timing.startIST, endIST: timing.endIST })}
               </ThemedText>
-              <ThemedText type="small">{timing.endLocal}</ThemedText>
             </ThemedView>
-            <ThemedText type="small" themeColor="textSecondary" style={styles.timingNote}>
-              {t('event.timingNote', { region: timing.regionLabel, startIST: timing.startIST, endIST: timing.endIST })}
-            </ThemedText>
           </ThemedView>
         )}
 
@@ -294,21 +316,51 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   timingCard: {
-    gap: Spacing.one,
+    gap: Spacing.three,
     padding: Spacing.three,
     borderRadius: Spacing.three,
+    borderLeftWidth: 4,
   },
   timingHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: Spacing.one,
   },
-  timingRow: {
+  timingHeaderLeft: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: Spacing.one,
   },
-  timingNote: {
-    marginTop: Spacing.one,
+  timingIcon: {
+    fontSize: 16,
+  },
+  timingBody: {
+    gap: Spacing.two,
+  },
+  timingEntry: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  timingEntryIcon: {
+    fontSize: 20,
+    width: 28,
+    textAlign: 'center',
+  },
+  timingEntryText: {
+    flex: 1,
+    gap: Spacing.half,
+  },
+  timingValue: {
+    fontSize: 16,
+  },
+  timingDivider: {
+    height: 1,
+    marginLeft: 28 + Spacing.two,
+    opacity: 0.25,
+  },
+  timingNoteBadge: {
+    padding: Spacing.two,
+    borderRadius: Spacing.two,
   },
 });
