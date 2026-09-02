@@ -167,7 +167,12 @@ export default function EventDetailScreen() {
           <ThemedView type="backgroundElement" style={styles.timingCard}>
             <ThemedView style={styles.timingHeader}>
               <ThemedText type="smallBold">{t('event.preciseTiming')}</ThemedText>
-              <RegionSelector regionId={viewingRegionId} onChange={setViewingRegionId} label="See in" />
+              <RegionSelector
+                regionId={viewingRegionId}
+                onChange={setViewingRegionId}
+                label={t('event.seeIn')}
+                sheetTitle={t('region.seeAnother')}
+              />
             </ThemedView>
             <ThemedView type="backgroundElement" style={styles.timingRow}>
               <ThemedText type="small" themeColor="textSecondary">

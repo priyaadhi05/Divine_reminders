@@ -8,10 +8,12 @@ import { DivineCompanion } from '@/components/divine-companion';
 import { LanguageSelector } from '@/components/language-selector';
 import { LogoMark } from '@/components/logo-mark';
 import { LunarDaysCard } from '@/components/lunar-days-card';
+import { RegionSelector } from '@/components/region-selector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { useRegion } from '@/contexts/region-context';
 import { DEITIES, type Deity, type DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -28,6 +30,7 @@ const DEITY_ACCENTS: Record<string, ThemeColor> = Object.fromEntries(
 export default function HomeScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
+  const { regionId, setRegionId } = useRegion();
   const [followedDeities, setFollowedDeities] = useState<Deity[]>([]);
   const [nextOverall, setNextOverall] = useState<DeityEvent | undefined>();
 
@@ -69,12 +72,18 @@ export default function HomeScreen() {
 
               <ThemedView style={styles.settingsRow}>
                 {/* Sole entry point for changing which deities are followed - the
-                    onboarding screen already lists every available deity with
-                    hearts to pick from, so a separate "browse" list here would
-                    just repeat it. */}
-                <Pressable onPress={() => router.push('/onboarding')}>
+                    same screen already lists every available deity with hearts
+                    to pick from (pre-checked to whatever's currently followed),
+                    so a separate "browse" list here would just repeat it. Jumps
+                    straight to that step - language and region below are each
+                    already a direct entry point on their own. */}
+                <Pressable onPress={() => router.push({ pathname: '/onboarding', params: { step: 'deities' } })}>
                   <ThemedText type="linkPrimary">{t('home.manageDeities')}</ThemedText>
                 </Pressable>
+              </ThemedView>
+
+              <ThemedView style={styles.settingsRow}>
+                <RegionSelector regionId={regionId} onChange={setRegionId} />
                 <LanguageSelector />
               </ThemedView>
 

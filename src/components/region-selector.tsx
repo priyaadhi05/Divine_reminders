@@ -5,22 +5,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { AUTO_REGION_ID, REGIONS, resolveRegionTimeZone } from '@/lib/regions';
 
-// Controlled, not tied to a persisted "home" region itself - the event page
-// initializes `regionId` from the person's onboarding country (see
-// useRegion) but changes made here are a one-off "what would this look like
-// in Germany?" peek, not a change to that home setting. Onboarding is the
-// only place that actually persists a region choice.
+// Controlled, not tied to a persisted "home" region itself - on Home, this
+// changes the actual home region (via useRegion), but on the event detail
+// screen it's a one-off "what would this look like in Germany?" peek that
+// doesn't touch that home setting - see the `sheetTitle` passed at each call
+// site, which is the only thing that differs between the two.
 export function RegionSelector({
   regionId,
   onChange,
-  label = 'Region',
+  label,
+  sheetTitle,
 }: {
   regionId: string;
   onChange: (id: string) => void;
   label?: string;
+  sheetTitle?: string;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const current = resolveRegionTimeZone(regionId);
 
@@ -29,7 +33,7 @@ export function RegionSelector({
       <Pressable onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
         <ThemedView type="backgroundElement" style={styles.trigger}>
           <ThemedText type="small" themeColor="textSecondary">
-            {label}
+            {label ?? t('home.region')}
           </ThemedText>
           <ThemedText type="smallBold">{current.label}</ThemedText>
         </ThemedView>
@@ -41,7 +45,7 @@ export function RegionSelector({
             <ThemedView type="background" style={styles.sheet}>
               <SafeAreaView edges={['bottom']}>
                 <ThemedText type="smallBold" style={styles.sheetTitle}>
-                  See timing for another country
+                  {sheetTitle ?? t('region.chooseHome')}
                 </ThemedText>
                 <FlatList
                   data={[{ id: AUTO_REGION_ID, label: resolveRegionTimeZone(AUTO_REGION_ID).label }, ...REGIONS]}

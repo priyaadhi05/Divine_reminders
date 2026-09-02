@@ -102,16 +102,6 @@ export default function CalendarScreen() {
                   );
                 })}
               </ThemedView>
-
-              {hasMoreYears ? (
-                <Pressable onPress={() => setVisibleYearCount((c) => c + 1)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
-                </Pressable>
-              ) : isExpanded ? (
-                <Pressable onPress={() => setVisibleYearCount(1)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">{t('deity.showCurrentYearOnly', { year: CURRENT_YEAR })}</ThemedText>
-                </Pressable>
-              ) : null}
             </ThemedView>
           }
           renderSectionHeader={({ section }) => (
@@ -124,6 +114,19 @@ export default function CalendarScreen() {
           renderItem={({ item }) => <EventCard event={item} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
           SectionSeparatorComponent={() => <ThemedView style={styles.sectionSeparator} />}
+          // At the end of what's already loaded, not pinned in the header -
+          // see the same fix on the deity screen for why.
+          ListFooterComponent={
+            hasMoreYears ? (
+              <Pressable onPress={() => setVisibleYearCount((c) => c + 1)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
+              </Pressable>
+            ) : isExpanded ? (
+              <Pressable onPress={() => setVisibleYearCount(1)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showCurrentYearOnly', { year: CURRENT_YEAR })}</ThemedText>
+              </Pressable>
+            ) : null
+          }
         />
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>
@@ -176,6 +179,7 @@ const styles = StyleSheet.create({
   },
   yearToggle: {
     marginTop: Spacing.three,
+    alignItems: 'center',
   },
   sectionHeader: {
     paddingVertical: Spacing.two,

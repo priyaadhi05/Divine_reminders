@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LogoMark } from '@/components/logo-mark';
@@ -13,15 +13,17 @@ import { DEITIES } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { LANGUAGES } from '@/lib/i18n/languages';
-import { enableReminders, markOnboarded, setDeityFollowed } from '@/lib/notifications';
+import { enableReminders, getFollowedDeities, markOnboarded, setDeityFollowed } from '@/lib/notifications';
 import { AUTO_REGION_ID, REGIONS, resolveRegionTimeZone } from '@/lib/regions';
 
 // First-run flow, three short steps: language, home country/region (this is
 // what decides what time a festival's precise timing shows in - see the
 // event detail screen's "See in" selector for a one-off peek at another
-// country without changing this), then which deities to follow. Re-run any
-// time from Home via "Manage my deities" to add more deities; language and
-// region can be changed from Home directly instead.
+// country without changing this), then which deities to follow. Re-run from
+// Home's "Manage my deities" to add/remove deities - that link jumps
+// straight to the deities step via ?step=deities, since language and region
+// each have their own direct entry point on Home now and don't need
+// re-visiting just to change who you follow.
 type Step = 'language' | 'location' | 'deities';
 
 export default function OnboardingScreen() {
@@ -29,9 +31,17 @@ export default function OnboardingScreen() {
   const { t } = useTranslation();
   const { languageId, setLanguageId } = useLanguage();
   const { regionId, setRegionId } = useRegion();
-  const [step, setStep] = useState<Step>('language');
+  const { step: initialStep } = useLocalSearchParams<{ step?: Step }>();
+  const [step, setStep] = useState<Step>(initialStep === 'deities' ? 'deities' : 'language');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+
+  // Pre-check whichever deities are already followed - otherwise re-opening
+  // this (e.g. from "Manage my deities") looks like nothing is followed yet,
+  // and saving from that blank slate would silently unfollow everything.
+  useEffect(() => {
+    getFollowedDeities().then((deities) => setSelected(new Set(deities.map((d) => d.id))));
+  }, []);
 
   const toggleDeity = (id: string) => {
     setSelected((prev) => {
@@ -45,21 +55,22 @@ export default function OnboardingScreen() {
   const handleFinish = async () => {
     if (busy) return;
     setBusy(true);
-    // Each step is isolated: a failure requesting OS permission (or saving
-    // one deity's follow state) shouldn't cascade into skipping the rest -
-    // the user picked these deities, they should end up followed even if
-    // something else on the device hiccups.
+    // Every deity gets set explicitly (followed or not), not just the ones
+    // picked this time - otherwise unchecking a previously-followed deity
+    // would do nothing and it'd stay followed. Each is isolated: a failure
+    // requesting OS permission (or saving one deity's follow state)
+    // shouldn't cascade into skipping the rest.
     try {
       try {
         await enableReminders();
       } catch (err) {
         console.warn('enableReminders failed during onboarding', err);
       }
-      for (const id of selected) {
+      for (const deity of DEITIES) {
         try {
-          await setDeityFollowed(id, true);
+          await setDeityFollowed(deity.id, selected.has(deity.id));
         } catch (err) {
-          console.warn(`setDeityFollowed(${id}) failed during onboarding`, err);
+          console.warn(`setDeityFollowed(${deity.id}) failed during onboarding`, err);
         }
       }
       await markOnboarded();

@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { getVersesForDeity, type VerseEntry } from '@/lib/devotional-verses';
+import { getVersesForDeity, localizedField, localizedLabel, type VerseEntry } from '@/lib/devotional-verses';
 
-// Mantras, slogans, and parayanam (recitation) texts for one deity - see
-// devotional-verses.ts for why these stay in their original script rather
-// than following the UI's selected language. Collapsed by default, same
-// "hidden until asked for" treatment as everything else added to these
-// already-busy deity pages.
+// Mantras, slogans, and parayanam (recitation) texts for one deity - kept
+// entirely in-app (see devotional-verses.ts - no more linking out to an
+// external page that ignored the app's language) and shown in whichever
+// language is currently selected. Collapsed by default, same "hidden until
+// asked for" treatment as everything else added to these already-busy
+// deity pages.
 export function SacredVerses({ deityId }: { deityId: string }) {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -44,28 +44,28 @@ export function SacredVerses({ deityId }: { deityId: string }) {
 
 function VerseCard({ verse }: { verse: VerseEntry }) {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, languageId } = useTranslation();
+  const meaning = localizedField(verse.meaning, languageId);
+  const note = localizedField(verse.note, languageId);
 
-  const card = (
+  return (
     <ThemedView type="backgroundElement" style={[styles.card, { borderLeftColor: theme.secondary }]}>
       <ThemedText type="small" themeColor="textSecondary">
-        {verse.label}
+        {localizedLabel(verse.label, languageId)}
       </ThemedText>
       <ThemedText type="smallBold">{verse.title}</ThemedText>
       {verse.script && <ThemedText style={styles.script}>{verse.script}</ThemedText>}
-      <ThemedText type="small" themeColor="textSecondary">
-        {verse.note}
-      </ThemedText>
-      {verse.link && <ThemedText type="linkPrimary">{t('deity.readFullText')}</ThemedText>}
+      {meaning && (
+        <ThemedText type="small" style={styles.meaning}>
+          {t('deity.meaning')}: {meaning}
+        </ThemedText>
+      )}
+      {note && (
+        <ThemedText type="small" themeColor="textSecondary">
+          {note}
+        </ThemedText>
+      )}
     </ThemedView>
-  );
-
-  if (!verse.link) return card;
-
-  return (
-    <Pressable onPress={() => WebBrowser.openBrowserAsync(verse.link!)} accessibilityRole="link">
-      {card}
-    </Pressable>
   );
 }
 
@@ -95,5 +95,8 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 24,
     marginVertical: Spacing.half,
+  },
+  meaning: {
+    fontStyle: 'italic',
   },
 });

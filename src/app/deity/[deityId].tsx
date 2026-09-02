@@ -136,16 +136,6 @@ export default function DeityScreen() {
                   />
                 ))}
               </ThemedView>
-
-              {hasMoreMonths ? (
-                <Pressable onPress={() => setVisibleMonthCount((c) => c + MONTHS_PER_PAGE)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
-                </Pressable>
-              ) : isExpanded ? (
-                <Pressable onPress={() => setVisibleMonthCount(1)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">{t('deity.showNextMonthOnly')}</ThemedText>
-                </Pressable>
-              ) : null}
             </ThemedView>
           }
           renderSectionHeader={({ section }) => (
@@ -158,6 +148,21 @@ export default function DeityScreen() {
           renderItem={({ item }) => <EventCard event={item} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
           SectionSeparatorComponent={() => <ThemedView style={styles.sectionSeparator} />}
+          // "Show more" lives at the end of what's already loaded, not up in
+          // the header - a header-pinned control meant you'd scroll all the
+          // way back to the top just to load more months, which read as the
+          // page jumping around instead of smoothly extending downward.
+          ListFooterComponent={
+            hasMoreMonths ? (
+              <Pressable onPress={() => setVisibleMonthCount((c) => c + MONTHS_PER_PAGE)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
+              </Pressable>
+            ) : isExpanded ? (
+              <Pressable onPress={() => setVisibleMonthCount(1)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showNextMonthOnly')}</ThemedText>
+              </Pressable>
+            ) : null
+          }
         />
       </SafeAreaView>
     </ThemedView>
@@ -267,7 +272,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   yearToggle: {
-    marginTop: Spacing.one,
+    marginTop: Spacing.three,
+    alignItems: 'center',
   },
   sectionHeader: {
     paddingVertical: Spacing.two,
