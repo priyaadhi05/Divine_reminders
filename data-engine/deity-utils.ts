@@ -136,6 +136,24 @@ export function panchangamForDate(days: DayPanchangam[], dateStr: string): DayPa
   return computeDayPanchangam(y, m, d);
 }
 
+// Finds every day across the whole range where the solar Tamil month
+// transitions into `tamilMonth` - i.e. the month's first day. Used for
+// observances anchored to a solar month boundary rather than a tithi or
+// nakshatra within it, e.g. Ayyappan's Mandala Kalam (Vrischikam 1, which is
+// the same solar transition as Tamil Karthigai 1 in this sidereal model) or
+// Makara Sankranti (Tamil Thai 1). Starting the scan at index 1 is safe: the
+// precomputed `days` range always begins well before either month's
+// mid-year transition, so index 0 is never a real occurrence.
+export function findAllTamilMonthStarts(days: DayPanchangam[], tamilMonth: string): number[] {
+  const indices: number[] = [];
+  for (let i = 1; i < days.length; i++) {
+    if (days[i].tamilMonthName === tamilMonth && days[i - 1].tamilMonthName !== tamilMonth) {
+      indices.push(i);
+    }
+  }
+  return indices;
+}
+
 // Find every occurrence of a cyclic panchangam value (tithi or nakshatra)
 // across the whole date range, once per lunar/sidereal cycle - e.g. every
 // Shukla Ekadashi (~12x/year) or every Krittika nakshatra day (~13x/year).

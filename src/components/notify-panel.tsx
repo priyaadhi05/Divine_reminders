@@ -6,7 +6,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { CATEGORY_LABELS, getCategoriesForDeity } from '@/data/events';
+import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import {
   areRemindersEnabled,
@@ -20,18 +22,22 @@ import {
   type DeityFollowState,
 } from '@/lib/notifications';
 
-// Three tiers of "which events do you want notified about", all living on
-// the deity's own page: a master "all of this god" toggle, and beneath it,
-// one toggle per category so someone can follow just Pradosham, or just
-// Valarpirai Sashti, without the rest. ("Follow everything" across all
-// gods lives on the Home screen instead.)
+// A single bell summarizes notification state for this deity (off / some /
+// all); tapping it opens a dropdown with the actual controls - an "every
+// event" toggle, then one toggle per occasion type (e.g. Valarpirai Sashti,
+// Monthly Krithigai) with its own lead-day picker once turned on. Keeping
+// all of that tucked away by default means the deity page reads as one
+// tidy row instead of a wall of always-visible chips.
 export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName: string }) {
   const theme = useTheme();
+  const { t, categoryLabel } = useTranslation();
   const categories = getCategoriesForDeity(deityId);
+  const [open, setOpen] = useState(false);
   const [deityState, setDeityState] = useState<DeityFollowState>('none');
   const [topicState, setTopicState] = useState<Record<string, boolean>>({});
   const [leadDaysState, setLeadDaysState] = useState<Record<string, number[]>>({});
   const [busy, setBusy] = useState(false);
+  const playNotifySound = useNotifySound();
 
   const refresh = async () => {
     setDeityState(await getDeityFollowState(deityId));
@@ -47,11 +53,15 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deityId]);
 
-  const withPermission = async (action: () => Promise<void>) => {
+  // `turningOn` plays the confirmation chime only when the action actually
+  // switches something on (never for turning off, never for a lead-days
+  // change, which isn't a fresh "notify me" decision).
+  const withPermission = async (turningOn: boolean, action: () => Promise<void>) => {
     if (busy) return;
     setBusy(true);
     try {
       if (!(await areRemindersEnabled())) await enableReminders();
+      if (turningOn) playNotifySound();
       await action();
       await refresh();
     } finally {
@@ -59,80 +69,106 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
     }
   };
 
-  const masterLabel =
+  const summaryLabel =
     deityState === 'all'
-      ? `🔔 Notified for all ${deityName} events`
+      ? t('notify.all', { name: deityName })
       : deityState === 'some'
-        ? `🔔 Notified for some ${deityName} events`
-        : `🔕 Notify me for ${deityName}`;
+        ? t('notify.some', { name: deityName })
+        : t('notify.notifyMeFor', { name: deityName });
 
   return (
     <ThemedView style={styles.container}>
-      <Pressable
-        onPress={() => withPermission(() => setDeityFollowed(deityId, deityState !== 'all'))}
-        disabled={busy}
-        style={[styles.masterButton, { borderColor: theme.accent, opacity: busy ? 0.6 : 1 }]}
-        accessibilityRole="button">
-        <ThemedText type="smallBold">
-          {masterLabel}
-          {Platform.OS === 'web' ? ' (mobile only)' : ''}
-        </ThemedText>
+      <Pressable onPress={() => setOpen((v) => !v)} accessibilityRole="button">
+        <ThemedView type="backgroundElement" style={[styles.summaryRow, { borderColor: theme.accent }]}>
+          <ThemedView type="backgroundElement" style={[styles.bell, deityState !== 'none' && { backgroundColor: theme.accent }]}>
+            <ThemedText>{deityState === 'none' ? '🔕' : '🔔'}</ThemedText>
+          </ThemedView>
+          <ThemedText type="smallBold" style={styles.summaryText}>
+            {summaryLabel}
+            {Platform.OS === 'web' ? t('mascot.mobileOnly') : ''}
+          </ThemedText>
+          <ThemedText themeColor="textSecondary">{open ? '︿' : '﹀'}</ThemedText>
+        </ThemedView>
       </Pressable>
 
-      {categories.filter((c) => topicState[c]).length > 0 && (
-        <ThemedView style={styles.leadDaysSection}>
-          <ThemedText type="small" themeColor="textSecondary">
-            Remind me:
-          </ThemedText>
-          {categories
-            .filter((c) => topicState[c])
-            .map((c) => (
-              <ThemedView key={c} style={styles.leadDaysGroup}>
-                {categories.length > 1 && (
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {CATEGORY_LABELS[c]}
-                  </ThemedText>
-                )}
-                <LeadDaysRow
-                  days={leadDaysState[c] ?? [3, 1, 0]}
-                  disabled={busy}
-                  onChange={(days) => withPermission(() => setTopicLeadDays(deityId, c, days))}
-                />
-              </ThemedView>
-            ))}
+      {open && (
+        <ThemedView type="backgroundElement" style={[styles.dropdown, { borderColor: theme.accent }]}>
+          {deityState === 'none' && (
+            <ThemedText type="small" themeColor="textSecondary">
+              {t('notify.requiresPermission')}
+            </ThemedText>
+          )}
+
+          <ToggleRow
+            label={t('notify.everyEvent', { name: deityName })}
+            icon="🙏"
+            on={deityState === 'all'}
+            disabled={busy}
+            onPress={() => withPermission(deityState !== 'all', () => setDeityFollowed(deityId, deityState !== 'all'))}
+          />
+
+          {categories.length > 1 && (
+            <>
+              <ThemedView style={[styles.divider, { backgroundColor: theme.accent }]} />
+              <ThemedText type="small" themeColor="textSecondary">
+                {t('notify.orSpecific')}
+              </ThemedText>
+              {categories.map((cat) => {
+                const on = !!topicState[cat];
+                return (
+                  <ThemedView key={cat} style={styles.categoryGroup}>
+                    <ToggleRow
+                      label={categoryLabel(cat, CATEGORY_LABELS[cat])}
+                      icon={CATEGORY_STYLE[cat].icon}
+                      on={on}
+                      disabled={busy}
+                      onPress={() => withPermission(!on, () => setTopicFollowed(deityId, cat, !on))}
+                    />
+                    {on && (
+                      <ThemedView style={styles.leadDaysIndent}>
+                        <LeadDaysRow
+                          days={leadDaysState[cat] ?? [3, 2, 1]}
+                          disabled={busy}
+                          onChange={(days) => withPermission(false, () => setTopicLeadDays(deityId, cat, days))}
+                        />
+                      </ThemedView>
+                    )}
+                  </ThemedView>
+                );
+              })}
+            </>
+          )}
         </ThemedView>
       )}
-
-      {categories.length > 1 && (
-        <>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.orLabel}>
-            Or pick specific events:
-          </ThemedText>
-          <ThemedView style={styles.chipRow}>
-            {categories.map((cat) => {
-              const on = !!topicState[cat];
-              const { colorKey, icon } = CATEGORY_STYLE[cat];
-              const chipColor = theme[colorKey];
-              return (
-                <Pressable
-                  key={cat}
-                  onPress={() => withPermission(() => setTopicFollowed(deityId, cat, !on))}
-                  disabled={busy}>
-                  <ThemedView
-                    type="backgroundElement"
-                    style={[styles.chip, on && { backgroundColor: chipColor, borderColor: chipColor }]}>
-                    <ThemedText style={styles.chipIcon}>{on ? '🔔' : icon}</ThemedText>
-                    <ThemedText type="small" style={on && { color: theme.primaryText, fontWeight: '700' }}>
-                      {CATEGORY_LABELS[cat]}
-                    </ThemedText>
-                  </ThemedView>
-                </Pressable>
-              );
-            })}
-          </ThemedView>
-        </>
-      )}
     </ThemedView>
+  );
+}
+
+function ToggleRow({
+  label,
+  icon,
+  on,
+  disabled,
+  onPress,
+}: {
+  label: string;
+  icon: string;
+  on: boolean;
+  disabled: boolean;
+  onPress: () => void;
+}) {
+  const theme = useTheme();
+  return (
+    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button">
+      <ThemedView type="backgroundElement" style={styles.toggleRow}>
+        <ThemedText type="small">
+          {icon} {label}
+        </ThemedText>
+        <ThemedView type="backgroundElement" style={[styles.miniBell, on && { backgroundColor: theme.accent }]}>
+          <ThemedText style={styles.miniBellIcon}>{on ? '🔔' : '🔕'}</ThemedText>
+        </ThemedView>
+      </ThemedView>
+    </Pressable>
   );
 }
 
@@ -140,38 +176,55 @@ const styles = StyleSheet.create({
   container: {
     gap: Spacing.two,
   },
-  masterButton: {
-    alignSelf: 'flex-start',
-    borderWidth: 1.5,
-    borderRadius: Spacing.four,
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
-  },
-  leadDaysSection: {
-    gap: Spacing.two,
-  },
-  leadDaysGroup: {
-    gap: Spacing.one,
-  },
-  orLabel: {
-    marginTop: Spacing.one,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  chip: {
+  summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.one,
-    paddingVertical: Spacing.one,
-    paddingHorizontal: Spacing.three,
+    alignSelf: 'flex-start',
+    gap: Spacing.two,
+    borderWidth: 1.5,
     borderRadius: Spacing.five,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.two,
   },
-  chipIcon: {
+  bell: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  summaryText: {
+    maxWidth: 220,
+  },
+  dropdown: {
+    gap: Spacing.two,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: 1,
+  },
+  divider: {
+    height: 1,
+    opacity: 0.25,
+  },
+  categoryGroup: {
+    gap: Spacing.one,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  miniBell: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniBellIcon: {
     fontSize: 13,
+  },
+  leadDaysIndent: {
+    marginLeft: Spacing.four,
   },
 });

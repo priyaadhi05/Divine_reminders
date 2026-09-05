@@ -2,7 +2,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { DEITIES, getCategoriesForDeity, getDeityById, getUpcomingEvents, type DeityEvent } from '@/data/events';
+import {
+  daysUntil,
+  DEITIES,
+  formatEventDate,
+  GENERAL_DEITY_ID,
+  getCategoriesForDeity,
+  getDeityById,
+  getGeneralCategories,
+  getUpcomingEvents,
+  type DeityEvent,
+} from '@/data/events';
 
 // Local (on-device) reminders only - no push server, no account, no cost.
 // Not supported on web (expo-notifications has no web implementation).
@@ -16,13 +26,13 @@ const NOTIFICATION_PREFIX = 'divine-calendar-reminder-';
 const CHANNEL_ID = 'divine-calendar-reminders';
 const REMINDER_HOUR = 9; // fires at 9am local device time on each countdown day
 
-// The countdown per followed event: a heads-up 3 days out, a nudge the day
-// before, and a blessing on the day itself. Every followed topic gets this
-// by default, but it's customizable per topic (see "Lead days" below) - e.g.
-// someone can want the full countdown for Thaipusam but just a day-of nudge
-// for a monthly Pradosham. Either way this is the app's whole reminder
-// mechanism - never a calendar entry, always a notification.
-const DEFAULT_LEAD_DAYS: readonly number[] = [3, 1, 0];
+// The countdown per followed event: a heads-up 3 days out, again at 2 days,
+// and a final nudge the day before. Every followed topic gets this by
+// default, but it's customizable per topic (see "Lead days" below) - e.g.
+// someone can want the full countdown for Thaipusam but just a single
+// day-before nudge for a monthly Pradosham. Either way this is the app's
+// whole reminder mechanism - never a calendar entry, always a notification.
+const DEFAULT_LEAD_DAYS: readonly number[] = [3, 2, 1];
 
 // --- Onboarding ------------------------------------------------------------
 
@@ -53,36 +63,70 @@ if (SUPPORTED) {
   });
 }
 
-// Notification title/body for the 3-day / 1-day / today countdown, e.g.:
-//   "🦚 Murugan's special day is in 3 days" / "Prepare your heart for
-//   Thaipusam 🙏\n\nSee the significance →"
-//   "🦚 Today is Thaipusam" / "May Lord Murugan bless you and your family
-//   with strength, wisdom and grace. 🙏"
+// Notification title/body for the 3-day / 2-day / 1-day / today countdown.
+// Each lead day gets its own wording rather than reusing one template with
+// only the day count swapped in, so a followed topic's three nudges read as
+// a build-up rather than the same line repeated three times, e.g.:
+//   3 days: "🦚 Murugan's special day is in 3 days" / "Thaipusam is coming
+//     up on Feb 1 - a good time to start planning. 🙏"
+//   1 day:  "🦚 Murugan's special day is tomorrow" / "Tomorrow is Thaipusam -
+//     take a moment tonight to prepare your heart. 🙏"
+//   Today:  "🦚 Today is Thaipusam" / "May Lord Murugan bless you and your
+//     family with strength, wisdom and grace. 🙏"
+// Events with no single owning deity (e.g. the monthly Amavasai/Pournami)
+// get their own neutral phrasing instead of falling back to deity wording.
 export function notificationTitle(event: DeityEvent, daysBefore: number): string {
   const deity = getDeityById(event.deity);
-  const symbol = deity?.symbol ?? '🪔';
-  const speaker = deity?.name ?? 'the divine calendar';
+  const symbol = deity?.symbol ?? (event.category === 'pournami' ? '🌕' : event.category === 'amavasai' ? '🌚' : '🪔');
   if (daysBefore === 0) return `${symbol} Today is ${event.name}`;
-  if (daysBefore === 1) return `${symbol} ${speaker}'s special day is tomorrow`;
-  return `${symbol} ${speaker}'s special day is in ${daysBefore} days`;
+  if (!deity) {
+    return daysBefore === 1 ? `${symbol} ${event.name} is tomorrow` : `${symbol} ${event.name} is in ${daysBefore} days`;
+  }
+  if (daysBefore === 1) return `${symbol} ${deity.name}'s special day is tomorrow`;
+  return `${symbol} ${deity.name}'s special day is in ${daysBefore} days`;
 }
 
 export function notificationBody(event: DeityEvent, daysBefore: number): string {
   const deity = getDeityById(event.deity);
-  const speaker = deity?.name ?? 'the divine calendar';
-  const honorific = deity?.honorific ?? 'Lord';
+
   if (daysBefore === 0) {
-    return `May ${honorific} ${speaker} bless you and your family with strength, wisdom and grace. 🙏`;
+    if (!deity) return `${event.significance} 🙏`;
+    return `May ${deity.honorific} ${deity.name} bless you and your family with strength, wisdom and grace. 🙏`;
   }
-  return `Prepare your heart for ${event.name} 🙏\n\nSee the significance →`;
+  if (daysBefore === 1) {
+    return `Tomorrow is ${event.name} - take a moment tonight to prepare your heart. 🙏`;
+  }
+  const shortDate = new Date(`${event.date}T00:00:00Z`).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC',
+  });
+  return `${event.name} is coming up on ${shortDate} - a good time to start planning. 🙏`;
+}
+
+// Message used for manual sharing (see SharePanel) - unlike a scheduled
+// reminder, which only ever fires exactly 3/2/1/0 days before, a share can
+// happen on any day. Reusing the countdown wording for that would have
+// clamped a genuinely past or far-off event to "Today is X" (negative
+// daysUntil floored to 0), which is simply wrong. "Today" wording only
+// applies when the event's date really is today; every other day states the
+// actual date instead of guessing at a countdown.
+export function shareMessage(event: DeityEvent): string {
+  const n = daysUntil(event.date);
+  if (n === 0) {
+    return `${notificationTitle(event, 0)}\n\n${notificationBody(event, 0)}`;
+  }
+  const deity = getDeityById(event.deity);
+  const symbol = deity?.symbol ?? (event.category === 'pournami' ? '🌕' : event.category === 'amavasai' ? '🌚' : '🪔');
+  return `${symbol} ${event.name} (${event.tamilName}) - ${formatEventDate(event.date)}\n\n${event.significance} 🙏`;
 }
 
 // First-person countdown line, voiced as whichever deity the event belongs
-// to - used for the home companion card's spoken (TTS) line.
+// to - used for the home companion card's spoken (TTS) line. Events with no
+// owning deity (Amavasai/Pournami) are voiced neutrally rather than
+// borrowing another deity's greeting.
 export function reminderLine(event: DeityEvent, daysBefore?: number): string {
   const deity = getDeityById(event.deity);
-  const greeting = deity?.greeting ?? 'Vel Vel!';
-  const speaker = deity?.name ?? 'the divine calendar';
   const when =
     daysBefore === undefined
       ? `on ${new Date(`${event.date}T00:00:00Z`).toLocaleDateString('en-US', {
@@ -94,7 +138,10 @@ export function reminderLine(event: DeityEvent, daysBefore?: number): string {
       : daysBefore === 1
         ? 'tomorrow'
         : `in ${daysBefore} days`;
-  return `${greeting} I'm ${speaker}, reminding you - ${event.name} (${event.tamilName}) is ${when}. ${event.significance}`;
+  if (!deity) {
+    return `${event.name} (${event.tamilName}) is ${when}. ${event.significance}`;
+  }
+  return `${deity.greeting} I'm ${deity.name}, reminding you - ${event.name} (${event.tamilName}) is ${when}. ${event.significance}`;
 }
 
 export async function areRemindersEnabled(): Promise<boolean> {
@@ -120,7 +167,10 @@ function topicKey(deityId: string, category: string): string {
 }
 
 function allTopics(): string[] {
-  return DEITIES.flatMap((d) => getCategoriesForDeity(d.id).map((c) => topicKey(d.id, c)));
+  return [
+    ...DEITIES.flatMap((d) => getCategoriesForDeity(d.id).map((c) => topicKey(d.id, c))),
+    ...getGeneralCategories().map((c) => topicKey(GENERAL_DEITY_ID, c)),
+  ];
 }
 
 export async function getFollowedTopics(): Promise<Set<string>> {
@@ -206,8 +256,8 @@ export async function getFollowedDeities(): Promise<typeof DEITIES> {
 
 // --- Lead-day preferences ------------------------------------------------
 //
-// How many days before a followed topic's date each nudge fires, e.g. [3, 1,
-// 0] for the full countdown or just [0] for a single day-of blessing.
+// How many days before a followed topic's date each nudge fires, e.g. [3, 2,
+// 1] for the full countdown or just [1] for a single day-before nudge.
 // Customizable per topic (deity + category) - the same granularity following
 // already works at - via the deity page's NotifyPanel and an event's own
 // "Set reminder" control. Topics with no explicit choice get

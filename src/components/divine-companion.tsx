@@ -7,7 +7,9 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import type { DeityEvent } from '@/data/events';
+import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } from '@/lib/notifications';
 
 // A reminder "companion" card: shows the next event (across any deity) as a
@@ -15,13 +17,17 @@ import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } 
 // reminderLine in src/lib/notifications.ts), speaks it aloud (on-device TTS)
 // when tapped, and hosts the toggle for real OS-level scheduled reminders.
 // No face/character graphic for now - just the text and a small pulse on the
-// icon while speaking.
-interface MuruganMascotProps {
+// icon while speaking. (Named for what it does, not "MuruganMascot" as it
+// was originally - it's always voiced whichever deity the next event
+// belongs to, never Murugan specifically.)
+interface DivineCompanionProps {
   nextEvent?: DeityEvent;
 }
 
-export function MuruganMascot({ nextEvent }: MuruganMascotProps) {
+export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const playNotifySound = useNotifySound();
   const [speaking, setSpeaking] = useState(false);
   const [remindersOn, setRemindersOn] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -44,7 +50,7 @@ export function MuruganMascot({ nextEvent }: MuruganMascotProps) {
     transform: [{ scale: 1 + talk.value * 0.25 }],
   }));
 
-  const line = nextEvent ? reminderLine(nextEvent) : 'Vel Vel! Nothing new on the horizon just yet - check back soon.';
+  const line = nextEvent ? reminderLine(nextEvent) : t('mascot.nothingNew');
 
   const handleTap = () => {
     if (speaking) {
@@ -69,6 +75,7 @@ export function MuruganMascot({ nextEvent }: MuruganMascotProps) {
         setRemindersOn(false);
       } else {
         const granted = await enableReminders();
+        if (granted) playNotifySound();
         setRemindersOn(granted);
       }
     } finally {
@@ -88,7 +95,7 @@ export function MuruganMascot({ nextEvent }: MuruganMascotProps) {
             {line}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary" style={styles.tapHint}>
-            {speaking ? 'Tap to stop' : 'Tap to hear this'}
+            {speaking ? t('mascot.tapToStop') : t('mascot.tapToHear')}
           </ThemedText>
         </ThemedView>
       </Pressable>
@@ -99,8 +106,8 @@ export function MuruganMascot({ nextEvent }: MuruganMascotProps) {
         style={[styles.bell, { borderColor: theme.accent, opacity: busy ? 0.6 : 1 }]}
         accessibilityRole="button">
         <ThemedText type="smallBold">
-          {remindersOn ? '🔔 Reminders on' : '🔕 Enable reminders'}
-          {Platform.OS === 'web' ? ' (mobile only)' : ''}
+          {remindersOn ? t('mascot.remindersOn') : t('mascot.enableReminders')}
+          {Platform.OS === 'web' ? t('mascot.mobileOnly') : ''}
         </ThemedText>
       </Pressable>
     </ThemedView>

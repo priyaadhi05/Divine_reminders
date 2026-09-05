@@ -49,6 +49,18 @@ const CATEGORY_CONTENT: Record<EventCategory, DevotionalContent> = {
     practice: 'Light a lamp for the Devi and, if possible, offer a small act of protection or courage to someone who needs it.',
     prayer: 'Om Shakti - lend me your strength today.',
   },
+  'monthly-chaturthi': {
+    practice: 'Many fast until moonrise, then offer modakam or another sweet before breaking the fast.',
+    prayer: 'Om Gam Ganapataye Namaha - remove the obstacles in my path.',
+  },
+  amavasai: {
+    practice: 'Many observe a partial fast and perform tarpanam (ancestor remembrance); others simply keep the day quiet and reflective.',
+    prayer: 'On this moonless night, let go of what weighs on me and welcome a fresh cycle.',
+  },
+  pournami: {
+    practice: 'Visit a temple if you can, or sit in quiet reflection under the full moon - many also observe a light fast.',
+    prayer: 'Under this full moon, fill my heart with clarity, peace, and gratitude.',
+  },
 };
 
 // Overrides for specific, well-known festivals that deserve their own words
@@ -130,6 +142,18 @@ const NAME_OVERRIDES: Record<string, DevotionalContent> = {
   Vijayadashami: {
     practice: 'A joyful, auspicious day to start something new - children traditionally begin learning to write (Vidyarambham) on this day.',
     prayer: 'Thank you for every victory over what holds me back.',
+  },
+  'Vinayagar Chaturthi': {
+    practice: 'Bring home a clay Ganesha idol, offer modakam or kozhukattai, and immerse the idol in water at the end of the day.',
+    prayer: 'Om Gam Ganapataye Namaha - clear the obstacles from my path and bless this new beginning.',
+  },
+  'Mandala Kalam Begins': {
+    practice: 'Devotees observing the vratham begin wearing black or blue, go barefoot, avoid non-vegetarian food and alcohol, and visit an Ayyappan temple daily.',
+    prayer: 'Swamiye Saranam Ayyappa - give me the discipline to keep this vow with a clear heart.',
+  },
+  'Makara Vilakku': {
+    practice: 'Devotees who completed the Mandala Vratham undertake the Sabarimala pilgrimage, carrying the irumudi kettu (offering bundle) up the eighteen holy steps.',
+    prayer: 'Swamiye Saranam Ayyappa - thank you for the strength to complete this vow.',
   },
 };
 

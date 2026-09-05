@@ -1,31 +1,47 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LogoMark } from '@/components/logo-mark';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useLanguage } from '@/contexts/language-context';
+import { useRegion } from '@/contexts/region-context';
 import { DEITIES } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
-import { enableReminders, markOnboarded, setDeityFollowed } from '@/lib/notifications';
+import { useTranslation } from '@/hooks/use-translation';
+import { LANGUAGES } from '@/lib/i18n/languages';
+import { enableReminders, getFollowedDeities, markOnboarded, setDeityFollowed } from '@/lib/notifications';
+import { AUTO_REGION_ID, REGIONS, resolveRegionTimeZone } from '@/lib/regions';
 
-// First-run flow: just "choose your deities" - straight into the
-// personalized "Your Sacred Days" home screen. Re-run any time from Home via
-// "Manage my deities" to add more. Only offers the deities we actually have
-// real, astronomically-computed calendars for today (Murugan, Vishnu, Shiva,
-// Amman) - more are on the roadmap, but a selectable card with no data
-// behind it would be a dead end.
-//
-// Reminder *timing* (3 days before / 1 day before / day of) isn't chosen
-// here anymore - every followed topic starts on the full countdown, and can
-// be dialed down per deity or per event afterward (see NotifyPanel and the
-// event detail screen's LeadDaysRow), since that choice is easier to make
-// looking at a specific event than guessed upfront for everything at once.
+// First-run flow, three short steps: language, home country/region (this is
+// what decides what time a festival's precise timing shows in - see the
+// event detail screen's "See in" selector for a one-off peek at another
+// country without changing this), then which deities to follow. Re-run from
+// Home's "Manage my deities" to add/remove deities - that link jumps
+// straight to the deities step via ?step=deities, since language and region
+// each have their own direct entry point on Home now and don't need
+// re-visiting just to change who you follow.
+type Step = 'language' | 'location' | 'deities';
+
 export default function OnboardingScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const { languageId, setLanguageId } = useLanguage();
+  const { regionId, setRegionId } = useRegion();
+  const { step: initialStep } = useLocalSearchParams<{ step?: Step }>();
+  const [step, setStep] = useState<Step>(initialStep === 'deities' ? 'deities' : 'language');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
+
+  // Pre-check whichever deities are already followed - otherwise re-opening
+  // this (e.g. from "Manage my deities") looks like nothing is followed yet,
+  // and saving from that blank slate would silently unfollow everything.
+  useEffect(() => {
+    getFollowedDeities().then((deities) => setSelected(new Set(deities.map((d) => d.id))));
+  }, []);
 
   const toggleDeity = (id: string) => {
     setSelected((prev) => {
@@ -39,21 +55,22 @@ export default function OnboardingScreen() {
   const handleFinish = async () => {
     if (busy) return;
     setBusy(true);
-    // Each step is isolated: a failure requesting OS permission (or saving
-    // one deity's follow state) shouldn't cascade into skipping the rest -
-    // the user picked these deities, they should end up followed even if
-    // something else on the device hiccups.
+    // Every deity gets set explicitly (followed or not), not just the ones
+    // picked this time - otherwise unchecking a previously-followed deity
+    // would do nothing and it'd stay followed. Each is isolated: a failure
+    // requesting OS permission (or saving one deity's follow state)
+    // shouldn't cascade into skipping the rest.
     try {
       try {
         await enableReminders();
       } catch (err) {
         console.warn('enableReminders failed during onboarding', err);
       }
-      for (const id of selected) {
+      for (const deity of DEITIES) {
         try {
-          await setDeityFollowed(id, true);
+          await setDeityFollowed(deity.id, selected.has(deity.id));
         } catch (err) {
-          console.warn(`setDeityFollowed(${id}) failed during onboarding`, err);
+          console.warn(`setDeityFollowed(${deity.id}) failed during onboarding`, err);
         }
       }
       await markOnboarded();
@@ -73,41 +90,118 @@ export default function OnboardingScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <ThemedText type="title" style={styles.heading}>
-            Which deities are meaningful to you?
-          </ThemedText>
-          <ThemedText themeColor="textSecondary" style={styles.subheading}>
-            Your home screen will only show sacred days for the deities you choose here.
-          </ThemedText>
-
-          <ThemedView style={styles.grid}>
-            {DEITIES.map((deity) => {
-              const isSelected = selected.has(deity.id);
-              return (
-                <Pressable key={deity.id} onPress={() => toggleDeity(deity.id)} style={styles.cardWrap}>
-                  <ThemedView
-                    type="backgroundElement"
-                    style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
-                    <ThemedText style={styles.cardSymbol}>{deity.symbol}</ThemedText>
-                    <ThemedText type="smallBold">{deity.name}</ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {deity.tamilName}
-                    </ThemedText>
-                    <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
-                  </ThemedView>
-                </Pressable>
-              );
-            })}
+          <ThemedView style={styles.brandRow}>
+            <LogoMark size={56} />
           </ThemedView>
 
-          <Pressable
-            onPress={handleFinish}
-            disabled={selected.size === 0 || busy}
-            style={[styles.primaryButton, { backgroundColor: theme.primary, opacity: selected.size === 0 || busy ? 0.5 : 1 }]}>
-            <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
-              {busy ? 'Saving…' : '❤️ Save my deities'}
-            </ThemedText>
-          </Pressable>
+          {step === 'language' && (
+            <>
+              <ThemedText type="title" style={styles.heading}>
+                {t('onboarding.languageHeading')}
+              </ThemedText>
+              <ThemedText themeColor="textSecondary" style={styles.subheading}>
+                {t('onboarding.languageSubheading')}
+              </ThemedText>
+
+              <ThemedView style={styles.grid}>
+                {LANGUAGES.map((language) => {
+                  const isSelected = language.id === languageId;
+                  return (
+                    <Pressable key={language.id} onPress={() => setLanguageId(language.id)} style={styles.cardWrap}>
+                      <ThemedView
+                        type="backgroundElement"
+                        style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
+                        <ThemedText type="smallBold">{language.nativeLabel}</ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {language.label}
+                        </ThemedText>
+                        <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
+                      </ThemedView>
+                    </Pressable>
+                  );
+                })}
+              </ThemedView>
+
+              <Pressable onPress={() => setStep('location')} style={[styles.primaryButton, { backgroundColor: theme.primary }]}>
+                <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
+                  {t('onboarding.continue')}
+                </ThemedText>
+              </Pressable>
+            </>
+          )}
+
+          {step === 'location' && (
+            <>
+              <ThemedText type="title" style={styles.heading}>
+                {t('onboarding.locationHeading')}
+              </ThemedText>
+              <ThemedText themeColor="textSecondary" style={styles.subheading}>
+                {t('onboarding.locationSubheading')}
+              </ThemedText>
+
+              <ThemedView style={styles.list}>
+                {[{ id: AUTO_REGION_ID, label: resolveRegionTimeZone(AUTO_REGION_ID).label }, ...REGIONS].map((region) => {
+                  const isSelected = region.id === regionId;
+                  return (
+                    <Pressable key={region.id} onPress={() => setRegionId(region.id)}>
+                      <ThemedView
+                        type={isSelected ? 'backgroundSelected' : 'backgroundElement'}
+                        style={[styles.listOption, isSelected && { borderColor: theme.primary }]}>
+                        <ThemedText type={isSelected ? 'smallBold' : 'small'}>{region.label}</ThemedText>
+                        {isSelected && <ThemedText>❤️</ThemedText>}
+                      </ThemedView>
+                    </Pressable>
+                  );
+                })}
+              </ThemedView>
+
+              <Pressable onPress={() => setStep('deities')} style={[styles.primaryButton, { backgroundColor: theme.primary }]}>
+                <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
+                  {t('onboarding.continue')}
+                </ThemedText>
+              </Pressable>
+            </>
+          )}
+
+          {step === 'deities' && (
+            <>
+              <ThemedText type="title" style={styles.heading}>
+                {t('onboarding.deityHeading')}
+              </ThemedText>
+              <ThemedText themeColor="textSecondary" style={styles.subheading}>
+                {t('onboarding.deitySubheading')}
+              </ThemedText>
+
+              <ThemedView style={styles.grid}>
+                {DEITIES.map((deity) => {
+                  const isSelected = selected.has(deity.id);
+                  return (
+                    <Pressable key={deity.id} onPress={() => toggleDeity(deity.id)} style={styles.cardWrap}>
+                      <ThemedView
+                        type="backgroundElement"
+                        style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
+                        <ThemedText style={styles.cardSymbol}>{deity.symbol}</ThemedText>
+                        <ThemedText type="smallBold">{deity.name}</ThemedText>
+                        <ThemedText type="small" themeColor="textSecondary">
+                          {deity.tamilName}
+                        </ThemedText>
+                        <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
+                      </ThemedView>
+                    </Pressable>
+                  );
+                })}
+              </ThemedView>
+
+              <Pressable
+                onPress={handleFinish}
+                disabled={selected.size === 0 || busy}
+                style={[styles.primaryButton, { backgroundColor: theme.primary, opacity: selected.size === 0 || busy ? 0.5 : 1 }]}>
+                <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
+                  {busy ? t('onboarding.saving') : t('onboarding.save')}
+                </ThemedText>
+              </Pressable>
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -128,6 +222,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.four,
     gap: Spacing.three,
+  },
+  brandRow: {
+    alignItems: 'center',
   },
   heading: {
     fontSize: 30,
@@ -158,6 +255,18 @@ const styles = StyleSheet.create({
   heart: {
     fontSize: 18,
     marginTop: Spacing.one,
+  },
+  list: {
+    gap: Spacing.two,
+  },
+  listOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: Spacing.three,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    padding: Spacing.three,
   },
   primaryButton: {
     marginTop: Spacing.three,

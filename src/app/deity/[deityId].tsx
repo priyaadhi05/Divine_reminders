@@ -1,16 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, SectionList, StyleSheet } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EventCard } from '@/components/event-card';
 import { NotifyPanel } from '@/components/notify-panel';
+import { SacredVerses } from '@/components/sacred-verses';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import {
   CATEGORY_LABELS,
-  CURRENT_YEAR,
   CURRENT_YEAR_MONTH,
   EventCategory,
   formatEventDate,
@@ -20,14 +20,21 @@ import {
   getUpcomingEvents,
 } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
+
+const MONTHS_PER_PAGE = 3;
 
 export default function DeityScreen() {
   const { deityId } = useLocalSearchParams<{ deityId: string }>();
   const deity = getDeityById(deityId);
   const theme = useTheme();
+  const { t, categoryLabel, deityName: translatedDeityName } = useTranslation();
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
-  const [showAllYears, setShowAllYears] = useState(false);
+  // Reveals a few more months at a time rather than jumping straight to
+  // everything - MONTHS_PER_PAGE more each tap of "Show more".
+  const [visibleMonthCount, setVisibleMonthCount] = useState(1);
+  useEffect(() => setVisibleMonthCount(1), [filter]);
 
   const allEvents = useMemo(() => getEventsForDeity(deityId), [deityId]);
   const [next] = useMemo(() => getUpcomingEvents(1, deityId), [deityId]);
@@ -43,13 +50,15 @@ export default function DeityScreen() {
     return getEventsByYearMonth(events);
   }, [allEvents, filter]);
 
-  // Only the current year's upcoming months by default - see Calendar tab
-  // for the same treatment and why.
-  const visibleGroups = showAllYears
-    ? allGroups
-    : allGroups.filter((g) => g.key.startsWith(String(CURRENT_YEAR)) && g.key >= CURRENT_YEAR_MONTH);
+  // Just the nearest upcoming month by default - a whole year of one
+  // deity's events (unlike the Calendar tab, which is meant to be browsed)
+  // was too much to land on. "Show more" reveals a few months at a time
+  // rather than jumping straight to the full decade.
+  const upcomingGroups = useMemo(() => allGroups.filter((g) => g.key >= CURRENT_YEAR_MONTH), [allGroups]);
+  const visibleGroups = upcomingGroups.slice(0, visibleMonthCount);
   const sections = visibleGroups.map((group) => ({ title: group.label, data: group.events }));
-  const hiddenCount = allGroups.length - visibleGroups.length;
+  const hasMoreMonths = visibleGroups.length < upcomingGroups.length;
+  const isExpanded = visibleMonthCount > 1;
 
   if (!deity) {
     return (
@@ -59,9 +68,11 @@ export default function DeityScreen() {
     );
   }
 
+  const localizedName = translatedDeityName(deity.id, deity.name);
+
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: deity.name }} />
+      <Stack.Screen options={{ title: localizedName }} />
       <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         <SectionList
           sections={sections}
@@ -74,10 +85,10 @@ export default function DeityScreen() {
                 <ThemedText style={styles.heroSymbol}>{deity.symbol}</ThemedText>
                 <ThemedText style={[styles.heroTamil, { color: theme.primaryText }]}>{deity.tamilName}</ThemedText>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
-                  {deity.name}
+                  {localizedName}
                 </ThemedText>
                 <ThemedText type="small" style={[styles.heroSubtitle, { color: theme.primaryText }]}>
-                  Festivals &amp; auspicious days · 2026–2035
+                  {t('deity.tagline')}
                 </ThemedText>
               </ThemedView>
 
@@ -87,7 +98,7 @@ export default function DeityScreen() {
                     type="backgroundElement"
                     style={[styles.nextCard, { borderColor: theme[CATEGORY_STYLE[next.category].colorKey] }]}>
                     <ThemedText type="small" themeColor="textSecondary">
-                      NEXT UP {CATEGORY_STYLE[next.category].icon}
+                      {t('deity.nextUp')} {CATEGORY_STYLE[next.category].icon}
                     </ThemedText>
                     <ThemedText type="subtitle" style={styles.nextName}>
                       {next.name}
@@ -99,17 +110,25 @@ export default function DeityScreen() {
                 </Pressable>
               )}
 
-              <NotifyPanel deityId={deityId} deityName={deity.name} />
+              <NotifyPanel deityId={deityId} deityName={localizedName} />
+
+              <SacredVerses deityId={deityId} />
 
               <ThemedText type="smallBold" style={styles.browseLabel}>
-                Browse the calendar
+                {t('deity.browseCalendar')}
               </ThemedText>
               <ThemedView style={styles.filterRow}>
-                <FilterChip label="All" icon="📿" colorKey="primary" selected={filter === 'all'} onPress={() => setFilter('all')} />
+                <FilterChip
+                  label={t('common.all')}
+                  icon="📿"
+                  colorKey="primary"
+                  selected={filter === 'all'}
+                  onPress={() => setFilter('all')}
+                />
                 {categoriesPresent.map((cat) => (
                   <FilterChip
                     key={cat}
-                    label={CATEGORY_LABELS[cat]}
+                    label={categoryLabel(cat, CATEGORY_LABELS[cat])}
                     icon={CATEGORY_STYLE[cat].icon}
                     colorKey={CATEGORY_STYLE[cat].colorKey}
                     selected={filter === cat}
@@ -117,14 +136,6 @@ export default function DeityScreen() {
                   />
                 ))}
               </ThemedView>
-
-              {hiddenCount > 0 || showAllYears ? (
-                <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">
-                    {showAllYears ? `← Show ${CURRENT_YEAR} only` : `Show all years (2026–2035) →`}
-                  </ThemedText>
-                </Pressable>
-              ) : null}
             </ThemedView>
           }
           renderSectionHeader={({ section }) => (
@@ -137,6 +148,21 @@ export default function DeityScreen() {
           renderItem={({ item }) => <EventCard event={item} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
           SectionSeparatorComponent={() => <ThemedView style={styles.sectionSeparator} />}
+          // "Show more" lives at the end of what's already loaded, not up in
+          // the header - a header-pinned control meant you'd scroll all the
+          // way back to the top just to load more months, which read as the
+          // page jumping around instead of smoothly extending downward.
+          ListFooterComponent={
+            hasMoreMonths ? (
+              <Pressable onPress={() => setVisibleMonthCount((c) => c + MONTHS_PER_PAGE)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
+              </Pressable>
+            ) : isExpanded ? (
+              <Pressable onPress={() => setVisibleMonthCount(1)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showNextMonthOnly')}</ThemedText>
+              </Pressable>
+            ) : null
+          }
         />
       </SafeAreaView>
     </ThemedView>
@@ -246,7 +272,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   yearToggle: {
-    marginTop: Spacing.one,
+    marginTop: Spacing.three,
+    alignItems: 'center',
   },
   sectionHeader: {
     paddingVertical: Spacing.two,

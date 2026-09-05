@@ -4,13 +4,19 @@ import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DeityCard } from '@/components/deity-card';
-import { MuruganMascot } from '@/components/murugan-mascot';
+import { DivineCompanion } from '@/components/divine-companion';
+import { LanguageSelector } from '@/components/language-selector';
+import { LogoMark } from '@/components/logo-mark';
+import { LunarDaysCard } from '@/components/lunar-days-card';
+import { RegionSelector } from '@/components/region-selector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { useRegion } from '@/contexts/region-context';
 import { DEITIES, type Deity, type DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { getFollowedDeities, getFollowedUpcomingEvents } from '@/lib/notifications';
 
 // One accent color per deity, cycling through the palette by the deity's
@@ -23,6 +29,8 @@ const DEITY_ACCENTS: Record<string, ThemeColor> = Object.fromEntries(
 
 export default function HomeScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const { regionId, setRegionId } = useRegion();
   const [followedDeities, setFollowedDeities] = useState<Deity[]>([]);
   const [nextOverall, setNextOverall] = useState<DeityEvent | undefined>();
 
@@ -46,29 +54,44 @@ export default function HomeScreen() {
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
+                <LogoMark ringColor={theme.primary} />
+                <ThemedText type="smallBold" style={[styles.heroEyebrow, { color: theme.primaryText }]}>
+                  {t('home.eyebrow')}
+                </ThemedText>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
-                  Your Sacred Days
+                  {t('home.title')}
                 </ThemedText>
                 <ThemedText type="small" style={[styles.heroSubtitle, { color: theme.primaryText }]}>
-                  Personalized to the deities you follow
+                  {t('home.subtitle')}
                 </ThemedText>
               </ThemedView>
 
-              <MuruganMascot nextEvent={nextOverall} />
+              <DivineCompanion nextEvent={nextOverall} />
 
-              {/* Sole entry point for changing which deities are followed - the
-                  onboarding screen already lists every available deity with
-                  hearts to pick from, so a separate "browse" list here would
-                  just repeat it. */}
-              <Pressable onPress={() => router.push('/onboarding')}>
-                <ThemedText type="linkPrimary">❤️ Manage my deities →</ThemedText>
-              </Pressable>
+              <LunarDaysCard />
+
+              <ThemedView style={styles.settingsRow}>
+                {/* Sole entry point for changing which deities are followed - the
+                    same screen already lists every available deity with hearts
+                    to pick from (pre-checked to whatever's currently followed),
+                    so a separate "browse" list here would just repeat it. Jumps
+                    straight to that step - language and region below are each
+                    already a direct entry point on their own. */}
+                <Pressable onPress={() => router.push({ pathname: '/onboarding', params: { step: 'deities' } })}>
+                  <ThemedText type="linkPrimary">{t('home.manageDeities')}</ThemedText>
+                </Pressable>
+              </ThemedView>
+
+              <ThemedView style={styles.settingsRow}>
+                <RegionSelector regionId={regionId} onChange={setRegionId} />
+                <LanguageSelector />
+              </ThemedView>
 
               {followedDeities.length === 0 && (
                 <ThemedView type="backgroundElement" style={styles.emptyCard}>
-                  <ThemedText type="smallBold">No sacred days yet</ThemedText>
+                  <ThemedText type="smallBold">{t('home.emptyTitle')}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
-                    Choose which deities are meaningful to you and they'll show up here, each with what's coming next.
+                    {t('home.emptySubtitle')}
                   </ThemedText>
                 </ThemedView>
               )}
@@ -109,6 +132,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.half,
   },
+  heroEyebrow: {
+    marginTop: Spacing.two,
+    letterSpacing: 2,
+    opacity: 0.85,
+  },
   heroTitle: {
     fontSize: 36,
     lineHeight: 42,
@@ -116,6 +144,11 @@ const styles = StyleSheet.create({
   heroSubtitle: {
     textAlign: 'center',
     opacity: 0.9,
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   emptyCard: {
     padding: Spacing.four,

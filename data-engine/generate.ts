@@ -10,6 +10,9 @@ import {
 import { generateMonthlyEkadashiEvents, generateVishnuEvents } from './deities/vishnu';
 import { generateMonthlyPradoshamEvents, generateMonthlyShivaratriEvents, generateShivaEvents } from './deities/shiva';
 import { generateMonthlyDurgashtamiEvents, generateDurgaEvents } from './deities/durga';
+import { generateMonthlyChaturthiEvents, generateGaneshaEvents } from './deities/ganesha';
+import { generateAyyappanEvents } from './deities/ayyappan';
+import { generateMonthlyAmavasaiPournamiEvents } from './deities/general';
 import type { BaseDeityEvent } from './deity-utils';
 
 const START_YEAR = 2026;
@@ -80,8 +83,33 @@ function main() {
   );
   writeDataset('durga', durgaEvents);
 
-  const total = muruganEvents.length + vishnuEvents.length + shivaEvents.length + durgaEvents.length;
-  console.log(`Generated ${total} events across 4 deities.`);
+  // Ganesha
+  const ganeshaAnnual = generateGaneshaEvents(days, START_YEAR, END_YEAR);
+  const ganeshaFestivalDates = new Set(ganeshaAnnual.map((e) => e.date));
+  const ganeshaEvents = [...ganeshaAnnual, ...generateMonthlyChaturthiEvents(days, ganeshaFestivalDates)].sort((a, b) =>
+    a.date.localeCompare(b.date)
+  );
+  writeDataset('ganesha', ganeshaEvents);
+
+  // Ayyappan - both events are solar-month transitions, not tithi-scoped
+  // per year, so there's no separate "annual" vs "monthly" split here.
+  const ayyappanEvents = generateAyyappanEvents(days);
+  writeDataset('ayyappan', ayyappanEvents);
+
+  // General (not deity-specific): Amavasai & Pournami, every lunar month -
+  // shown on Home regardless of which deities someone follows.
+  const generalEvents = generateMonthlyAmavasaiPournamiEvents(days).sort((a, b) => a.date.localeCompare(b.date));
+  writeDataset('general', generalEvents);
+
+  const total =
+    muruganEvents.length +
+    vishnuEvents.length +
+    shivaEvents.length +
+    durgaEvents.length +
+    ganeshaEvents.length +
+    ayyappanEvents.length +
+    generalEvents.length;
+  console.log(`Generated ${total} events across 6 deities + general lunar days.`);
 }
 
 main();

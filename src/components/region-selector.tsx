@@ -4,12 +4,27 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { useRegion } from '@/contexts/region-context';
 import { Spacing } from '@/constants/theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { AUTO_REGION_ID, REGIONS, resolveRegionTimeZone } from '@/lib/regions';
 
-export function RegionSelector() {
-  const { regionId, setRegionId } = useRegion();
+// Controlled, not tied to a persisted "home" region itself - on Home, this
+// changes the actual home region (via useRegion), but on the event detail
+// screen it's a one-off "what would this look like in Germany?" peek that
+// doesn't touch that home setting - see the `sheetTitle` passed at each call
+// site, which is the only thing that differs between the two.
+export function RegionSelector({
+  regionId,
+  onChange,
+  label,
+  sheetTitle,
+}: {
+  regionId: string;
+  onChange: (id: string) => void;
+  label?: string;
+  sheetTitle?: string;
+}) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const current = resolveRegionTimeZone(regionId);
 
@@ -18,7 +33,7 @@ export function RegionSelector() {
       <Pressable onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
         <ThemedView type="backgroundElement" style={styles.trigger}>
           <ThemedText type="small" themeColor="textSecondary">
-            Region
+            {label ?? t('home.region')}
           </ThemedText>
           <ThemedText type="smallBold">{current.label}</ThemedText>
         </ThemedView>
@@ -30,7 +45,7 @@ export function RegionSelector() {
             <ThemedView type="background" style={styles.sheet}>
               <SafeAreaView edges={['bottom']}>
                 <ThemedText type="smallBold" style={styles.sheetTitle}>
-                  Select your region
+                  {sheetTitle ?? t('region.chooseHome')}
                 </ThemedText>
                 <FlatList
                   data={[{ id: AUTO_REGION_ID, label: resolveRegionTimeZone(AUTO_REGION_ID).label }, ...REGIONS]}
@@ -41,7 +56,7 @@ export function RegionSelector() {
                     return (
                       <Pressable
                         onPress={() => {
-                          setRegionId(item.id);
+                          onChange(item.id);
                           setOpen(false);
                         }}>
                         <ThemedView

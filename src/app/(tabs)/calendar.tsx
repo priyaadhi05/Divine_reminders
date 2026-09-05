@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Platform, Pressable, SectionList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,25 +9,42 @@ import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import { CATEGORY_LABELS, CURRENT_YEAR, CURRENT_YEAR_MONTH, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 
-const FILTERS: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
-  { key: 'all', label: 'All', icon: '📿', colorKey: 'primary' },
-  { key: 'festival', label: CATEGORY_LABELS.festival, ...CATEGORY_STYLE.festival },
-  { key: 'vratham', label: CATEGORY_LABELS.vratham, ...CATEGORY_STYLE.vratham },
-  { key: 'monthly-sashti', label: CATEGORY_LABELS['monthly-sashti'], ...CATEGORY_STYLE['monthly-sashti'] },
-  { key: 'monthly-krithigai', label: CATEGORY_LABELS['monthly-krithigai'], ...CATEGORY_STYLE['monthly-krithigai'] },
-  { key: 'theipirai-sashti', label: CATEGORY_LABELS['theipirai-sashti'], ...CATEGORY_STYLE['theipirai-sashti'] },
-  { key: 'ekadashi', label: CATEGORY_LABELS.ekadashi, ...CATEGORY_STYLE.ekadashi },
-  { key: 'pradosham', label: CATEGORY_LABELS.pradosham, ...CATEGORY_STYLE.pradosham },
-  { key: 'monthly-shivaratri', label: CATEGORY_LABELS['monthly-shivaratri'], ...CATEGORY_STYLE['monthly-shivaratri'] },
-  { key: 'monthly-durgashtami', label: CATEGORY_LABELS['monthly-durgashtami'], ...CATEGORY_STYLE['monthly-durgashtami'] },
+// Categories only - labels are resolved per-render via categoryLabel() so
+// they follow the selected language.
+const FILTER_CATEGORIES: EventCategory[] = [
+  'festival',
+  'vratham',
+  'monthly-sashti',
+  'monthly-krithigai',
+  'theipirai-sashti',
+  'ekadashi',
+  'pradosham',
+  'monthly-shivaratri',
+  'monthly-durgashtami',
+  'pournami',
+  'amavasai',
 ];
 
 export default function CalendarScreen() {
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
-  const [showAllYears, setShowAllYears] = useState(false);
+  // One more year at a time rather than jumping straight to all 10 -
+  // starts at just the current year, same as before.
+  const [visibleYearCount, setVisibleYearCount] = useState(1);
+  useEffect(() => setVisibleYearCount(1), [filter]);
   const theme = useTheme();
+  const { t, categoryLabel } = useTranslation();
+
+  const filters: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
+    { key: 'all', label: t('common.all'), icon: '📿', colorKey: 'primary' },
+    ...FILTER_CATEGORIES.map((key) => ({
+      key,
+      label: categoryLabel(key, CATEGORY_LABELS[key]),
+      ...CATEGORY_STYLE[key],
+    })),
+  ];
 
   const allGroups = useMemo(() => {
     const events = filter === 'all' ? getAllEvents() : getAllEvents().filter((e) => e.category === filter);
@@ -35,14 +52,16 @@ export default function CalendarScreen() {
   }, [filter]);
 
   // Only the current year's upcoming months by default - ten years of every
-  // deity's events on one page is overwhelming. Past months and other years
-  // stay a tap away via "Show all years".
-  const visibleGroups = showAllYears
-    ? allGroups
-    : allGroups.filter((g) => g.key.startsWith(String(CURRENT_YEAR)) && g.key >= CURRENT_YEAR_MONTH);
+  // deity's events on one page is overwhelming. "Show more" reveals one
+  // additional year at a time rather than jumping straight to all of them.
+  const upcomingGroups = useMemo(() => allGroups.filter((g) => g.key >= CURRENT_YEAR_MONTH), [allGroups]);
+  const years = useMemo(() => Array.from(new Set(upcomingGroups.map((g) => g.key.slice(0, 4)))), [upcomingGroups]);
+  const visibleYears = new Set(years.slice(0, visibleYearCount));
+  const visibleGroups = upcomingGroups.filter((g) => visibleYears.has(g.key.slice(0, 4)));
 
   const sections = visibleGroups.map((group) => ({ title: group.label, data: group.events }));
-  const hiddenCount = allGroups.length - visibleGroups.length;
+  const hasMoreYears = visibleYearCount < years.length;
+  const isExpanded = visibleYearCount > 1;
 
   return (
     <ThemedView style={styles.container}>
@@ -55,13 +74,13 @@ export default function CalendarScreen() {
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedText type="title" style={styles.title} themeColor="primary">
-                Calendar
+                {t('calendar.title')}
               </ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                All events across every deity, 2026–2035 · festivals, vrathams &amp; monthly observances
+                {t('calendar.subtitle')}
               </ThemedText>
               <ThemedView style={styles.filterRow}>
-                {FILTERS.map((f) => {
+                {filters.map((f) => {
                   const selected = filter === f.key;
                   const chipColor = theme[f.colorKey];
                   return (
@@ -83,14 +102,6 @@ export default function CalendarScreen() {
                   );
                 })}
               </ThemedView>
-
-              {hiddenCount > 0 || showAllYears ? (
-                <Pressable onPress={() => setShowAllYears((v) => !v)} style={styles.yearToggle}>
-                  <ThemedText type="linkPrimary">
-                    {showAllYears ? `← Show ${CURRENT_YEAR} only` : `Show all years (2026–2035) →`}
-                  </ThemedText>
-                </Pressable>
-              ) : null}
             </ThemedView>
           }
           renderSectionHeader={({ section }) => (
@@ -103,6 +114,19 @@ export default function CalendarScreen() {
           renderItem={({ item }) => <EventCard event={item} />}
           ItemSeparatorComponent={() => <ThemedView style={styles.separator} />}
           SectionSeparatorComponent={() => <ThemedView style={styles.sectionSeparator} />}
+          // At the end of what's already loaded, not pinned in the header -
+          // see the same fix on the deity screen for why.
+          ListFooterComponent={
+            hasMoreYears ? (
+              <Pressable onPress={() => setVisibleYearCount((c) => c + 1)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showMore')}</ThemedText>
+              </Pressable>
+            ) : isExpanded ? (
+              <Pressable onPress={() => setVisibleYearCount(1)} style={styles.yearToggle}>
+                <ThemedText type="linkPrimary">{t('deity.showCurrentYearOnly', { year: CURRENT_YEAR })}</ThemedText>
+              </Pressable>
+            ) : null
+          }
         />
         {Platform.OS === 'web' && <WebBadge />}
       </SafeAreaView>
@@ -155,6 +179,7 @@ const styles = StyleSheet.create({
   },
   yearToggle: {
     marginTop: Spacing.three,
+    alignItems: 'center',
   },
   sectionHeader: {
     paddingVertical: Spacing.two,
