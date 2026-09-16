@@ -83,7 +83,6 @@ export default function DeityScreen() {
             <ThemedView style={styles.header}>
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
                 <ThemedText style={styles.heroSymbol}>{deity.symbol}</ThemedText>
-                <ThemedText style={[styles.heroTamil, { color: theme.primaryText }]}>{deity.tamilName}</ThemedText>
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
                   {localizedName}
                 </ThemedText>
@@ -226,11 +225,6 @@ const styles = StyleSheet.create({
   },
   heroSymbol: {
     fontSize: 36,
-  },
-  heroTamil: {
-    fontSize: 22,
-    fontWeight: '700',
-    opacity: 0.9,
   },
   heroTitle: {
     fontSize: 34,

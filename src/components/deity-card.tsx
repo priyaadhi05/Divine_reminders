@@ -29,9 +29,6 @@ export function DeityCard({ deity, accentColor }: { deity: Deity; accentColor: T
           <ThemedText type="subtitle" style={styles.name}>
             {deityName(deity.id, deity.name)}
           </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {deity.tamilName}
-          </ThemedText>
           {next && (
             <ThemedText type="small" style={[styles.nextLine, { color: accent }]} numberOfLines={1}>
               {t('deity.nextLabel')}: {next.name} · {formatEventDate(next.date).split(',').slice(0, 2).join(',')}

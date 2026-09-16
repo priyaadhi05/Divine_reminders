@@ -28,7 +28,7 @@ type Step = 'language' | 'location' | 'deities';
 
 export default function OnboardingScreen() {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, deityName } = useTranslation();
   const { languageId, setLanguageId } = useLanguage();
   const { regionId, setRegionId } = useRegion();
   const { step: initialStep } = useLocalSearchParams<{ step?: Step }>();
@@ -181,10 +181,7 @@ export default function OnboardingScreen() {
                         type="backgroundElement"
                         style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
                         <ThemedText style={styles.cardSymbol}>{deity.symbol}</ThemedText>
-                        <ThemedText type="smallBold">{deity.name}</ThemedText>
-                        <ThemedText type="small" themeColor="textSecondary">
-                          {deity.tamilName}
-                        </ThemedText>
+                        <ThemedText type="smallBold">{deityName(deity.id, deity.name)}</ThemedText>
                         <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
                       </ThemedView>
                     </Pressable>
