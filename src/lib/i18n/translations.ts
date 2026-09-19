@@ -99,6 +99,8 @@ const EN = {
   'share.videoReady': 'Video ready to share',
   'share.cardReady': 'Our card - ready to share',
   'share.useOwnInstead': 'Use my own photo or video instead',
+  'share.selectedCount': '{{count}} selected',
+  'share.noneSelected': 'None selected - WhatsApp gets just the text',
 
   'calendar.title': 'Calendar',
   'calendar.subtitle': 'All events across every deity · festivals, vrathams & monthly observances',
@@ -199,6 +201,8 @@ const TA: Record<TranslationKey, string> = {
   'share.videoReady': 'வீடியோ பகிரத் தயார்',
   'share.cardReady': 'எங்கள் அட்டை - பகிரத் தயார்',
   'share.useOwnInstead': 'எனது சொந்த புகைப்படம்/வீடியோவைப் பயன்படுத்து',
+  'share.selectedCount': '{{count}} தேர்ந்தெடுக்கப்பட்டது',
+  'share.noneSelected': 'எதுவும் தேர்ந்தெடுக்கவில்லை - வாட்ஸ்அப்பில் உரை மட்டும் செல்லும்',
 
   'calendar.title': 'நாட்காட்டி',
   'calendar.subtitle': 'ஒவ்வொரு தெய்வத்தின் அனைத்து நிகழ்வுகளும் · திருவிழாக்கள், விரதங்கள் & மாதாந்திர நாட்கள்',
@@ -299,6 +303,8 @@ const TE: Record<TranslationKey, string> = {
   'share.videoReady': 'వీడియో పంచుకోవడానికి సిద్ధంగా ఉంది',
   'share.cardReady': 'మా కార్డ్ - పంచుకోవడానికి సిద్ధం',
   'share.useOwnInstead': 'నా సొంత ఫోటో లేదా వీడియోను ఉపయోగించు',
+  'share.selectedCount': '{{count}} ఎంచుకున్నారు',
+  'share.noneSelected': 'ఏదీ ఎంచుకోలేదు - వాట్సాప్‌కు టెక్స్ట్ మాత్రమే వెళ్తుంది',
 
   'calendar.title': 'క్యాలెండర్',
   'calendar.subtitle': 'ప్రతి దేవత యొక్క అన్ని వేడుకలు · పండుగలు, వ్రతాలు & నెలవారీ దినాలు',
@@ -399,6 +405,8 @@ const KN: Record<TranslationKey, string> = {
   'share.videoReady': 'ವೀಡಿಯೊ ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧವಾಗಿದೆ',
   'share.cardReady': 'ನಮ್ಮ ಕಾರ್ಡ್ - ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧ',
   'share.useOwnInstead': 'ನನ್ನ ಸ್ವಂತ ಫೋಟೋ ಅಥವಾ ವೀಡಿಯೊ ಬಳಸಿ',
+  'share.selectedCount': '{{count}} ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ',
+  'share.noneSelected': 'ಯಾವುದೂ ಆಯ್ಕೆಯಾಗಿಲ್ಲ - ವಾಟ್ಸಾಪ್‌ಗೆ ಪಠ್ಯ ಮಾತ್ರ ಹೋಗುತ್ತದೆ',
 
   'calendar.title': 'ಕ್ಯಾಲೆಂಡರ್',
   'calendar.subtitle': 'ಪ್ರತಿ ದೇವರ ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳು · ಹಬ್ಬಗಳು, ವ್ರತಗಳು & ಮಾಸಿಕ ದಿನಗಳು',
@@ -499,6 +507,8 @@ const HI: Record<TranslationKey, string> = {
   'share.videoReady': 'वीडियो साझा करने के लिए तैयार है',
   'share.cardReady': 'हमारा कार्ड - साझा करने के लिए तैयार',
   'share.useOwnInstead': 'मेरी अपनी फोटो या वीडियो का उपयोग करें',
+  'share.selectedCount': '{{count}} चुनी गईं',
+  'share.noneSelected': 'कुछ नहीं चुना - व्हाट्सऐप को सिर्फ़ टेक्स्ट जाएगा',
 
   'calendar.title': 'कैलेंडर',
   'calendar.subtitle': 'हर देवता के सभी आयोजन · त्योहार, व्रत और मासिक दिन',

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Image, Linking, Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
+import { Alert, Image, Linking, Platform, Pressable, Share, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
 
@@ -12,24 +12,42 @@ import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media';
 
-// Quick-share row for a single event, shown once someone taps "Share with
-// family" (see src/app/event/[id].tsx). Three tiers:
-//  - WhatsApp: opens directly with the message pre-filled via its own URL
-//    scheme - the one platform of the three that actually supports this.
-//  - Instagram / Facebook: neither accepts pre-filled text through a URL
-//    scheme, so these route through the OS share sheet instead, with
-//    whatever image/video is active below (the bundled card by default, or
-//    a photo/video someone attached) - Instagram in particular needs an
-//    image to have anything to share at all.
-//  - "More": the plain OS share sheet, same as this button did before.
-// Below that: a strip of this deity's own pictures (lib/deity-photos.ts, plus
-// the branded card from lib/deity-cards.ts as a last option) to pick from -
-// tapping one makes it the image every button above shares. Someone can also
-// add their own photo or video, which then shows first in the strip.
+// Quick-share section for a single event, shown once someone taps "Share with
+// family" (see src/app/event/[id].tsx). Top to bottom:
+//  1. This deity's pictures (lib/deity-photos.ts, plus the branded card from
+//     lib/deity-cards.ts) as a grid - tap any number of them to select /
+//     deselect. Someone's own photo or video can be added and shows first.
+//  2. WhatsApp / Instagram / Facebook / More, which act on the selection.
+// What each button can actually do is limited by the OS: neither Linking nor
+// expo-sharing can open a specific app *with* an attachment, and expo-sharing
+// only attaches one file per share sheet. So:
+//  - WhatsApp with nothing selected opens WhatsApp directly with the message
+//    text pre-filled (its own URL scheme - the only direct route there is).
+//  - Every button with pictures selected opens the OS share sheet, once per
+//    picture (asking before each next one), and the person picks the app.
 interface SharePanelProps {
   deityId: string;
   message: string;
 }
+
+function isDismissal(error: unknown): boolean {
+  const e = error as { name?: string; message?: string };
+  const text = `${e?.name ?? ''} ${e?.message ?? ''}`.toLowerCase();
+  return text.includes('abort') || text.includes('cancel') || text.includes('dismiss');
+}
+
+const askNext = (done: number, total: number) =>
+  new Promise<boolean>((resolve) =>
+    Alert.alert(
+      `Picture ${done} of ${total} shared`,
+      'Send the next one now?',
+      [
+        { text: 'Stop', style: 'cancel', onPress: () => resolve(false) },
+        { text: `Next (${done + 1} of ${total})`, onPress: () => resolve(true) },
+      ],
+      { cancelable: false, onDismiss: () => resolve(false) }
+    )
+  );
 
 export function SharePanel({ deityId, message }: SharePanelProps) {
   const theme = useTheme();
@@ -37,12 +55,13 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   const [customMedia, setCustomMedia] = useState<ShareMedia | null>(null);
   const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [cardUri, setCardUri] = useState<string | null>(null);
-  const [selectedUri, setSelectedUri] = useState<string | null>(null);
+  // null = untouched, which means "just the first picture"
+  const [selectedUris, setSelectedUris] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    setSelectedUri(null);
+    setSelectedUris(null);
     getShareMedia(deityId).then((m) => !cancelled && setCustomMedia(m));
     getDeityPhotoUris(deityId)
       .then((uris) => !cancelled && setPhotoUris(uris))
@@ -61,65 +80,76 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     ...photoUris.map((uri): ShareMedia => ({ uri, type: 'image' })),
     ...(cardUri ? [{ uri: cardUri, type: 'image' } as ShareMedia] : []),
   ];
-  const media: ShareMedia | null = options.find((o) => o.uri === selectedUri) ?? options[0] ?? null;
-  const isCard = !!media && media.uri === cardUri;
+  const selection = selectedUris ?? (options[0] ? [options[0].uri] : []);
+  const chosen = options.filter((o) => selection.includes(o.uri));
 
-  // Neither expo-sharing nor Linking can force-open one specific app with an
-  // attachment - only the OS share sheet can attach a file, and only the
-  // person can pick which app receives it there. dialogTitle at least hints
-  // at that (shown on Android/web; iOS has no equivalent).
-  const shareViaSheet = async (dialogTitle?: string) => {
+  const toggle = (uri: string) =>
+    setSelectedUris(selection.includes(uri) ? selection.filter((u) => u !== uri) : [...selection, uri]);
+
+  const shareTextViaSheet = async () => {
     try {
-      if (media) {
-        if (!(await Sharing.isAvailableAsync())) {
-          Alert.alert(
-            'Sharing a photo isn’t supported here',
-            'This browser/device can’t attach a photo or video to a share. Open the app on your phone to share the image, or continue with text only.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Share text only', onPress: () => Share.share({ message }) },
-            ]
-          );
-          return;
-        }
-        await Sharing.shareAsync(media.uri, {
-          mimeType: media.type === 'video' ? 'video/*' : 'image/*',
-          UTI: media.type === 'video' ? 'public.movie' : 'public.image',
-          dialogTitle,
-        });
-      } else {
-        await Share.share({ message });
-      }
+      await Share.share({ message });
     } catch {
       // user dismissed the share sheet - nothing to do
     }
   };
 
-  const shareToWhatsApp = async () => {
-    // A photo/video can't ride along on WhatsApp's URL scheme - fall back to
-    // the share sheet (with the media attached) and let WhatsApp be picked there.
-    if (media) return shareViaSheet('Choose WhatsApp to share');
-    const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
-    try {
-      if (await Linking.canOpenURL(url)) {
-        await Linking.openURL(url);
-        return;
-      }
-    } catch {
-      // fall through to the share sheet below
-    }
-    await shareViaSheet();
-  };
-
-  const shareToInstagram = async () => {
-    if (!media) {
-      Alert.alert('Add a photo or video first', 'Instagram needs an image or video to share - add one below, then try again.');
+  // The OS share sheet takes one file at a time, so several pictures go out
+  // one after another, asking before each next one.
+  const shareViaSheet = async (items: ShareMedia[], dialogTitle?: string) => {
+    if (!(await Sharing.isAvailableAsync())) {
+      Alert.alert(
+        'Sharing a photo isn’t supported here',
+        'This browser/device can’t attach a photo or video to a share. Open the app on your phone to share the image, or continue with text only.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Share text only', onPress: shareTextViaSheet },
+        ]
+      );
       return;
     }
-    await shareViaSheet('Choose Instagram to share');
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      try {
+        await Sharing.shareAsync(item.uri, {
+          mimeType: item.type === 'video' ? 'video/*' : 'image/*',
+          UTI: item.type === 'video' ? 'public.movie' : 'public.image',
+          dialogTitle,
+        });
+      } catch (error) {
+        if (!isDismissal(error)) {
+          Alert.alert('Couldn’t open the share sheet', error instanceof Error ? error.message : String(error));
+        }
+        return;
+      }
+      if (i < items.length - 1 && !(await askNext(i + 1, items.length))) return;
+    }
   };
 
-  const shareToFacebook = () => shareViaSheet('Choose Facebook to share');
+  const shareToWhatsApp = async () => {
+    if (chosen.length > 0) return shareViaSheet(chosen, 'Choose WhatsApp to share');
+    // No picture selected: WhatsApp's own URL scheme opens it directly with
+    // the message pre-filled (no canOpenURL - that needs the scheme declared
+    // in the native config; openURL just fails if WhatsApp isn't installed).
+    try {
+      await Linking.openURL(`whatsapp://send?text=${encodeURIComponent(message)}`);
+    } catch {
+      await shareTextViaSheet();
+    }
+  };
+
+  const needPicture = (app: string) =>
+    Alert.alert('Select a picture first', `${app} needs a picture or video to share - tap one above, then try again.`);
+
+  const shareToInstagram = async () => {
+    if (chosen.length === 0) return needPicture('Instagram');
+    await shareViaSheet(chosen, 'Choose Instagram to share');
+  };
+
+  const shareToFacebook = async () =>
+    chosen.length > 0 ? shareViaSheet(chosen, 'Choose Facebook to share') : shareTextViaSheet();
+
+  const shareMore = async () => (chosen.length > 0 ? shareViaSheet(chosen) : shareTextViaSheet());
 
   const pickMedia = async () => {
     if (busy) return;
@@ -140,7 +170,7 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       const next: ShareMedia = { uri: asset.uri, type: asset.type === 'video' ? 'video' : 'image' };
       await setShareMedia(deityId, next);
       setCustomMedia(next);
-      setSelectedUri(next.uri);
+      setSelectedUris([...selection.filter((u) => u !== customMedia?.uri), next.uri]);
     } finally {
       setBusy(false);
     }
@@ -150,42 +180,40 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   // nothing - there's always something reasonable to share.
   const removeMedia = async () => {
     await setShareMedia(deityId, null);
+    setSelectedUris(selection.filter((u) => u !== customMedia?.uri));
     setCustomMedia(null);
-    setSelectedUri(null);
   };
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedView style={styles.platformRow}>
-        <PlatformButton label={t('share.whatsapp')} icon="💬" onPress={shareToWhatsApp} />
-        <PlatformButton label={t('share.instagram')} icon="📸" onPress={shareToInstagram} />
-        <PlatformButton label={t('share.facebook')} icon="📘" onPress={shareToFacebook} />
-        <PlatformButton label={t('share.more')} icon="↗️" onPress={() => shareViaSheet()} />
-      </ThemedView>
-
       <ThemedView type="backgroundElement" style={styles.mediaCard}>
-        {media ? (
+        {options.length > 0 ? (
           <ThemedView type="backgroundElement" style={styles.mediaCardBody}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
+            <ThemedView type="backgroundElement" style={styles.grid}>
               {options.map((option) => {
-                const selected = option.uri === media.uri;
+                const selected = selection.includes(option.uri);
                 return (
                   <Pressable
                     key={option.uri}
-                    onPress={() => setSelectedUri(option.uri)}
+                    onPress={() => toggle(option.uri)}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}>
                     <Image
                       source={{ uri: option.uri }}
                       style={[styles.thumbnail, { borderColor: selected ? theme.primary : 'transparent' }]}
                     />
+                    {selected && (
+                      <ThemedView style={[styles.check, { backgroundColor: theme.primary }]}>
+                        <ThemedText style={[styles.checkMark, { color: theme.primaryText }]}>✓</ThemedText>
+                      </ThemedView>
+                    )}
                     {option.type === 'video' && <ThemedText style={styles.playBadge}>▶</ThemedText>}
                   </Pressable>
                 );
               })}
-            </ScrollView>
+            </ThemedView>
             <ThemedText type="small" themeColor="textSecondary">
-              {isCard ? t('share.cardReady') : media.type === 'video' ? t('share.videoReady') : t('share.photoReady')}
+              {chosen.length > 0 ? t('share.selectedCount', { count: chosen.length }) : t('share.noneSelected')}
             </ThemedText>
             <ThemedView type="backgroundElement" style={styles.mediaActions}>
               <Pressable onPress={pickMedia} disabled={busy}>
@@ -208,6 +236,13 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
             </ThemedText>
           </Pressable>
         )}
+      </ThemedView>
+
+      <ThemedView style={styles.platformRow}>
+        <PlatformButton label={t('share.whatsapp')} icon="💬" onPress={shareToWhatsApp} />
+        <PlatformButton label={t('share.instagram')} icon="📸" onPress={shareToInstagram} />
+        <PlatformButton label={t('share.facebook')} icon="📘" onPress={shareToFacebook} />
+        <PlatformButton label={t('share.more')} icon="↗️" onPress={shareMore} />
       </ThemedView>
     </ThemedView>
   );
@@ -253,7 +288,9 @@ const styles = StyleSheet.create({
   mediaCardBody: {
     gap: Spacing.two,
   },
-  strip: {
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.two,
   },
   thumbnail: {
@@ -261,6 +298,21 @@ const styles = StyleSheet.create({
     height: 76,
     borderRadius: Spacing.two,
     borderWidth: 2.5,
+  },
+  check: {
+    position: 'absolute',
+    top: Spacing.one,
+    right: Spacing.one,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkMark: {
+    fontSize: 13,
+    lineHeight: 16,
+    fontWeight: '700',
   },
   playBadge: {
     position: 'absolute',
