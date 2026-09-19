@@ -2,8 +2,8 @@ import { Asset } from 'expo-asset';
 
 // Real deity images for each deity's "Share with family" section (see
 // components/share-panel.tsx) - bundled JPEGs sized for messaging apps
-// (1080px or less on the long side). Deities without an entry here (Vishnu,
-// Shiva, Ayyappan) just share the generated card from lib/deity-cards.ts.
+// (1080px or less on the long side). A deity with no entry here would just
+// share the generated card from lib/deity-cards.ts.
 const DEITY_PHOTO_ASSETS: Record<string, number[]> = {
   murugan: [
     require('@/assets/deity-photos/murugan-1.jpg'),
@@ -15,12 +15,31 @@ const DEITY_PHOTO_ASSETS: Record<string, number[]> = {
     require('@/assets/deity-photos/ganesha-1.jpg'),
     require('@/assets/deity-photos/ganesha-2.jpg'),
     require('@/assets/deity-photos/ganesha-3.jpg'),
+    require('@/assets/deity-photos/ganesha-4.jpg'),
   ],
   durga: [
     require('@/assets/deity-photos/durga-1.jpg'),
     require('@/assets/deity-photos/durga-2.jpg'),
     require('@/assets/deity-photos/durga-3.jpg'),
     require('@/assets/deity-photos/durga-4.jpg'),
+  ],
+  vishnu: [
+    require('@/assets/deity-photos/vishnu-1.jpg'),
+    require('@/assets/deity-photos/vishnu-2.jpg'),
+    require('@/assets/deity-photos/vishnu-3.jpg'),
+    require('@/assets/deity-photos/vishnu-4.jpg'),
+  ],
+  shiva: [
+    require('@/assets/deity-photos/shiva-1.jpg'),
+    require('@/assets/deity-photos/shiva-2.jpg'),
+    require('@/assets/deity-photos/shiva-3.jpg'),
+    require('@/assets/deity-photos/shiva-4.jpg'),
+  ],
+  ayyappan: [
+    require('@/assets/deity-photos/ayyappan-1.jpg'),
+    require('@/assets/deity-photos/ayyappan-2.jpg'),
+    require('@/assets/deity-photos/ayyappan-3.jpg'),
+    require('@/assets/deity-photos/ayyappan-4.jpg'),
   ],
 };
 
