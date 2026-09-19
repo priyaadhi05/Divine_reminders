@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Image, Linking, Platform, Pressable, Share, StyleSheet } from 'react-native';
+import { Alert, Image, Linking, Platform, Pressable, ScrollView, Share, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
 
@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { getDeityCardUri, hasDeityCard } from '@/lib/deity-cards';
+import { getDeityPhotoUris } from '@/lib/deity-photos';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media';
@@ -21,9 +22,10 @@ import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media
 //    a photo/video someone attached) - Instagram in particular needs an
 //    image to have anything to share at all.
 //  - "More": the plain OS share sheet, same as this button did before.
-// Below that: this app has no real deity photography of its own (see
-// lib/deity-cards.ts for why), so it defaults to a plain branded card and
-// lets someone swap in their own photo or video instead if they'd rather.
+// Below that: a strip of this deity's own pictures (lib/deity-photos.ts, plus
+// the branded card from lib/deity-cards.ts as a last option) to pick from -
+// tapping one makes it the image every button above shares. Someone can also
+// add their own photo or video, which then shows first in the strip.
 interface SharePanelProps {
   deityId: string;
   message: string;
@@ -33,17 +35,34 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   const theme = useTheme();
   const { t } = useTranslation();
   const [customMedia, setCustomMedia] = useState<ShareMedia | null>(null);
+  const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [cardUri, setCardUri] = useState<string | null>(null);
+  const [selectedUri, setSelectedUri] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    getShareMedia(deityId).then(setCustomMedia);
-    if (hasDeityCard(deityId)) getDeityCardUri(deityId).then(setCardUri);
+    let cancelled = false;
+    setSelectedUri(null);
+    getShareMedia(deityId).then((m) => !cancelled && setCustomMedia(m));
+    getDeityPhotoUris(deityId)
+      .then((uris) => !cancelled && setPhotoUris(uris))
+      .catch(() => !cancelled && setPhotoUris([]));
+    if (hasDeityCard(deityId)) getDeityCardUri(deityId).then((uri) => !cancelled && setCardUri(uri));
     else setCardUri(null);
+    return () => {
+      cancelled = true;
+    };
   }, [deityId]);
 
-  const media: ShareMedia | null = customMedia ?? (cardUri ? { uri: cardUri, type: 'image' } : null);
-  const isDefaultCard = !customMedia && !!cardUri;
+  // Everything that can be shared, in the order it's shown: their own
+  // photo/video first, then this deity's pictures, then the branded card.
+  const options: ShareMedia[] = [
+    ...(customMedia ? [customMedia] : []),
+    ...photoUris.map((uri): ShareMedia => ({ uri, type: 'image' })),
+    ...(cardUri ? [{ uri: cardUri, type: 'image' } as ShareMedia] : []),
+  ];
+  const media: ShareMedia | null = options.find((o) => o.uri === selectedUri) ?? options[0] ?? null;
+  const isCard = !!media && media.uri === cardUri;
 
   // Neither expo-sharing nor Linking can force-open one specific app with an
   // attachment - only the OS share sheet can attach a file, and only the
@@ -121,16 +140,18 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       const next: ShareMedia = { uri: asset.uri, type: asset.type === 'video' ? 'video' : 'image' };
       await setShareMedia(deityId, next);
       setCustomMedia(next);
+      setSelectedUri(next.uri);
     } finally {
       setBusy(false);
     }
   };
 
-  // Reverts to the bundled card (if this deity has one) rather than to
+  // Falls back to this deity's own pictures (or the card) rather than to
   // nothing - there's always something reasonable to share.
   const removeMedia = async () => {
     await setShareMedia(deityId, null);
     setCustomMedia(null);
+    setSelectedUri(null);
   };
 
   return (
@@ -144,24 +165,39 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
 
       <ThemedView type="backgroundElement" style={styles.mediaCard}>
         {media ? (
-          <ThemedView type="backgroundElement" style={styles.mediaRow}>
-            <Image source={{ uri: media.uri }} style={styles.thumbnail} />
-            <ThemedView type="backgroundElement" style={styles.mediaInfo}>
-              <ThemedText type="small" themeColor="textSecondary">
-                {isDefaultCard ? t('share.cardReady') : media.type === 'video' ? t('share.videoReady') : t('share.photoReady')}
-              </ThemedText>
-              <ThemedView type="backgroundElement" style={styles.mediaActions}>
-                <Pressable onPress={pickMedia} disabled={busy}>
-                  <ThemedText type="linkPrimary">{isDefaultCard ? t('share.useOwnInstead') : t('common.change')}</ThemedText>
-                </Pressable>
-                {!isDefaultCard && (
-                  <Pressable onPress={removeMedia} disabled={busy}>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {t('common.remove')}
-                    </ThemedText>
+          <ThemedView type="backgroundElement" style={styles.mediaCardBody}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.strip}>
+              {options.map((option) => {
+                const selected = option.uri === media.uri;
+                return (
+                  <Pressable
+                    key={option.uri}
+                    onPress={() => setSelectedUri(option.uri)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}>
+                    <Image
+                      source={{ uri: option.uri }}
+                      style={[styles.thumbnail, { borderColor: selected ? theme.primary : 'transparent' }]}
+                    />
+                    {option.type === 'video' && <ThemedText style={styles.playBadge}>▶</ThemedText>}
                   </Pressable>
-                )}
-              </ThemedView>
+                );
+              })}
+            </ScrollView>
+            <ThemedText type="small" themeColor="textSecondary">
+              {isCard ? t('share.cardReady') : media.type === 'video' ? t('share.videoReady') : t('share.photoReady')}
+            </ThemedText>
+            <ThemedView type="backgroundElement" style={styles.mediaActions}>
+              <Pressable onPress={pickMedia} disabled={busy}>
+                <ThemedText type="linkPrimary">{customMedia ? t('common.change') : t('share.useOwnInstead')}</ThemedText>
+              </Pressable>
+              {customMedia && (
+                <Pressable onPress={removeMedia} disabled={busy}>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {t('common.remove')}
+                  </ThemedText>
+                </Pressable>
+              )}
             </ThemedView>
           </ThemedView>
         ) : (
@@ -214,19 +250,24 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: Spacing.three,
   },
-  mediaRow: {
-    flexDirection: 'row',
+  mediaCardBody: {
+    gap: Spacing.two,
+  },
+  strip: {
     gap: Spacing.two,
   },
   thumbnail: {
-    width: 56,
-    height: 56,
+    width: 76,
+    height: 76,
     borderRadius: Spacing.two,
+    borderWidth: 2.5,
   },
-  mediaInfo: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: Spacing.one,
+  playBadge: {
+    position: 'absolute',
+    right: Spacing.two,
+    bottom: Spacing.one,
+    color: '#FFFFFF',
+    fontSize: 14,
   },
   mediaActions: {
     flexDirection: 'row',
