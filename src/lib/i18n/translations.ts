@@ -26,7 +26,7 @@ const EN = {
   'onboarding.save': '❤️ Save my deities',
   'onboarding.saving': 'Saving…',
 
-  'home.eyebrow': 'DIVINE CALENDAR',
+  'home.eyebrow': 'DIVINE-REMINDER',
   'home.title': 'Your Sacred Days',
   'home.subtitle': 'Personalized to the deities you follow',
   'home.manageDeities': '❤️ Manage my deities →',
@@ -103,7 +103,7 @@ const EN = {
   'calendar.title': 'Calendar',
   'calendar.subtitle': 'All events across every deity · festivals, vrathams & monthly observances',
 
-  'share.sentWith': '🪔 Sent with Divine Calendar',
+  'share.sentWith': '🪔 Sent with Divine-Reminder',
   'share.getTheApp': 'Get the app: {{url}}',
 } as const;
 
@@ -126,7 +126,7 @@ const TA: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ எனது தெய்வங்களைச் சேமி',
   'onboarding.saving': 'சேமிக்கிறது…',
 
-  'home.eyebrow': 'திவ்ய நாட்காட்டி',
+  'home.eyebrow': 'திவ்ய நினைவூட்டி',
   'home.title': 'உங்கள் புனித நாட்கள்',
   'home.subtitle': 'நீங்கள் பின்பற்றும் தெய்வங்களுக்கு ஏற்ப',
   'home.manageDeities': '❤️ எனது தெய்வங்களை நிர்வகி →',
@@ -203,7 +203,7 @@ const TA: Record<TranslationKey, string> = {
   'calendar.title': 'நாட்காட்டி',
   'calendar.subtitle': 'ஒவ்வொரு தெய்வத்தின் அனைத்து நிகழ்வுகளும் · திருவிழாக்கள், விரதங்கள் & மாதாந்திர நாட்கள்',
 
-  'share.sentWith': '🪔 திவ்ய நாட்காட்டி மூலம் அனுப்பப்பட்டது',
+  'share.sentWith': '🪔 திவ்ய நினைவூட்டி மூலம் அனுப்பப்பட்டது',
   'share.getTheApp': 'ஆப்ஸைப் பெற: {{url}}',
 };
 
@@ -226,7 +226,7 @@ const TE: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ నా దేవతలను భద్రపరచు',
   'onboarding.saving': 'భద్రపరుస్తోంది…',
 
-  'home.eyebrow': 'దివ్య క్యాలెండర్',
+  'home.eyebrow': 'దివ్య రిమైండర్',
   'home.title': 'మీ పవిత్ర దినాలు',
   'home.subtitle': 'మీరు అనుసరించే దేవతలకు అనుగుణంగా',
   'home.manageDeities': '❤️ నా దేవతలను నిర్వహించు →',
@@ -303,7 +303,7 @@ const TE: Record<TranslationKey, string> = {
   'calendar.title': 'క్యాలెండర్',
   'calendar.subtitle': 'ప్రతి దేవత యొక్క అన్ని వేడుకలు · పండుగలు, వ్రతాలు & నెలవారీ దినాలు',
 
-  'share.sentWith': '🪔 దివ్య క్యాలెండర్ ద్వారా పంపబడింది',
+  'share.sentWith': '🪔 దివ్య రిమైండర్ ద్వారా పంపబడింది',
   'share.getTheApp': 'యాప్‌ను పొందండి: {{url}}',
 };
 
@@ -326,7 +326,7 @@ const KN: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ ನನ್ನ ದೇವರುಗಳನ್ನು ಉಳಿಸಿ',
   'onboarding.saving': 'ಉಳಿಸಲಾಗುತ್ತಿದೆ…',
 
-  'home.eyebrow': 'ದಿವ್ಯ ಕ್ಯಾಲೆಂಡರ್',
+  'home.eyebrow': 'ದಿವ್ಯ ರಿಮೈಂಡರ್',
   'home.title': 'ನಿಮ್ಮ ಪವಿತ್ರ ದಿನಗಳು',
   'home.subtitle': 'ನೀವು ಅನುಸರಿಸುವ ದೇವರುಗಳಿಗೆ ಅನುಗುಣವಾಗಿ',
   'home.manageDeities': '❤️ ನನ್ನ ದೇವರುಗಳನ್ನು ನಿರ್ವಹಿಸಿ →',
@@ -403,7 +403,7 @@ const KN: Record<TranslationKey, string> = {
   'calendar.title': 'ಕ್ಯಾಲೆಂಡರ್',
   'calendar.subtitle': 'ಪ್ರತಿ ದೇವರ ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳು · ಹಬ್ಬಗಳು, ವ್ರತಗಳು & ಮಾಸಿಕ ದಿನಗಳು',
 
-  'share.sentWith': '🪔 ದಿವ್ಯ ಕ್ಯಾಲೆಂಡರ್ ಮೂಲಕ ಕಳುಹಿಸಲಾಗಿದೆ',
+  'share.sentWith': '🪔 ದಿವ್ಯ ರಿಮೈಂಡರ್ ಮೂಲಕ ಕಳುಹಿಸಲಾಗಿದೆ',
   'share.getTheApp': 'ಆ್ಯಪ್ ಪಡೆಯಿರಿ: {{url}}',
 };
 
@@ -426,7 +426,7 @@ const HI: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ मेरे देवता सहेजें',
   'onboarding.saving': 'सहेजा जा रहा है…',
 
-  'home.eyebrow': 'दिव्य कैलेंडर',
+  'home.eyebrow': 'दिव्य रिमाइंडर',
   'home.title': 'आपके पवित्र दिन',
   'home.subtitle': 'आपके अनुसरण किए गए देवताओं के अनुसार',
   'home.manageDeities': '❤️ मेरे देवता प्रबंधित करें →',
@@ -503,7 +503,7 @@ const HI: Record<TranslationKey, string> = {
   'calendar.title': 'कैलेंडर',
   'calendar.subtitle': 'हर देवता के सभी आयोजन · त्योहार, व्रत और मासिक दिन',
 
-  'share.sentWith': '🪔 दिव्य कैलेंडर के साथ भेजा गया',
+  'share.sentWith': '🪔 दिव्य रिमाइंडर के साथ भेजा गया',
   'share.getTheApp': 'ऐप पाएं: {{url}}',
 };
 

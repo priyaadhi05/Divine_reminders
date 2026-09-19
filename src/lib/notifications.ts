@@ -293,7 +293,7 @@ export async function setTopicLeadDays(deityId: string, category: string, days: 
 async function ensureChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-    name: 'Divine Calendar reminders',
+    name: 'Divine-Reminder alerts',
     importance: Notifications.AndroidImportance.DEFAULT,
   });
 }
