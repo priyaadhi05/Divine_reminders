@@ -10,7 +10,7 @@
     "dayBoundary": "Local sunrise (panchangam value prevailing at sunrise defines the calendar day)",
     "note": "Astronomically computed. May occasionally differ by ±1 day from a specific temple's published panchangam near tithi/nakshatra boundary edge cases."
   },
-  "generatedAt": "2026-09-24T20:24:52.423Z",
+  "generatedAt": "2026-09-24T21:14:45.753Z",
   "events": [
     {
       "id": "vishnu-ekadashi-2026-01-14",
