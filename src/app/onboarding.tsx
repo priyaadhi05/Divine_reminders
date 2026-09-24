@@ -248,6 +248,7 @@ const styles = StyleSheet.create({
   },
   cardSymbol: {
     fontSize: 32,
+    lineHeight: 40,
   },
   heart: {
     fontSize: 18,

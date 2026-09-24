@@ -12,11 +12,13 @@ import { generateMonthlyPradoshamEvents, generateMonthlyShivaratriEvents, genera
 import { generateMonthlyDurgashtamiEvents, generateDurgaEvents } from './deities/durga';
 import { generateMonthlyChaturthiEvents, generateGaneshaEvents } from './deities/ganesha';
 import { generateAyyappanEvents } from './deities/ayyappan';
+import { generateHanumanEvents } from './deities/hanuman';
+import { generateLakshmiEvents } from './deities/lakshmi';
 import { generateMonthlyAmavasaiPournamiEvents } from './deities/general';
 import type { BaseDeityEvent } from './deity-utils';
 
 const START_YEAR = 2026;
-const END_YEAR = 2035;
+const END_YEAR = 2045;
 
 const ASSUMPTIONS = {
   location: 'Chennai, Tamil Nadu (13.0827N, 80.2707E)',
@@ -96,6 +98,16 @@ function main() {
   const ayyappanEvents = generateAyyappanEvents(days);
   writeDataset('ayyappan', ayyappanEvents);
 
+  // Hanuman - a single annual festival, no monthly observance in this model.
+  const hanumanEvents = generateHanumanEvents(days);
+  writeDataset('hanuman', hanumanEvents);
+
+  // Lakshmi - two annual festivals (Varalakshmi Vratham, Diwali); her other
+  // major appearance, Navratri, is generated under Durga since that's one
+  // shared nine-night arc rather than a separate Lakshmi-only event.
+  const lakshmiEvents = generateLakshmiEvents(days, START_YEAR, END_YEAR);
+  writeDataset('lakshmi', lakshmiEvents);
+
   // General (not deity-specific): Amavasai & Pournami, every lunar month -
   // shown on Home regardless of which deities someone follows.
   const generalEvents = generateMonthlyAmavasaiPournamiEvents(days).sort((a, b) => a.date.localeCompare(b.date));
@@ -108,8 +120,10 @@ function main() {
     durgaEvents.length +
     ganeshaEvents.length +
     ayyappanEvents.length +
+    hanumanEvents.length +
+    lakshmiEvents.length +
     generalEvents.length;
-  console.log(`Generated ${total} events across 6 deities + general lunar days.`);
+  console.log(`Generated ${total} events across 8 deities + general lunar days.`);
 }
 
 main();

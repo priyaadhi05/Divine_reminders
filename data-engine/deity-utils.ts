@@ -126,6 +126,17 @@ export function subtractDays(dateStr: string, n: number): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
+// Finds the Friday on or before a given date (YYYY-MM-DD) - used for
+// festivals anchored to a weekday near a lunar day rather than the lunar day
+// itself, e.g. Varalakshmi Vratham (the Friday before Aavani's Pournami).
+export function fridayOnOrBefore(dateStr: string): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  const diff = (date.getUTCDay() - 5 + 7) % 7; // Friday = 5
+  date.setUTCDate(date.getUTCDate() - diff);
+  return date.toISOString().slice(0, 10);
+}
+
 // Some rule-derived dates (e.g. N days before/after another event) fall
 // outside the precomputed `days` range - before its start year. Fall back to
 // computing that single day directly rather than approximating its Tamil month.

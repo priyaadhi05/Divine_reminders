@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet } from 'react-native';
+import { Platform, Pressable, StyleSheet, Switch } from 'react-native';
+import { SymbolView } from 'expo-symbols';
 
 import { LeadDaysRow } from '@/components/lead-days-row';
 import { ThemedText } from '@/components/themed-text';
@@ -81,18 +82,32 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
       <Pressable onPress={() => setOpen((v) => !v)} accessibilityRole="button">
         <ThemedView type="backgroundElement" style={[styles.summaryRow, { borderColor: theme.accent }]}>
           <ThemedView type="backgroundElement" style={[styles.bell, deityState !== 'none' && { backgroundColor: theme.accent }]}>
-            <ThemedText>{deityState === 'none' ? '🔕' : '🔔'}</ThemedText>
+            <SymbolView
+              name={{
+                ios: deityState === 'none' ? 'bell.slash.fill' : 'bell.fill',
+                android: deityState === 'none' ? 'notifications_off' : 'notifications_active',
+                web: 'notifications',
+              }}
+              size={15}
+              tintColor={deityState === 'none' ? theme.textSecondary : theme.primaryText}
+            />
           </ThemedView>
           <ThemedText type="smallBold" style={styles.summaryText}>
             {summaryLabel}
             {Platform.OS === 'web' ? t('mascot.mobileOnly') : ''}
           </ThemedText>
-          <ThemedText themeColor="textSecondary">{open ? '︿' : '﹀'}</ThemedText>
+          <SymbolView
+            name={{ ios: 'chevron.down', android: 'expand_more', web: 'expand_more' }}
+            size={14}
+            weight="semibold"
+            tintColor={theme.textSecondary}
+            style={open ? styles.chevronOpen : undefined}
+          />
         </ThemedView>
       </Pressable>
 
       {open && (
-        <ThemedView type="backgroundElement" style={[styles.dropdown, { borderColor: theme.accent }]}>
+        <ThemedView type="backgroundElement" style={[styles.dropdown, styles.dropdownShadow, { borderColor: theme.accent }]}>
           {deityState === 'none' && (
             <ThemedText type="small" themeColor="textSecondary">
               {t('notify.requiresPermission')}
@@ -159,14 +174,18 @@ function ToggleRow({
 }) {
   const theme = useTheme();
   return (
-    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button">
+    <Pressable onPress={onPress} disabled={disabled} accessibilityRole="switch" accessibilityState={{ checked: on, disabled }}>
       <ThemedView type="backgroundElement" style={styles.toggleRow}>
         <ThemedText type="small">
           {icon} {label}
         </ThemedText>
-        <ThemedView type="backgroundElement" style={[styles.miniBell, on && { backgroundColor: theme.accent }]}>
-          <ThemedText style={styles.miniBellIcon}>{on ? '🔔' : '🔕'}</ThemedText>
-        </ThemedView>
+        <Switch
+          value={on}
+          disabled={disabled}
+          pointerEvents="none"
+          trackColor={{ false: theme.backgroundSelected, true: theme.accent }}
+          thumbColor={Platform.OS === 'android' ? (on ? theme.primaryText : '#FFFFFF') : undefined}
+        />
       </ThemedView>
     </Pressable>
   );
@@ -196,11 +215,21 @@ const styles = StyleSheet.create({
   summaryText: {
     maxWidth: 220,
   },
+  chevronOpen: {
+    transform: [{ rotate: '180deg' }],
+  },
   dropdown: {
     gap: Spacing.two,
     padding: Spacing.three,
     borderRadius: Spacing.three,
     borderWidth: 1,
+  },
+  dropdownShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   divider: {
     height: 1,
@@ -213,16 +242,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  miniBell: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  miniBellIcon: {
-    fontSize: 13,
   },
   leadDaysIndent: {
     marginLeft: Spacing.four,

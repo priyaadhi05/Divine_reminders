@@ -155,6 +155,18 @@ const NAME_OVERRIDES: Record<string, DevotionalContent> = {
     practice: 'Devotees who completed the Mandala Vratham undertake the Sabarimala pilgrimage, carrying the irumudi kettu (offering bundle) up the eighteen holy steps.',
     prayer: 'Swamiye Saranam Ayyappa - thank you for the strength to complete this vow.',
   },
+  'Hanuman Jayanti': {
+    practice: 'Recite the Hanuman Chalisa, visit a Hanuman temple, and offer vermilion (sindoor) or butter, his traditional offerings.',
+    prayer: 'Om Hanumate Namaha - grant me strength, courage, and unwavering devotion.',
+  },
+  'Varalakshmi Vratham': {
+    practice: 'Set up and worship a decorated kalasam as Lakshmi in the morning, tie the sacred thread (charadu) on the wrist, and share offerings with other women in the evening.',
+    prayer: 'Om Shreem Mahalakshmiyei Namaha - bless my family with prosperity, health, and togetherness.',
+  },
+  'Diwali (Lakshmi Puja)': {
+    practice: 'Take an oil bath at dawn, light rows of lamps at your doorstep, and welcome Lakshmi into a clean, well-lit home in the evening.',
+    prayer: 'Om Shreem Mahalakshmiyei Namaha - light my path and fill this year ahead with abundance.',
+  },
 };
 
 export function getDevotionalContent(event: DeityEvent): DevotionalContent {

@@ -38,7 +38,7 @@ export default function CalendarScreen() {
   const { t, categoryLabel } = useTranslation();
 
   const filters: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
-    { key: 'all', label: t('common.all'), icon: '📿', colorKey: 'primary' },
+    { key: 'all', label: t('common.all'), icon: '📿', colorKey: 'success' },
     ...FILTER_CATEGORIES.map((key) => ({
       key,
       label: categoryLabel(key, CATEGORY_LABELS[key]),

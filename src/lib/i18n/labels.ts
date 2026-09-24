@@ -26,6 +26,8 @@ const DEITY_NAME_TRANSLATIONS: Record<string, Record<string, string>> = {
   durga: { en: 'Amman', ta: 'அம்மன்', te: 'దుర్గ', kn: 'ದುರ್ಗಾ', hi: 'दुर्गा' },
   ganesha: { en: 'Ganesha', ta: 'விநாயகர்', te: 'గణేశ్', kn: 'ಗಣೇಶ', hi: 'गणेश' },
   ayyappan: { en: 'Ayyappan', ta: 'ஐயப்பன்', te: 'అయ్యప్ప', kn: 'ಅಯ್ಯಪ್ಪ', hi: 'अय्यप्पा' },
+  hanuman: { en: 'Hanuman', ta: 'ஹனுமான்', te: 'హనుమాన్', kn: 'ಹನುಮಾನ್', hi: 'हनुमान' },
+  lakshmi: { en: 'Lakshmi', ta: 'லட்சுமி', te: 'లక్ష్మి', kn: 'ಲಕ್ಷ್ಮಿ', hi: 'लक्ष्मी' },
 };
 
 export function translatedCategoryLabel(languageId: string, category: EventCategory, fallback: string): string {

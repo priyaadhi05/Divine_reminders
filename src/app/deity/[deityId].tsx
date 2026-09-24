@@ -225,6 +225,7 @@ const styles = StyleSheet.create({
   },
   heroSymbol: {
     fontSize: 36,
+    lineHeight: 44,
   },
   heroTitle: {
     fontSize: 34,

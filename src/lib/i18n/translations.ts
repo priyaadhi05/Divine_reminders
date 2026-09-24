@@ -26,7 +26,7 @@ const EN = {
   'onboarding.save': '❤️ Save my deities',
   'onboarding.saving': 'Saving…',
 
-  'home.eyebrow': 'DIVINE-REMINDER',
+  'home.eyebrow': 'BHAKTI REMINDER',
   'home.title': 'Your Sacred Days',
   'home.subtitle': 'Personalized to the deities you follow',
   'home.manageDeities': '❤️ Manage my deities →',
@@ -51,6 +51,8 @@ const EN = {
   'lunar.seeMore': 'See more dates →',
   'lunar.showLess': '← Show less',
   'lunar.browseFullCalendar': 'Browse the full calendar →',
+  'lunar.enable': 'Enable',
+  'lunar.enabled': 'On',
 
   'deity.tagline': 'Festivals & auspicious days, for years to come',
   'deity.nextUp': 'NEXT UP',
@@ -60,7 +62,7 @@ const EN = {
   'deity.showMore': 'Show more →',
   'deity.showCurrentYearOnly': '← Show {{year}} only',
   'deity.showNextMonthOnly': '← Show upcoming month only',
-  'deity.sacredVerses': 'Sacred verses',
+  'deity.sacredVerses': 'Mantras & Chants',
   'deity.meaning': 'Meaning',
 
   'notify.notifyMeFor': 'Notify me for {{name}}',
@@ -102,10 +104,13 @@ const EN = {
   'share.selectedCount': '{{count}} selected',
   'share.noneSelected': 'None selected - WhatsApp gets just the text',
 
+  'nav.home': 'Home',
+  'nav.calendar': 'Calendar',
+
   'calendar.title': 'Calendar',
   'calendar.subtitle': 'All events across every deity · festivals, vrathams & monthly observances',
 
-  'share.sentWith': '🪔 Sent with Divine-Reminder',
+  'share.sentWith': '🪔 Sent with Bhakti Reminder',
   'share.getTheApp': 'Get the app: {{url}}',
 } as const;
 
@@ -118,7 +123,7 @@ const TA: Record<TranslationKey, string> = {
   'common.remove': 'நீக்கு',
 
   'onboarding.deityHeading': 'உங்களுக்கு முக்கியமான தெய்வங்கள் யார்?',
-  'onboarding.deitySubheading': 'நீங்கள் இங்கே தேர்ந்தெடுக்கும் தெய்வங்களின் புனித நாட்கள் மட்டுமே உங்கள் முகப்புத் திரையில் தோன்றும்.',
+  'onboarding.deitySubheading': 'நீங்கள் இங்கே தேர்ந்தெடுக்கும் தெய்வங்களின் விசேஷ நாட்கள் மட்டும் உங்கள் முகப்புத் திரையில் தெரியும்.',
   'onboarding.languageHeading': 'உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்',
   'onboarding.languageSubheading': 'இதை முகப்புத் திரையிலிருந்து எப்போது வேண்டுமானாலும் மாற்றலாம்.',
   'onboarding.locationHeading': 'நீங்கள் எங்கு வசிக்கிறீர்கள்?',
@@ -128,22 +133,22 @@ const TA: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ எனது தெய்வங்களைச் சேமி',
   'onboarding.saving': 'சேமிக்கிறது…',
 
-  'home.eyebrow': 'திவ்ய நினைவூட்டி',
-  'home.title': 'உங்கள் புனித நாட்கள்',
+  'home.eyebrow': 'பக்தி நினைவூட்டி',
+  'home.title': 'உங்கள் விசேஷ நாட்கள்',
   'home.subtitle': 'நீங்கள் பின்பற்றும் தெய்வங்களுக்கு ஏற்ப',
   'home.manageDeities': '❤️ எனது தெய்வங்களை நிர்வகி →',
   'home.language': '🌐 மொழி',
   'home.region': 'பகுதி',
   'region.chooseHome': 'உங்கள் சொந்த நாட்டைத் தேர்ந்தெடுக்கவும்',
   'region.seeAnother': 'மற்றொரு நாட்டின் நேரத்தைப் பார்க்க',
-  'home.emptyTitle': 'இன்னும் புனித நாட்கள் இல்லை',
+  'home.emptyTitle': 'இன்னும் விசேஷ நாட்கள் இல்லை',
   'home.emptySubtitle': 'உங்களுக்கு முக்கியமான தெய்வங்களைத் தேர்ந்தெடுக்கவும் - அவை அடுத்து வரும் நாளுடன் இங்கே தோன்றும்.',
 
   'mascot.tapToHear': 'கேட்க தட்டவும்',
   'mascot.tapToStop': 'நிறுத்த தட்டவும்',
   'mascot.enableReminders': '🔕 நினைவூட்டல்களை இயக்கு',
   'mascot.remindersOn': '🔔 நினைவூட்டல்கள் இயங்குகின்றன',
-  'mascot.mobileOnly': ' (மொபைலில் மட்டும்)',
+  'mascot.mobileOnly': ' (கைபேசியில் மட்டும்)',
   'mascot.nothingNew': 'இப்போதைக்கு புதிதாக எதுவும் இல்லை - விரைவில் மீண்டும் பாருங்கள்.',
 
   'lunar.heading': 'அமாவாசை & பௌர்ணமி',
@@ -153,6 +158,8 @@ const TA: Record<TranslationKey, string> = {
   'lunar.seeMore': 'மேலும் தேதிகளைக் காண →',
   'lunar.showLess': '← குறைவாகக் காட்டு',
   'lunar.browseFullCalendar': 'முழு நாட்காட்டியைப் பார்வையிடு →',
+  'lunar.enable': 'இயக்கு',
+  'lunar.enabled': 'இயங்குகிறது',
 
   'deity.tagline': 'திருவிழாக்களும் புண்ணிய நாட்களும், வரும் ஆண்டுகளுக்கு',
   'deity.nextUp': 'அடுத்து வருவது',
@@ -162,16 +169,16 @@ const TA: Record<TranslationKey, string> = {
   'deity.showMore': 'மேலும் காட்டு →',
   'deity.showCurrentYearOnly': '← {{year}} மட்டும் காட்டு',
   'deity.showNextMonthOnly': '← அடுத்த மாதம் மட்டும் காட்டு',
-  'deity.sacredVerses': 'புனித சுலோகங்கள்',
+  'deity.sacredVerses': 'மந்திரங்களும் முழக்கங்களும்',
   'deity.meaning': 'பொருள்',
 
-  'notify.notifyMeFor': '{{name}} க்கு எனக்குத் தெரிவி',
-  'notify.some': '{{name}}வின் சில நிகழ்வுகளுக்குத் தெரிவிக்கப்படுகிறது',
-  'notify.all': '{{name}}வின் அனைத்து நிகழ்வுகளுக்கும் தெரிவிக்கப்படுகிறது',
+  'notify.notifyMeFor': '{{name}}வுக்கு நினைவூட்டல் வை',
+  'notify.some': '{{name}}வின் சில நிகழ்வுகளுக்கு நினைவூட்டல் உள்ளது',
+  'notify.all': '{{name}}வின் அனைத்து நிகழ்வுகளுக்கும் நினைவூட்டல் உள்ளது',
   'notify.requiresPermission': 'அறிவிப்பு அனுமதி தேவை — ஒருமுறை கேட்கப்படும்.',
   'notify.everyEvent': '{{name}}வின் ஒவ்வொரு நிகழ்வும்',
   'notify.orSpecific': 'அல்லது குறிப்பிட்ட நிகழ்வுகள் மட்டும்:',
-  'notify.beforeDays': 'இத்தனை நாட்களுக்கு முன் தெரிவிக்கவும்:',
+  'notify.beforeDays': 'இத்தனை நாட்களுக்கு முன் நினைவூட்டவும்:',
 
   'event.setReminder': 'நினைவூட்டல் அமை',
   'event.reminderSet': '🔔 நினைவூட்டல் அமைக்கப்பட்டது',
@@ -204,11 +211,14 @@ const TA: Record<TranslationKey, string> = {
   'share.selectedCount': '{{count}} தேர்ந்தெடுக்கப்பட்டது',
   'share.noneSelected': 'எதுவும் தேர்ந்தெடுக்கவில்லை - வாட்ஸ்அப்பில் உரை மட்டும் செல்லும்',
 
+  'nav.home': 'முகப்பு',
+  'nav.calendar': 'நாட்காட்டி',
+
   'calendar.title': 'நாட்காட்டி',
   'calendar.subtitle': 'ஒவ்வொரு தெய்வத்தின் அனைத்து நிகழ்வுகளும் · திருவிழாக்கள், விரதங்கள் & மாதாந்திர நாட்கள்',
 
-  'share.sentWith': '🪔 திவ்ய நினைவூட்டி மூலம் அனுப்பப்பட்டது',
-  'share.getTheApp': 'ஆப்ஸைப் பெற: {{url}}',
+  'share.sentWith': '🪔 பக்தி நினைவூட்டி மூலம் அனுப்பப்பட்டது',
+  'share.getTheApp': 'செயலியைப் பெற: {{url}}',
 };
 
 const TE: Record<TranslationKey, string> = {
@@ -220,7 +230,7 @@ const TE: Record<TranslationKey, string> = {
   'common.remove': 'తీసివేయి',
 
   'onboarding.deityHeading': 'మీకు ముఖ్యమైన దేవతలు ఎవరు?',
-  'onboarding.deitySubheading': 'మీరు ఇక్కడ ఎంచుకున్న దేవతల పవిత్ర దినాలు మాత్రమే మీ హోమ్ స్క్రీన్‌లో కనిపిస్తాయి.',
+  'onboarding.deitySubheading': 'మీరు ఇక్కడ ఎంచుకున్న దేవతల విశేష దినాలు మాత్రమే మీ హోమ్ స్క్రీన్‌లో కనిపిస్తాయి.',
   'onboarding.languageHeading': 'మీ భాషను ఎంచుకోండి',
   'onboarding.languageSubheading': 'దీన్ని మీరు హోమ్ నుండి ఎప్పుడైనా మార్చుకోవచ్చు.',
   'onboarding.locationHeading': 'మీరు ఎక్కడ ఉన్నారు?',
@@ -230,15 +240,15 @@ const TE: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ నా దేవతలను భద్రపరచు',
   'onboarding.saving': 'భద్రపరుస్తోంది…',
 
-  'home.eyebrow': 'దివ్య రిమైండర్',
-  'home.title': 'మీ పవిత్ర దినాలు',
+  'home.eyebrow': 'భక్తి రిమైండర్',
+  'home.title': 'మీ విశేష దినాలు',
   'home.subtitle': 'మీరు అనుసరించే దేవతలకు అనుగుణంగా',
   'home.manageDeities': '❤️ నా దేవతలను నిర్వహించు →',
   'home.language': '🌐 భాష',
   'home.region': 'ప్రాంతం',
   'region.chooseHome': 'మీ స్వదేశాన్ని ఎంచుకోండి',
   'region.seeAnother': 'మరో దేశపు సమయాన్ని చూడండి',
-  'home.emptyTitle': 'ఇంకా పవిత్ర దినాలు లేవు',
+  'home.emptyTitle': 'ఇంకా విశేష దినాలు లేవు',
   'home.emptySubtitle': 'మీకు ముఖ్యమైన దేవతలను ఎంచుకోండి - అవి తర్వాత రాబోయే దానితో పాటు ఇక్కడ కనిపిస్తాయి.',
 
   'mascot.tapToHear': 'వినడానికి నొక్కండి',
@@ -255,6 +265,8 @@ const TE: Record<TranslationKey, string> = {
   'lunar.seeMore': 'మరిన్ని తేదీలు చూడండి →',
   'lunar.showLess': '← తక్కువగా చూపించు',
   'lunar.browseFullCalendar': 'పూర్తి క్యాలెండర్‌ను చూడండి →',
+  'lunar.enable': 'ప్రారంభించు',
+  'lunar.enabled': 'ఆన్‌లో',
 
   'deity.tagline': 'పండుగలు & శుభ దినాలు, రాబోయే సంవత్సరాలకు',
   'deity.nextUp': 'తర్వాత రాబోయేది',
@@ -264,16 +276,16 @@ const TE: Record<TranslationKey, string> = {
   'deity.showMore': 'మరిన్ని చూపించు →',
   'deity.showCurrentYearOnly': '← {{year}} మాత్రమే చూపించు',
   'deity.showNextMonthOnly': '← వచ్చే నెల మాత్రమే చూపించు',
-  'deity.sacredVerses': 'పవిత్ర శ్లోకాలు',
+  'deity.sacredVerses': 'మంత్రాలు & నినాదాలు',
   'deity.meaning': 'అర్థం',
 
-  'notify.notifyMeFor': '{{name}} కోసం నాకు తెలియజేయి',
-  'notify.some': '{{name}} యొక్క కొన్ని వేడుకలకు తెలియజేయబడుతోంది',
-  'notify.all': '{{name}} యొక్క అన్ని వేడుకలకు తెలియజేయబడుతోంది',
+  'notify.notifyMeFor': '{{name}} కోసం రిమైండర్ పెట్టు',
+  'notify.some': '{{name}} యొక్క కొన్ని వేడుకలకు రిమైండర్ ఉంది',
+  'notify.all': '{{name}} యొక్క అన్ని వేడుకలకు రిమైండర్ ఉంది',
   'notify.requiresPermission': 'నోటిఫికేషన్ అనుమతి అవసరం — ఒకసారి అడగబడుతుంది.',
   'notify.everyEvent': '{{name}} యొక్క ప్రతి వేడుక',
   'notify.orSpecific': 'లేదా నిర్దిష్ట సందర్భాలు మాత్రమే:',
-  'notify.beforeDays': 'ఎన్ని రోజుల ముందు తెలియజేయాలి:',
+  'notify.beforeDays': 'ఎన్ని రోజుల ముందు రిమైండర్ కావాలి:',
 
   'event.setReminder': 'రిమైండర్ పెట్టు',
   'event.reminderSet': '🔔 రిమైండర్ పెట్టబడింది',
@@ -306,10 +318,13 @@ const TE: Record<TranslationKey, string> = {
   'share.selectedCount': '{{count}} ఎంచుకున్నారు',
   'share.noneSelected': 'ఏదీ ఎంచుకోలేదు - వాట్సాప్‌కు టెక్స్ట్ మాత్రమే వెళ్తుంది',
 
+  'nav.home': 'హోమ్',
+  'nav.calendar': 'క్యాలెండర్',
+
   'calendar.title': 'క్యాలెండర్',
   'calendar.subtitle': 'ప్రతి దేవత యొక్క అన్ని వేడుకలు · పండుగలు, వ్రతాలు & నెలవారీ దినాలు',
 
-  'share.sentWith': '🪔 దివ్య రిమైండర్ ద్వారా పంపబడింది',
+  'share.sentWith': '🪔 భక్తి రిమైండర్ ద్వారా పంపబడింది',
   'share.getTheApp': 'యాప్‌ను పొందండి: {{url}}',
 };
 
@@ -322,7 +337,7 @@ const KN: Record<TranslationKey, string> = {
   'common.remove': 'ತೆಗೆದುಹಾಕಿ',
 
   'onboarding.deityHeading': 'ನಿಮಗೆ ಮುಖ್ಯವಾದ ದೇವರುಗಳು ಯಾರು?',
-  'onboarding.deitySubheading': 'ನೀವು ಇಲ್ಲಿ ಆಯ್ಕೆ ಮಾಡುವ ದೇವರುಗಳ ಪವಿತ್ರ ದಿನಗಳು ಮಾತ್ರ ನಿಮ್ಮ ಹೋಮ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.',
+  'onboarding.deitySubheading': 'ನೀವು ಇಲ್ಲಿ ಆಯ್ಕೆ ಮಾಡುವ ದೇವರುಗಳ ವಿಶೇಷ ದಿನಗಳು ಮಾತ್ರ ನಿಮ್ಮ ಹೋಮ್ ಸ್ಕ್ರೀನ್‌ನಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.',
   'onboarding.languageHeading': 'ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
   'onboarding.languageSubheading': 'ಇದನ್ನು ನೀವು ಹೋಮ್‌ನಿಂದ ಯಾವಾಗ ಬೇಕಾದರೂ ಬದಲಾಯಿಸಬಹುದು.',
   'onboarding.locationHeading': 'ನೀವು ಎಲ್ಲಿದ್ದೀರಿ?',
@@ -332,15 +347,15 @@ const KN: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ ನನ್ನ ದೇವರುಗಳನ್ನು ಉಳಿಸಿ',
   'onboarding.saving': 'ಉಳಿಸಲಾಗುತ್ತಿದೆ…',
 
-  'home.eyebrow': 'ದಿವ್ಯ ರಿಮೈಂಡರ್',
-  'home.title': 'ನಿಮ್ಮ ಪವಿತ್ರ ದಿನಗಳು',
+  'home.eyebrow': 'ಭಕ್ತಿ ರಿಮೈಂಡರ್',
+  'home.title': 'ನಿಮ್ಮ ವಿಶೇಷ ದಿನಗಳು',
   'home.subtitle': 'ನೀವು ಅನುಸರಿಸುವ ದೇವರುಗಳಿಗೆ ಅನುಗುಣವಾಗಿ',
   'home.manageDeities': '❤️ ನನ್ನ ದೇವರುಗಳನ್ನು ನಿರ್ವಹಿಸಿ →',
   'home.language': '🌐 ಭಾಷೆ',
   'home.region': 'ಪ್ರದೇಶ',
   'region.chooseHome': 'ನಿಮ್ಮ ಸ್ವದೇಶವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
   'region.seeAnother': 'ಇನ್ನೊಂದು ದೇಶದ ಸಮಯ ನೋಡಿ',
-  'home.emptyTitle': 'ಇನ್ನೂ ಪವಿತ್ರ ದಿನಗಳಿಲ್ಲ',
+  'home.emptyTitle': 'ಇನ್ನೂ ವಿಶೇಷ ದಿನಗಳಿಲ್ಲ',
   'home.emptySubtitle': 'ನಿಮಗೆ ಮುಖ್ಯವಾದ ದೇವರುಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ - ಅವು ಮುಂದಿನ ದಿನದೊಂದಿಗೆ ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.',
 
   'mascot.tapToHear': 'ಕೇಳಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
@@ -357,6 +372,8 @@ const KN: Record<TranslationKey, string> = {
   'lunar.seeMore': 'ಇನ್ನಷ್ಟು ದಿನಾಂಕಗಳನ್ನು ನೋಡಿ →',
   'lunar.showLess': '← ಕಡಿಮೆ ತೋರಿಸಿ',
   'lunar.browseFullCalendar': 'ಪೂರ್ಣ ಕ್ಯಾಲೆಂಡರ್ ನೋಡಿ →',
+  'lunar.enable': 'ಸಕ್ರಿಯಗೊಳಿಸಿ',
+  'lunar.enabled': 'ಆನ್',
 
   'deity.tagline': 'ಹಬ್ಬಗಳು & ಶುಭ ದಿನಗಳು, ಮುಂಬರುವ ವರ್ಷಗಳಿಗೆ',
   'deity.nextUp': 'ಮುಂದಿನದು',
@@ -366,16 +383,16 @@ const KN: Record<TranslationKey, string> = {
   'deity.showMore': 'ಇನ್ನಷ್ಟು ತೋರಿಸಿ →',
   'deity.showCurrentYearOnly': '← {{year}} ಮಾತ್ರ ತೋರಿಸಿ',
   'deity.showNextMonthOnly': '← ಮುಂದಿನ ತಿಂಗಳು ಮಾತ್ರ ತೋರಿಸಿ',
-  'deity.sacredVerses': 'ಪವಿತ್ರ ಶ್ಲೋಕಗಳು',
+  'deity.sacredVerses': 'ಮಂತ್ರಗಳು ಮತ್ತು ಘೋಷಣೆಗಳು',
   'deity.meaning': 'ಅರ್ಥ',
 
-  'notify.notifyMeFor': '{{name}} ಗಾಗಿ ನನಗೆ ತಿಳಿಸಿ',
-  'notify.some': '{{name}} ನ ಕೆಲವು ಕಾರ್ಯಕ್ರಮಗಳಿಗೆ ತಿಳಿಸಲಾಗುತ್ತಿದೆ',
-  'notify.all': '{{name}} ನ ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳಿಗೆ ತಿಳಿಸಲಾಗುತ್ತಿದೆ',
+  'notify.notifyMeFor': '{{name}} ಗಾಗಿ ಜ್ಞಾಪನೆ ಹೊಂದಿಸಿ',
+  'notify.some': '{{name}} ನ ಕೆಲವು ಕಾರ್ಯಕ್ರಮಗಳಿಗೆ ಜ್ಞಾಪನೆ ಇದೆ',
+  'notify.all': '{{name}} ನ ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳಿಗೂ ಜ್ಞಾಪನೆ ಇದೆ',
   'notify.requiresPermission': 'ಅಧಿಸೂಚನೆ ಅನುಮತಿ ಅಗತ್ಯ — ಒಮ್ಮೆ ಕೇಳಲಾಗುತ್ತದೆ.',
   'notify.everyEvent': '{{name}} ನ ಪ್ರತಿಯೊಂದು ಕಾರ್ಯಕ್ರಮ',
   'notify.orSpecific': 'ಅಥವಾ ನಿರ್ದಿಷ್ಟ ಸಂದರ್ಭಗಳು ಮಾತ್ರ:',
-  'notify.beforeDays': 'ಎಷ್ಟು ದಿನಗಳ ಮೊದಲು ತಿಳಿಸಬೇಕು:',
+  'notify.beforeDays': 'ಎಷ್ಟು ದಿನಗಳ ಮೊದಲು ಜ್ಞಾಪನೆ ಬೇಕು:',
 
   'event.setReminder': 'ಜ್ಞಾಪನೆ ಹೊಂದಿಸಿ',
   'event.reminderSet': '🔔 ಜ್ಞಾಪನೆ ಹೊಂದಿಸಲಾಗಿದೆ',
@@ -408,10 +425,13 @@ const KN: Record<TranslationKey, string> = {
   'share.selectedCount': '{{count}} ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ',
   'share.noneSelected': 'ಯಾವುದೂ ಆಯ್ಕೆಯಾಗಿಲ್ಲ - ವಾಟ್ಸಾಪ್‌ಗೆ ಪಠ್ಯ ಮಾತ್ರ ಹೋಗುತ್ತದೆ',
 
+  'nav.home': 'ಹೋಮ್',
+  'nav.calendar': 'ಕ್ಯಾಲೆಂಡರ್',
+
   'calendar.title': 'ಕ್ಯಾಲೆಂಡರ್',
   'calendar.subtitle': 'ಪ್ರತಿ ದೇವರ ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳು · ಹಬ್ಬಗಳು, ವ್ರತಗಳು & ಮಾಸಿಕ ದಿನಗಳು',
 
-  'share.sentWith': '🪔 ದಿವ್ಯ ರಿಮೈಂಡರ್ ಮೂಲಕ ಕಳುಹಿಸಲಾಗಿದೆ',
+  'share.sentWith': '🪔 ಭಕ್ತಿ ರಿಮೈಂಡರ್ ಮೂಲಕ ಕಳುಹಿಸಲಾಗಿದೆ',
   'share.getTheApp': 'ಆ್ಯಪ್ ಪಡೆಯಿರಿ: {{url}}',
 };
 
@@ -424,7 +444,7 @@ const HI: Record<TranslationKey, string> = {
   'common.remove': 'हटाएं',
 
   'onboarding.deityHeading': 'आपके लिए कौन से देवता महत्वपूर्ण हैं?',
-  'onboarding.deitySubheading': 'यहाँ आपके चुने गए देवताओं के पवित्र दिन ही आपकी होम स्क्रीन पर दिखाई देंगे।',
+  'onboarding.deitySubheading': 'यहाँ आपके चुने गए देवताओं के खास दिन ही आपकी होम स्क्रीन पर दिखाई देंगे।',
   'onboarding.languageHeading': 'अपनी भाषा चुनें',
   'onboarding.languageSubheading': 'इसे आप होम से कभी भी बदल सकते हैं।',
   'onboarding.locationHeading': 'आप कहाँ रहते हैं?',
@@ -434,15 +454,15 @@ const HI: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ मेरे देवता सहेजें',
   'onboarding.saving': 'सहेजा जा रहा है…',
 
-  'home.eyebrow': 'दिव्य रिमाइंडर',
-  'home.title': 'आपके पवित्र दिन',
+  'home.eyebrow': 'भक्ति रिमाइंडर',
+  'home.title': 'आपके खास दिन',
   'home.subtitle': 'आपके अनुसरण किए गए देवताओं के अनुसार',
   'home.manageDeities': '❤️ मेरे देवता प्रबंधित करें →',
   'home.language': '🌐 भाषा',
   'home.region': 'क्षेत्र',
   'region.chooseHome': 'अपना गृह क्षेत्र चुनें',
   'region.seeAnother': 'किसी अन्य देश का समय देखें',
-  'home.emptyTitle': 'अभी तक कोई पवित्र दिन नहीं',
+  'home.emptyTitle': 'अभी तक कोई खास दिन नहीं',
   'home.emptySubtitle': 'अपने लिए महत्वपूर्ण देवताओं को चुनें - वे आगामी दिन के साथ यहाँ दिखाई देंगे।',
 
   'mascot.tapToHear': 'सुनने के लिए टैप करें',
@@ -459,6 +479,8 @@ const HI: Record<TranslationKey, string> = {
   'lunar.seeMore': 'और तारीखें देखें →',
   'lunar.showLess': '← कम दिखाएं',
   'lunar.browseFullCalendar': 'पूरा कैलेंडर देखें →',
+  'lunar.enable': 'चालू करें',
+  'lunar.enabled': 'चालू',
 
   'deity.tagline': 'त्योहार और शुभ दिन, आने वाले वर्षों के लिए',
   'deity.nextUp': 'आगे क्या है',
@@ -468,16 +490,16 @@ const HI: Record<TranslationKey, string> = {
   'deity.showMore': 'और दिखाएं →',
   'deity.showCurrentYearOnly': '← केवल {{year}} दिखाएं',
   'deity.showNextMonthOnly': '← केवल अगला महीना दिखाएं',
-  'deity.sacredVerses': 'पवित्र श्लोक',
+  'deity.sacredVerses': 'मंत्र और नारे',
   'deity.meaning': 'अर्थ',
 
-  'notify.notifyMeFor': '{{name}} के लिए मुझे सूचित करें',
-  'notify.some': '{{name}} के कुछ आयोजनों के लिए सूचित किया जा रहा है',
-  'notify.all': '{{name}} के सभी आयोजनों के लिए सूचित किया जा रहा है',
+  'notify.notifyMeFor': '{{name}} के लिए रिमाइंडर लगाएं',
+  'notify.some': '{{name}} के कुछ आयोजनों के लिए रिमाइंडर लगा है',
+  'notify.all': '{{name}} के सभी आयोजनों के लिए रिमाइंडर लगा है',
   'notify.requiresPermission': 'सूचना अनुमति आवश्यक है — एक बार पूछा जाएगा।',
   'notify.everyEvent': '{{name}} का हर आयोजन',
   'notify.orSpecific': 'या केवल विशिष्ट अवसर:',
-  'notify.beforeDays': 'कितने दिन पहले सूचित करें:',
+  'notify.beforeDays': 'कितने दिन पहले रिमाइंडर चाहिए:',
 
   'event.setReminder': 'रिमाइंडर लगाएं',
   'event.reminderSet': '🔔 रिमाइंडर लगाया गया',
@@ -510,10 +532,13 @@ const HI: Record<TranslationKey, string> = {
   'share.selectedCount': '{{count}} चुनी गईं',
   'share.noneSelected': 'कुछ नहीं चुना - व्हाट्सऐप को सिर्फ़ टेक्स्ट जाएगा',
 
+  'nav.home': 'होम',
+  'nav.calendar': 'कैलेंडर',
+
   'calendar.title': 'कैलेंडर',
   'calendar.subtitle': 'हर देवता के सभी आयोजन · त्योहार, व्रत और मासिक दिन',
 
-  'share.sentWith': '🪔 दिव्य रिमाइंडर के साथ भेजा गया',
+  'share.sentWith': '🪔 भक्ति रिमाइंडर के साथ भेजा गया',
   'share.getTheApp': 'ऐप पाएं: {{url}}',
 };
 

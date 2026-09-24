@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Alert, Image, Linking, Platform, Pressable, Share, StyleSheet } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Image, Linking, Platform, Pressable, Share, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sharing from 'expo-sharing';
+import { captureRef } from 'react-native-view-shot';
 
+import { GreetingCard } from '@/components/greeting-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -20,13 +22,24 @@ import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media
 //  2. WhatsApp / Instagram / Facebook / More, which act on the selection.
 // What each button can actually do is limited by the OS: neither Linking nor
 // expo-sharing can open a specific app *with* an attachment, and expo-sharing
-// only attaches one file per share sheet. So:
-//  - WhatsApp with nothing selected opens WhatsApp directly with the message
-//    text pre-filled (its own URL scheme - the only direct route there is).
-//  - Every button with pictures selected opens the OS share sheet, once per
-//    picture (asking before each next one), and the person picks the app.
+// only attaches one file per share sheet - and neither can carry a caption
+// alongside a picture. So:
+//  - WhatsApp with nothing selected opens WhatsApp (app or Web) directly via
+//    the universal wa.me link with the message text pre-filled.
+//  - Every button with pictures selected writes the greeting onto each
+//    selected picture first (see GreetingCard / composeCaption below, since
+//    that's the only way the words travel with the picture on native), then
+//    opens the OS share sheet once per picture (asking before each next
+//    one) for the person to pick the app. On web, the real Web Share API is
+//    used instead when available (see shareViaWebShare) - it can carry the
+//    message and the pictures together in one call, no compositing needed.
 interface SharePanelProps {
   deityId: string;
+  // The full share message (lib/share-greeting.ts's greeting plus the app's
+  // own name/install line) - used as the text-only WhatsApp/More message,
+  // and written onto each selected picture before it's shared (see
+  // composeCaption below), so the app link travels with a picture too and
+  // not just a bare text share.
   message: string;
 }
 
@@ -58,6 +71,45 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   // null = untouched, which means "just the first picture"
   const [selectedUris, setSelectedUris] = useState<string[] | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Off-screen rig that writes `caption` onto one picture at a time before
+  // it's shared (see GreetingCard) - a share sheet/WhatsApp only carries one
+  // attachment and no separate caption field, so the message has to be part
+  // of the picture itself. `captureJob` holds the in-flight request; its
+  // `resolve` is called once the composited file is ready.
+  const cardRef = useRef<View>(null);
+  const [captureJob, setCaptureJob] = useState<{ uri: string; resolve: (out: string) => void } | null>(null);
+
+  const composeCaption = (uri: string): Promise<string> =>
+    new Promise((resolve) => setCaptureJob({ uri, resolve }));
+
+  const handleCardReady = async () => {
+    if (!captureJob) return;
+    const { uri, resolve } = captureJob;
+    try {
+      // Let the freshly-loaded image actually paint before grabbing pixels.
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      resolve(await captureRef(cardRef, { format: 'jpg', quality: 0.92 }));
+    } catch {
+      resolve(uri); // couldn't composite - share the plain picture rather than nothing
+    } finally {
+      setCaptureJob(null);
+    }
+  };
+
+  // Videos can't be captioned this way, so they're shared as-is. Web has no
+  // expo-sharing implementation at all (shareViaSheet below already shows
+  // its own "not supported here" message for that) and react-native-view-shot
+  // doesn't reliably capture there either, so compositing is skipped on web
+  // rather than hanging in front of that existing message.
+  const withCaptions = async (items: ShareMedia[]): Promise<ShareMedia[]> => {
+    if (Platform.OS === 'web') return items;
+    const out: ShareMedia[] = [];
+    for (const item of items) {
+      out.push(item.type === 'video' ? item : { uri: await composeCaption(item.uri), type: 'image' });
+    }
+    return out;
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -126,13 +178,50 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     }
   };
 
-  const shareToWhatsApp = async () => {
-    if (chosen.length > 0) return shareViaSheet(chosen, 'Choose WhatsApp to share');
-    // No picture selected: WhatsApp's own URL scheme opens it directly with
-    // the message pre-filled (no canOpenURL - that needs the scheme declared
-    // in the native config; openURL just fails if WhatsApp isn't installed).
+  // Web has no expo-sharing implementation, but the real Web Share API
+  // (Safari/Chrome on phones, some desktop browsers) can share files *and*
+  // text together in one call - unlike the native OS share sheet, so no
+  // on-picture compositing is needed here at all.
+  const canWebShare =
+    Platform.OS === 'web' && typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+
+  const shareViaWebShare = async (items: ShareMedia[]) => {
     try {
-      await Linking.openURL(`whatsapp://send?text=${encodeURIComponent(message)}`);
+      const files = await Promise.all(
+        items.map(async (item, i) => {
+          const blob = await (await fetch(item.uri)).blob();
+          const ext = item.type === 'video' ? 'mp4' : 'jpg';
+          return new File([blob], `divine-reminder-${i + 1}.${ext}`, {
+            type: blob.type || (item.type === 'video' ? 'video/mp4' : 'image/jpeg'),
+          });
+        })
+      );
+      const shareData = { text: message, files };
+      await navigator.share(navigator.canShare && !navigator.canShare(shareData) ? { files } : shareData);
+    } catch (error) {
+      if (!isDismissal(error)) {
+        Alert.alert(
+          'Couldn’t share',
+          'This browser can’t share a photo. Open the app on your phone to share it, or continue with text only.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Share text only', onPress: shareTextViaSheet },
+          ]
+        );
+      }
+    }
+  };
+
+  const shareSelected = async (items: ShareMedia[], dialogTitle?: string) =>
+    canWebShare ? shareViaWebShare(items) : shareViaSheet(await withCaptions(items), dialogTitle);
+
+  const shareToWhatsApp = async () => {
+    if (chosen.length > 0) return shareSelected(chosen, 'Choose WhatsApp to share');
+    // No picture selected: the universal wa.me link opens the WhatsApp app
+    // (native) or WhatsApp Web (browser) directly with the message
+    // pre-filled - the one direct route there is, either way.
+    try {
+      await Linking.openURL(`https://wa.me/?text=${encodeURIComponent(message)}`);
     } catch {
       await shareTextViaSheet();
     }
@@ -143,13 +232,13 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
 
   const shareToInstagram = async () => {
     if (chosen.length === 0) return needPicture('Instagram');
-    await shareViaSheet(chosen, 'Choose Instagram to share');
+    await shareSelected(chosen, 'Choose Instagram to share');
   };
 
   const shareToFacebook = async () =>
-    chosen.length > 0 ? shareViaSheet(chosen, 'Choose Facebook to share') : shareTextViaSheet();
+    chosen.length > 0 ? shareSelected(chosen, 'Choose Facebook to share') : shareTextViaSheet();
 
-  const shareMore = async () => (chosen.length > 0 ? shareViaSheet(chosen) : shareTextViaSheet());
+  const shareMore = async () => (chosen.length > 0 ? shareSelected(chosen) : shareTextViaSheet());
 
   const pickMedia = async () => {
     if (busy) return;
@@ -239,20 +328,38 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       </ThemedView>
 
       <ThemedView style={styles.platformRow}>
-        <PlatformButton label={t('share.whatsapp')} icon="💬" onPress={shareToWhatsApp} />
-        <PlatformButton label={t('share.instagram')} icon="📸" onPress={shareToInstagram} />
-        <PlatformButton label={t('share.facebook')} icon="📘" onPress={shareToFacebook} />
-        <PlatformButton label={t('share.more')} icon="↗️" onPress={shareMore} />
+        <PlatformButton label={t('share.whatsapp')} icon="💬" onPress={shareToWhatsApp} disabled={!!captureJob} />
+        <PlatformButton label={t('share.instagram')} icon="📸" onPress={shareToInstagram} disabled={!!captureJob} />
+        <PlatformButton label={t('share.facebook')} icon="📘" onPress={shareToFacebook} disabled={!!captureJob} />
+        <PlatformButton label={t('share.more')} icon="↗️" onPress={shareMore} disabled={!!captureJob} />
       </ThemedView>
+
+      {captureJob && (
+        <View style={styles.captureHost} pointerEvents="none">
+          <GreetingCard photoUri={captureJob.uri} caption={message} ref={cardRef} onImageLoad={handleCardReady} />
+        </View>
+      )}
     </ThemedView>
   );
 }
 
-function PlatformButton({ label, icon, onPress }: { label: string; icon: string; onPress: () => void }) {
+function PlatformButton({
+  label,
+  icon,
+  onPress,
+  disabled,
+}: {
+  label: string;
+  icon: string;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
   const theme = useTheme();
   return (
-    <Pressable onPress={onPress} style={styles.platformButtonFlex} accessibilityRole="button">
-      <ThemedView type="backgroundElement" style={[styles.platformButton, { borderColor: theme.primary }]}>
+    <Pressable onPress={onPress} disabled={disabled} style={styles.platformButtonFlex} accessibilityRole="button">
+      <ThemedView
+        type="backgroundElement"
+        style={[styles.platformButton, { borderColor: theme.primary, opacity: disabled ? 0.5 : 1 }]}>
         <ThemedText style={styles.platformIcon}>{icon}</ThemedText>
         <ThemedText type="small">{label}</ThemedText>
       </ThemedView>
@@ -267,6 +374,11 @@ const styles = StyleSheet.create({
   platformRow: {
     flexDirection: 'row',
     gap: Spacing.two,
+  },
+  captureHost: {
+    position: 'absolute',
+    top: -10000,
+    left: 0,
   },
   platformButtonFlex: {
     flex: 1,

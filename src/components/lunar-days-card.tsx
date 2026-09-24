@@ -27,7 +27,7 @@ import { areRemindersEnabled, enableReminders, isTopicFollowed, setTopicFollowed
 // Home, which is scoped to followed deities - this card always shows. Only
 // the next occurrence of each is visible by default; tapping "See more
 // dates" reveals a short, hand-picked list of what's coming up next rather
-// than dumping the full 2026-2035 dataset onto the home screen - that full
+// than dumping the full 2026-2045 dataset onto the home screen - that full
 // range is still one tap away, in the Calendar tab.
 const UPCOMING_PREVIEW_COUNT = 6;
 
@@ -108,12 +108,18 @@ export function LunarDaysCard() {
                 </ThemedText>
               )}
             </ThemedView>
-            <Pressable onPress={() => toggleFollow(category)} disabled={busy} accessibilityRole="button">
+            <Pressable
+              onPress={() => toggleFollow(category)}
+              disabled={busy}
+              accessibilityRole="button"
+              accessibilityState={{ selected: on, disabled: busy }}>
               <ThemedView
                 type="backgroundElement"
-                style={[styles.bell, { borderColor: theme[colorKey] }, on && { backgroundColor: theme[colorKey] }]}>
-                <ThemedText type="small" style={on ? { color: theme.primaryText } : undefined}>
-                  {on ? '🔔' : '🔕'}
+                style={[styles.enableButton, { borderColor: theme[colorKey] }, on && { backgroundColor: theme[colorKey] }]}>
+                <ThemedText
+                  type="small"
+                  style={on ? { color: theme.primaryText, fontWeight: '700' } : { color: theme[colorKey] }}>
+                  {on ? `✓ ${t('lunar.enabled')}` : t('lunar.enable')}
                 </ThemedText>
               </ThemedView>
             </Pressable>
@@ -158,10 +164,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: Spacing.half,
   },
-  bell: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  enableButton: {
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.five,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',

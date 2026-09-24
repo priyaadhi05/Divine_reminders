@@ -12,18 +12,20 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 
 import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function AppTabs() {
+  const { t } = useTranslation();
   return (
     <Tabs>
       <TabSlot style={{ height: '100%' }} />
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="home" href="/" asChild>
-            <TabButton>Home</TabButton>
+            <TabButton>{t('nav.home')}</TabButton>
           </TabTrigger>
           <TabTrigger name="calendar" href="/calendar" asChild>
-            <TabButton>Calendar</TabButton>
+            <TabButton>{t('nav.calendar')}</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -50,7 +52,7 @@ export function CustomTabList(props: TabListProps) {
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         <ThemedText type="smallBold" themeColor="primary" style={styles.brandText}>
-          🔔 Divine-Reminder
+          Bhakti Reminder
         </ThemedText>
 
         {props.children}

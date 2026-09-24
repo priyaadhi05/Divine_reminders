@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Platform, Pressable, ScrollView, StyleSheet, Switch } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { SymbolView } from 'expo-symbols';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LeadDaysRow } from '@/components/lead-days-row';
@@ -24,9 +25,9 @@ import {
   isTopicFollowed,
   setTopicFollowed,
   setTopicLeadDays,
-  shareMessage,
 } from '@/lib/notifications';
 import { resolveRegionTimeZone } from '@/lib/regions';
+import { buildGreeting } from '@/lib/share-greeting';
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -101,11 +102,16 @@ export default function EventDetailScreen() {
 
   const owningDeity = getDeityById(event.deity);
   const localizedDeityName = owningDeity ? translatedDeityName(owningDeity.id, owningDeity.name) : undefined;
-  // Every share carries the app's own name, and an install link once one
-  // actually exists (see lib/app-info.ts) - sharing is how this app grows,
-  // so it shouldn't read as an anonymous forwarded text.
+  // The personal greeting (lib/share-greeting.ts) is what's written onto a
+  // shared picture (see components/share-panel.tsx / greeting-card.tsx) - a
+  // picture attachment can't carry a separate caption, so the same words are
+  // also the text-only message. Every share carries the app's own name, and
+  // an install link once one actually exists (see lib/app-info.ts) - sharing
+  // is how this app grows, so it shouldn't read as an anonymous forwarded
+  // text.
+  const greeting = buildGreeting(event);
   const fullShareMessage = [
-    shareMessage(event),
+    greeting,
     APP_INSTALL_URL ? `${t('share.sentWith')}\n${t('share.getTheApp', { url: APP_INSTALL_URL })}` : t('share.sentWith'),
   ].join('\n\n');
 
@@ -128,40 +134,64 @@ export default function EventDetailScreen() {
           <ThemedText type="smallBold">{formatEventDate(event.date)}</ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.buttonRow}>
-          <Pressable onPress={handleSetReminder} disabled={busy} style={styles.buttonFlex}>
-            <ThemedView style={[styles.button, { backgroundColor: reminderOn ? theme.backgroundSelected : theme.primary }]}>
-              <ThemedText type="smallBold" style={{ color: reminderOn ? theme.text : theme.primaryText }}>
-                {reminderOn ? t('event.reminderSet') : t('event.setReminder')}
-              </ThemedText>
+        <ThemedView type="backgroundElement" style={[styles.reminderCard, { borderLeftColor: accentColor }]}>
+          <Pressable
+            onPress={handleSetReminder}
+            disabled={busy}
+            accessibilityRole="switch"
+            accessibilityState={{ checked: reminderOn, disabled: busy }}>
+            <ThemedView type="backgroundElement" style={styles.reminderRow}>
+              <ThemedView
+                style={[styles.reminderIconWrap, { backgroundColor: reminderOn ? accentColor : theme.backgroundSelected }]}>
+                <SymbolView
+                  name={{
+                    ios: reminderOn ? 'bell.fill' : 'bell',
+                    android: reminderOn ? 'notifications_active' : 'notifications_none',
+                    web: 'notifications',
+                  }}
+                  size={18}
+                  tintColor={reminderOn ? theme.primaryText : theme.textSecondary}
+                />
+              </ThemedView>
+              <ThemedView type="backgroundElement" style={styles.reminderTextWrap}>
+                <ThemedText type="smallBold">{reminderOn ? t('event.reminderSet') : t('event.setReminder')}</ThemedText>
+                {!reminderOn && (
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {t('notify.requiresPermission')}
+                  </ThemedText>
+                )}
+              </ThemedView>
+              <Switch
+                value={reminderOn}
+                disabled={busy}
+                pointerEvents="none"
+                trackColor={{ false: theme.backgroundSelected, true: accentColor }}
+                thumbColor={Platform.OS === 'android' ? (reminderOn ? theme.primaryText : '#FFFFFF') : undefined}
+              />
             </ThemedView>
           </Pressable>
-          <Pressable onPress={() => setShareOpen((v) => !v)} style={styles.buttonFlex}>
-            <ThemedView style={[styles.button, styles.buttonOutline, { borderColor: theme.primary }]}>
-              <ThemedText type="smallBold" style={{ color: theme.primary }}>
-                {t('event.share')}
+
+          {reminderOn && (
+            <ThemedView type="backgroundElement" style={styles.leadDaysSection}>
+              <ThemedView style={[styles.reminderDivider, { backgroundColor: accentColor }]} />
+              <ThemedText type="small" themeColor="textSecondary">
+                {t('event.appliesTo', { category: categoryLabel(event.category, CATEGORY_LABELS[event.category]) })}
+                {localizedDeityName ? t('event.forDeity', { name: localizedDeityName }) : ''}
               </ThemedText>
+              <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
             </ThemedView>
-          </Pressable>
+          )}
         </ThemedView>
 
-        {!reminderOn && (
-          <ThemedText type="small" themeColor="textSecondary" style={styles.permissionHint}>
-            {t('notify.requiresPermission')}
-          </ThemedText>
-        )}
+        <Pressable onPress={() => setShareOpen((v) => !v)}>
+          <ThemedView style={[styles.button, styles.buttonOutline, { borderColor: theme.primary }]}>
+            <ThemedText type="smallBold" style={{ color: theme.primary }}>
+              {t('event.share')}
+            </ThemedText>
+          </ThemedView>
+        </Pressable>
 
         {shareOpen && <SharePanel deityId={event.deity} message={fullShareMessage} />}
-
-        {reminderOn && (
-          <ThemedView style={styles.leadDaysSection}>
-            <ThemedText type="small" themeColor="textSecondary">
-              {t('event.appliesTo', { category: categoryLabel(event.category, CATEGORY_LABELS[event.category]) })}
-              {localizedDeityName ? t('event.forDeity', { name: localizedDeityName }) : ''}
-            </ThemedText>
-            <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
-          </ThemedView>
-        )}
 
         {timing && (
           <ThemedView type="backgroundElement" style={[styles.timingCard, { borderLeftColor: accentColor }]}>
@@ -278,18 +308,34 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 26,
   },
-  buttonRow: {
+  reminderCard: {
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderLeftWidth: 4,
+  },
+  reminderRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.two,
   },
-  buttonFlex: {
+  reminderIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reminderTextWrap: {
     flex: 1,
+    gap: Spacing.half,
+  },
+  reminderDivider: {
+    height: 1,
+    opacity: 0.2,
   },
   leadDaysSection: {
     gap: Spacing.two,
-  },
-  permissionHint: {
-    marginTop: -Spacing.three,
   },
   button: {
     paddingVertical: Spacing.two,

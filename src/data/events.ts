@@ -2,6 +2,8 @@ import ayyappanData from '@/assets/data/ayyappan-events.json';
 import durgaData from '@/assets/data/durga-events.json';
 import ganeshaData from '@/assets/data/ganesha-events.json';
 import generalData from '@/assets/data/general-events.json';
+import hanumanData from '@/assets/data/hanuman-events.json';
+import lakshmiData from '@/assets/data/lakshmi-events.json';
 import muruganData from '@/assets/data/murugan-events.json';
 import shivaData from '@/assets/data/shiva-events.json';
 import vishnuData from '@/assets/data/vishnu-events.json';
@@ -128,6 +130,24 @@ export const DEITIES: Deity[] = [
     honorific: 'Lord',
     dataset: ayyappanData as DeityDataset,
   },
+  {
+    id: 'hanuman',
+    name: 'Hanuman',
+    tamilName: 'ஹனுமான்',
+    symbol: '🐒',
+    greeting: 'Om Hanumate Namaha!',
+    honorific: 'Lord',
+    dataset: hanumanData as DeityDataset,
+  },
+  {
+    id: 'lakshmi',
+    name: 'Lakshmi',
+    tamilName: 'லட்சுமி',
+    symbol: '🪔',
+    greeting: 'Om Shreem Mahalakshmiyei Namaha!',
+    honorific: 'Goddess',
+    dataset: lakshmiData as DeityDataset,
+  },
 ];
 
 export function getDeityById(id: string): Deity | undefined {
@@ -231,7 +251,7 @@ export function relativeDayLabel(dateStr: string): string {
 
 // Used to collapse long year-by-year calendar lists (Calendar tab, a
 // deity's page) down to just the current year's remaining months by
-// default, since 2026-2035 all at once on one screen is overwhelming.
+// default, since 2026-2045 all at once on one screen is overwhelming.
 const now = new Date();
 export const CURRENT_YEAR = now.getFullYear();
 export const CURRENT_YEAR_MONTH = `${CURRENT_YEAR}-${String(now.getMonth() + 1).padStart(2, '0')}`;
