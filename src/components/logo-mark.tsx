@@ -3,8 +3,9 @@ import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/hooks/use-theme';
 
-// The app's crest: a small lotus-and-halo seal (see assets/images/logo-mark.png)
-// ringed in whichever color it's sitting on - the Home hero banner, the
+// The app's crest: a lit diya on a lotus in a gold-ringed green seal (see
+// assets/images/logo-mark.png - drawn by scripts/logo/generate-logo.py along
+// with every app icon size), ringed in whichever color it's sitting on - the Home hero banner, the
 // onboarding header's page background, etc. - so it reads as a badge rather
 // than a flat square image dropped on top.
 export function LogoMark({ size = 64, ringColor }: { size?: number; ringColor?: string }) {

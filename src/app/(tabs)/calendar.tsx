@@ -6,7 +6,7 @@ import { EventCard } from '@/components/event-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { BottomTabInset, MaxContentWidth, TopTabInset, Spacing, ThemeColor } from '@/constants/theme';
 import { CATEGORY_LABELS, CURRENT_YEAR, CURRENT_YEAR_MONTH, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Spacing.three,
+    paddingTop: TopTabInset,
     paddingBottom: BottomTabInset + Spacing.three,
   },
   header: {

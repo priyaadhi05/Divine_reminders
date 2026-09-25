@@ -92,7 +92,7 @@ export default function OnboardingScreen() {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <ThemedView style={styles.brandRow}>
-            <LogoMark size={56} />
+            <LogoMark size={88} />
           </ThemedView>
 
           {step === 'language' && (

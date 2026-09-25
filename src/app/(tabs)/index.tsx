@@ -12,7 +12,7 @@ import { RegionSelector } from '@/components/region-selector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { BottomTabInset, MaxContentWidth, TopTabInset, Spacing, ThemeColor } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
 import { DEITIES, type Deity, type DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
@@ -54,7 +54,7 @@ export default function HomeScreen() {
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
-                <LogoMark ringColor={theme.primary} />
+                <LogoMark size={96} ringColor={theme.primary} />
                 <ThemedText type="smallBold" style={[styles.heroEyebrow, { color: theme.primaryText }]}>
                   {t('home.eyebrow')}
                 </ThemedText>
@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Spacing.three,
+    paddingTop: TopTabInset,
     paddingBottom: BottomTabInset + Spacing.three,
   },
   header: {
