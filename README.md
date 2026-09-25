@@ -74,10 +74,35 @@ All event data is fully static, not server-fetched:
    there.
 
 So at runtime there's no API, no backend, no network request for event data -
-it's all baked into the app and works fully offline. Same story for the
-reminder companion: notifications are scheduled locally on-device
-(`expo-notifications`), and its voice uses the phone's own TTS engine
-(`expo-speech`) - nothing calls out to a server for those either.
+it's all baked into the app and works fully offline. Notifications are
+scheduled locally on-device (`expo-notifications`) too.
+
+## Read-aloud voice (Google Cloud Text-to-Speech)
+
+Every screen has 🔊 Listen buttons that read its content aloud in the
+selected language, for listeners who find reading hard. Phones' built-in
+voices can't cover this: iPhones and Macs have no Kannada, Tamil or Telugu
+voice at all. So when an API key is set, the app fetches speech from Google
+Cloud Text-to-Speech (`src/lib/cloud-speech.ts`), which has voices for all
+five languages. Without a key, or when offline, it falls back to the phone's
+own voice (`expo-speech`), which only works where that language is installed.
+
+To set it up:
+
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a
+   project, enable billing, and enable the **Cloud Text-to-Speech API**.
+2. Create an API key (APIs & Services → Credentials). Restrict it to the
+   Cloud Text-to-Speech API, and to this app's bundle id / website - the key
+   is bundled into the app, so the restriction is what stops misuse.
+3. Put it in `.env.local` (git-ignored) as shown in `.env.example`, and
+   restart `npx expo start`.
+4. For EAS builds, add the same variable in EAS:
+   `eas env:create --name EXPO_PUBLIC_GOOGLE_TTS_API_KEY --value <key> --environment production`
+   (repeat for `preview`/`development` as needed).
+
+Each clip is fetched once and cached on the phone, so replaying doesn't
+cost anything more. Setting a budget alert in Google Cloud Billing is a good
+idea.
 
 The only place this app talks to anything external is "Add to
 Calendar"/"Export to Calendar (.ics)", which hands off to the device's own

@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react';
 import * as Speech from 'expo-speech';
 
 import { useTranslation } from '@/hooks/use-translation';
+import { cloudSpeechConfigured, speakWithCloud, stopCloudSpeech } from '@/lib/cloud-speech';
 import { getContent } from '@/lib/i18n/content';
 
 // Read-aloud for any text in the app, in the selected language. One
@@ -61,38 +62,61 @@ function forSpeech(text: string): string {
     .trim();
 }
 
+// Every speak/stop bumps this, so a request still in flight (fetching the
+// online voice, looking up device voices) never starts talking after a
+// newer tap or a Stop.
+let generation = 0;
+
+function stopAll() {
+  generation++;
+  Speech.stop();
+  stopCloudSpeech();
+  setStatus({ speakingKey: null });
+}
+
 // For unmount cleanup: stops only if `key` is still the one talking, so a
 // screen closing never cuts off something another screen started since.
 export function stopIfSpeaking(key: string) {
-  if (status.speakingKey !== key) return;
-  Speech.stop();
-  setStatus({ speakingKey: null });
+  if (status.speakingKey === key) stopAll();
 }
 
 export function useSpeech() {
   const { languageId } = useTranslation();
   const { speakingKey, missingVoiceKey } = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
-  const stop = () => {
-    Speech.stop();
-    setStatus({ speakingKey: null });
-  };
-
   // `inLanguage` overrides the selected language - e.g. the language picker
   // saying each language's own name in that language.
   const speak = async (key: string, text: string, inLanguage: string = languageId) => {
-    Speech.stop();
+    stopAll();
+    const gen = generation;
     const languageTag = getContent(inLanguage).speechLanguage;
+    const spoken = forSpeech(text);
+    const finished = () => {
+      if (gen === generation && status.speakingKey === key) setStatus({ speakingKey: null });
+    };
+
+    // The online voice first when configured - it speaks every language the
+    // app offers, the same on every phone (lib/cloud-speech.ts).
+    if (cloudSpeechConfigured) {
+      setStatus({ speakingKey: key, missingVoiceKey: null });
+      try {
+        await speakWithCloud(spoken, languageTag);
+        finished();
+        return;
+      } catch (err) {
+        console.warn('Online voice failed, falling back to the device voice', err);
+        if (gen !== generation) return;
+      }
+    }
+
     const voice = await findVoice(languageTag);
+    if (gen !== generation) return;
     if (voice === null) {
       setStatus({ speakingKey: null, missingVoiceKey: key });
       return;
     }
     setStatus({ speakingKey: key, missingVoiceKey: null });
-    const finished = () => {
-      if (status.speakingKey === key) setStatus({ speakingKey: null });
-    };
-    Speech.speak(forSpeech(text), {
+    Speech.speak(spoken, {
       language: languageTag,
       voice: voice?.identifier,
       rate: 0.9,
@@ -102,7 +126,7 @@ export function useSpeech() {
     });
   };
 
-  const toggle = (key: string, text: string) => (speakingKey === key ? stop() : speak(key, text));
+  const toggle = (key: string, text: string) => (speakingKey === key ? stopAll() : speak(key, text));
 
-  return { speakingKey, missingVoiceKey, speak, stop, toggle };
+  return { speakingKey, missingVoiceKey, speak, stop: stopAll, toggle };
 }
