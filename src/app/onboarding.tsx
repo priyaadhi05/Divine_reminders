@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ListenButton } from '@/components/listen-button';
 import { LogoMark } from '@/components/logo-mark';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -10,6 +11,7 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { useRegion } from '@/contexts/region-context';
 import { DEITIES } from '@/data/events';
+import { useSpeech } from '@/hooks/use-speech';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { LANGUAGES } from '@/lib/i18n/languages';
@@ -30,6 +32,7 @@ export default function OnboardingScreen() {
   const theme = useTheme();
   const { t, deityName } = useTranslation();
   const { languageId, setLanguageId } = useLanguage();
+  const { speak } = useSpeech();
   const { regionId, setRegionId } = useRegion();
   const { step: initialStep } = useLocalSearchParams<{ step?: Step }>();
   const [step, setStep] = useState<Step>(initialStep === 'deities' ? 'deities' : 'language');
@@ -100,12 +103,20 @@ export default function OnboardingScreen() {
               <ThemedText themeColor="textSecondary" style={styles.subheading}>
                 {t('onboarding.languageSubheading')}
               </ThemedText>
+              <ListenButton speechKey={'onboarding:language-step'} text={`${t('onboarding.languageHeading')}. ${t('onboarding.languageSubheading')}`} />
 
               <ThemedView style={styles.grid}>
                 {LANGUAGES.map((language) => {
                   const isSelected = language.id === languageId;
                   return (
-                    <Pressable key={language.id} onPress={() => setLanguageId(language.id)} style={styles.cardWrap}>
+                    <Pressable
+                      key={language.id}
+                      onPress={() => {
+                        setLanguageId(language.id);
+                        // Says e.g. "ಕನ್ನಡ" in Kannada, so someone who can't read the list still hears what they picked.
+                        speak('onboarding:language', language.nativeLabel, language.id);
+                      }}
+                      style={styles.cardWrap}>
                       <ThemedView
                         type="backgroundElement"
                         style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
@@ -136,6 +147,7 @@ export default function OnboardingScreen() {
               <ThemedText themeColor="textSecondary" style={styles.subheading}>
                 {t('onboarding.locationSubheading')}
               </ThemedText>
+              <ListenButton speechKey={'onboarding:location-step'} text={[`${t('onboarding.locationHeading')}. ${t('onboarding.locationSubheading')}`, ...regionOptions(languageId).map((r) => r.label)].join('\n')} />
 
               <ThemedView style={styles.list}>
                 {regionOptions(languageId).map((region) => {
@@ -169,12 +181,19 @@ export default function OnboardingScreen() {
               <ThemedText themeColor="textSecondary" style={styles.subheading}>
                 {t('onboarding.deitySubheading')}
               </ThemedText>
+              <ListenButton speechKey={'onboarding:deity-step'} text={[`${t('onboarding.deityHeading')}. ${t('onboarding.deitySubheading')}`, ...DEITIES.map((d) => deityName(d.id, d.name))].join('\n')} />
 
               <ThemedView style={styles.grid}>
                 {DEITIES.map((deity) => {
                   const isSelected = selected.has(deity.id);
                   return (
-                    <Pressable key={deity.id} onPress={() => toggleDeity(deity.id)} style={styles.cardWrap}>
+                    <Pressable
+                      key={deity.id}
+                      onPress={() => {
+                        toggleDeity(deity.id);
+                        speak('onboarding:deity', deityName(deity.id, deity.name));
+                      }}
+                      style={styles.cardWrap}>
                       <ThemedView
                         type="backgroundElement"
                         style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>

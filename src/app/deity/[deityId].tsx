@@ -4,6 +4,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EventCard } from '@/components/event-card';
+import { ListenButton } from '@/components/listen-button';
 import { NotifyPanel } from '@/components/notify-panel';
 import { SacredVerses } from '@/components/sacred-verses';
 import { ThemedText } from '@/components/themed-text';
@@ -89,6 +90,16 @@ export default function DeityScreen() {
                   {t('deity.tagline')}
                 </ThemedText>
               </ThemedView>
+
+              <ListenButton
+                speechKey={`deity:${deity.id}`}
+                text={[
+                  `${localizedName}. ${t('deity.tagline')}.`,
+                  next ? `${t('deity.nextLabel')}: ${localize(next).name}, ${fullDate(next.date)}. ${localize(next).significance}` : undefined,
+                ]
+                  .filter(Boolean)
+                  .join('\n')}
+              />
 
               {next && (
                 <Pressable onPress={() => router.push({ pathname: '/event/[id]', params: { id: next.id } })}>

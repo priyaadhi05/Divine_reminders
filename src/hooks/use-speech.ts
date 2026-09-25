@@ -78,9 +78,11 @@ export function useSpeech() {
     setStatus({ speakingKey: null });
   };
 
-  const speak = async (key: string, text: string) => {
+  // `inLanguage` overrides the selected language - e.g. the language picker
+  // saying each language's own name in that language.
+  const speak = async (key: string, text: string, inLanguage: string = languageId) => {
     Speech.stop();
-    const languageTag = getContent(languageId).speechLanguage;
+    const languageTag = getContent(inLanguage).speechLanguage;
     const voice = await findVoice(languageTag);
     if (voice === null) {
       setStatus({ speakingKey: null, missingVoiceKey: key });
