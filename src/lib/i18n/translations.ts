@@ -23,6 +23,7 @@ const EN = {
   'onboarding.save': '❤️ Save my deities',
   'onboarding.saving': 'Saving…',
 
+  'app.name': 'Bhakti Reminder',
   'home.eyebrow': 'BHAKTI REMINDER',
   'home.title': 'Your Sacred Days',
   'home.subtitle': 'Personalized to the deities you follow',
@@ -34,8 +35,6 @@ const EN = {
   'home.emptyTitle': 'No sacred days yet',
   'home.emptySubtitle': "Choose which deities are meaningful to you and they'll show up here, each with what's coming next.",
 
-  'mascot.tapToHear': 'Tap to hear this',
-  'mascot.tapToStop': 'Tap to stop',
   'mascot.enableReminders': '🔕 Enable reminders',
   'mascot.remindersOn': '🔔 Reminders on',
   'mascot.mobileOnly': ' (mobile only)',
@@ -157,6 +156,7 @@ const TA: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ எனது தெய்வங்களைச் சேமி',
   'onboarding.saving': 'சேமிக்கிறது…',
 
+  'app.name': 'பக்தி நினைவூட்டி',
   'home.eyebrow': 'பக்தி நினைவூட்டி',
   'home.title': 'உங்கள் விசேஷ நாட்கள்',
   'home.subtitle': 'நீங்கள் பின்பற்றும் தெய்வங்களுக்கு ஏற்ப',
@@ -168,8 +168,6 @@ const TA: Record<TranslationKey, string> = {
   'home.emptyTitle': 'இன்னும் விசேஷ நாட்கள் இல்லை',
   'home.emptySubtitle': 'உங்களுக்கு முக்கியமான தெய்வங்களைத் தேர்ந்தெடுக்கவும் - அவை அடுத்து வரும் நாளுடன் இங்கே தோன்றும்.',
 
-  'mascot.tapToHear': 'கேட்க தட்டவும்',
-  'mascot.tapToStop': 'நிறுத்த தட்டவும்',
   'mascot.enableReminders': '🔕 நினைவூட்டல்களை இயக்கு',
   'mascot.remindersOn': '🔔 நினைவூட்டல்கள் இயங்குகின்றன',
   'mascot.mobileOnly': ' (கைபேசியில் மட்டும்)',
@@ -291,6 +289,7 @@ const TE: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ నా దేవతలను భద్రపరచు',
   'onboarding.saving': 'భద్రపరుస్తోంది…',
 
+  'app.name': 'భక్తి రిమైండర్',
   'home.eyebrow': 'భక్తి రిమైండర్',
   'home.title': 'మీ విశేష దినాలు',
   'home.subtitle': 'మీరు అనుసరించే దేవతలకు అనుగుణంగా',
@@ -302,8 +301,6 @@ const TE: Record<TranslationKey, string> = {
   'home.emptyTitle': 'ఇంకా విశేష దినాలు లేవు',
   'home.emptySubtitle': 'మీకు ముఖ్యమైన దేవతలను ఎంచుకోండి - అవి తర్వాత రాబోయే దానితో పాటు ఇక్కడ కనిపిస్తాయి.',
 
-  'mascot.tapToHear': 'వినడానికి నొక్కండి',
-  'mascot.tapToStop': 'ఆపడానికి నొక్కండి',
   'mascot.enableReminders': '🔕 రిమైండర్‌లను ప్రారంభించు',
   'mascot.remindersOn': '🔔 రిమైండర్‌లు ఆన్‌లో ఉన్నాయి',
   'mascot.mobileOnly': ' (మొబైల్‌లో మాత్రమే)',
@@ -425,6 +422,7 @@ const KN: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ ನನ್ನ ದೇವರುಗಳನ್ನು ಉಳಿಸಿ',
   'onboarding.saving': 'ಉಳಿಸಲಾಗುತ್ತಿದೆ…',
 
+  'app.name': 'ಭಕ್ತಿ ರಿಮೈಂಡರ್',
   'home.eyebrow': 'ಭಕ್ತಿ ರಿಮೈಂಡರ್',
   'home.title': 'ನಿಮ್ಮ ವಿಶೇಷ ದಿನಗಳು',
   'home.subtitle': 'ನೀವು ಅನುಸರಿಸುವ ದೇವರುಗಳಿಗೆ ಅನುಗುಣವಾಗಿ',
@@ -436,8 +434,6 @@ const KN: Record<TranslationKey, string> = {
   'home.emptyTitle': 'ಇನ್ನೂ ವಿಶೇಷ ದಿನಗಳಿಲ್ಲ',
   'home.emptySubtitle': 'ನಿಮಗೆ ಮುಖ್ಯವಾದ ದೇವರುಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ - ಅವು ಮುಂದಿನ ದಿನದೊಂದಿಗೆ ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.',
 
-  'mascot.tapToHear': 'ಕೇಳಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
-  'mascot.tapToStop': 'ನಿಲ್ಲಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
   'mascot.enableReminders': '🔕 ಜ್ಞಾಪನೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ',
   'mascot.remindersOn': '🔔 ಜ್ಞಾಪನೆಗಳು ಆನ್ ಆಗಿವೆ',
   'mascot.mobileOnly': ' (ಮೊಬೈಲ್‌ನಲ್ಲಿ ಮಾತ್ರ)',
@@ -559,6 +555,7 @@ const HI: Record<TranslationKey, string> = {
   'onboarding.save': '❤️ मेरे देवता सहेजें',
   'onboarding.saving': 'सहेजा जा रहा है…',
 
+  'app.name': 'भक्ति रिमाइंडर',
   'home.eyebrow': 'भक्ति रिमाइंडर',
   'home.title': 'आपके खास दिन',
   'home.subtitle': 'आपके अनुसरण किए गए देवताओं के अनुसार',
@@ -570,8 +567,6 @@ const HI: Record<TranslationKey, string> = {
   'home.emptyTitle': 'अभी तक कोई खास दिन नहीं',
   'home.emptySubtitle': 'अपने लिए महत्वपूर्ण देवताओं को चुनें - वे आगामी दिन के साथ यहाँ दिखाई देंगे।',
 
-  'mascot.tapToHear': 'सुनने के लिए टैप करें',
-  'mascot.tapToStop': 'रोकने के लिए टैप करें',
   'mascot.enableReminders': '🔕 रिमाइंडर चालू करें',
   'mascot.remindersOn': '🔔 रिमाइंडर चालू हैं',
   'mascot.mobileOnly': ' (केवल मोबाइल पर)',

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
@@ -80,15 +80,18 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
       <Pressable
         onPress={handleTap}
         accessibilityRole="button"
-        accessibilityLabel={t('mascot.tapToHear')}>
+        accessibilityLabel={speaking ? t('listen.stop') : t('listen.play')}>
         <ThemedView type="backgroundSelected" style={styles.bubble}>
           <ThemedText type="small" numberOfLines={4}>
             <Animated.Text style={iconStyle}>{speaking ? '🔊 ' : '🙏 '}</Animated.Text>
             {line}
           </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.tapHint}>
-            {speaking ? t('mascot.tapToStop') : t('mascot.tapToHear')}
-          </ThemedText>
+          <View
+            style={[styles.listenPill, { borderColor: theme.secondary }, speaking && { backgroundColor: theme.secondary }]}>
+            <ThemedText type="smallBold" style={{ color: speaking ? theme.primaryText : theme.secondary }}>
+              {speaking ? `⏹ ${t('listen.stop')}` : `🔊 ${t('listen.play')}`}
+            </ThemedText>
+          </View>
           {missingVoiceKey === SPEECH_KEY && (
             <ThemedText type="small" themeColor="textSecondary">
               {t('listen.noVoice', { language: getLanguageById(languageId).nativeLabel })}
@@ -123,8 +126,13 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.half,
   },
-  tapHint: {
-    fontStyle: 'italic',
+  listenPill: {
+    alignSelf: 'flex-start',
+    borderWidth: 1.5,
+    borderRadius: Spacing.five,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
+    marginTop: Spacing.one,
   },
   bell: {
     alignSelf: 'flex-start',

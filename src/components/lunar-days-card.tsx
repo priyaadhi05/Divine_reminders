@@ -3,6 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 
 import { EventCard } from '@/components/event-card';
+import { ListenButton } from '@/components/listen-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -63,6 +64,15 @@ export function LunarDaysCard() {
 
   const preview = upcoming.slice(0, UPCOMING_PREVIEW_COUNT);
 
+  // Same lines the card shows, for its Listen button.
+  const nextLine = (category: EventCategory) => {
+    const next = nextByCategory[category];
+    return next
+      ? `${t('lunar.next', { name: localize(next).name, date: dateNoYear(next.date) })}, ${relativeDay(daysUntil(next.date))}.`
+      : `${t('lunar.noUpcoming', { category: categoryLabel(category, CATEGORY_LABELS[category]) })}.`;
+  };
+  const listenText = [`${t('lunar.heading')}. ${t('lunar.subtitle')}.`, ...categories.map(nextLine)].join('\n');
+
   const toggleFollow = async (category: EventCategory) => {
     if (busy) return;
     setBusy(true);
@@ -86,6 +96,7 @@ export function LunarDaysCard() {
         <ThemedText type="small" themeColor="textSecondary">
           {t('lunar.subtitle')}
         </ThemedText>
+        <ListenButton speechKey="lunar-days" text={listenText} />
       </ThemedView>
 
       {categories.map((category) => {

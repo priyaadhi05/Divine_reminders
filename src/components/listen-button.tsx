@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { stopIfSpeaking, useSpeech } from '@/hooks/use-speech';
 import { useTheme } from '@/hooks/use-theme';
@@ -22,25 +21,25 @@ export function ListenButton({ speechKey, text }: { speechKey: string; text: str
   useEffect(() => () => stopIfSpeaking(speechKey), [speechKey]);
 
   return (
-    <ThemedView style={styles.wrap}>
+    <View style={styles.wrap}>
       <Pressable
         onPress={() => toggle(speechKey, text)}
         accessibilityRole="button"
         accessibilityLabel={speaking ? t('listen.stop') : t('listen.play')}
         style={({ pressed }) => pressed && styles.pressed}>
-        <ThemedView
+        <View
           style={[styles.pill, { borderColor: theme.secondary }, speaking && { backgroundColor: theme.secondary }]}>
           <ThemedText type="smallBold" style={{ color: speaking ? theme.primaryText : theme.secondary }}>
             {speaking ? `⏹ ${t('listen.stop')}` : `🔊 ${t('listen.play')}`}
           </ThemedText>
-        </ThemedView>
+        </View>
       </Pressable>
       {missingVoiceKey === speechKey && (
         <ThemedText type="small" themeColor="textSecondary">
           {t('listen.noVoice', { language: getLanguageById(languageId).nativeLabel })}
         </ThemedText>
       )}
-    </ThemedView>
+    </View>
   );
 }
 
