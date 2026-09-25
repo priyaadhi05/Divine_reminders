@@ -14,7 +14,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { LANGUAGES } from '@/lib/i18n/languages';
 import { enableReminders, getFollowedDeities, markOnboarded, setDeityFollowed } from '@/lib/notifications';
-import { AUTO_REGION_ID, REGIONS, resolveRegionTimeZone } from '@/lib/regions';
+import { regionOptions } from '@/lib/regions';
 
 // First-run flow, three short steps: language, home country/region (this is
 // what decides what time a festival's precise timing shows in - see the
@@ -76,10 +76,8 @@ export default function OnboardingScreen() {
       await markOnboarded();
       router.replace('/');
     } catch (err) {
-      Alert.alert(
-        'Something went wrong',
-        err instanceof Error ? err.message : 'You can try again anytime from "Manage my deities" on Home.'
-      );
+      console.warn('onboarding save failed', err);
+      Alert.alert(t('common.errorTitle'), t('onboarding.saveFailed'));
       router.replace('/');
     } finally {
       setBusy(false);
@@ -140,7 +138,7 @@ export default function OnboardingScreen() {
               </ThemedText>
 
               <ThemedView style={styles.list}>
-                {[{ id: AUTO_REGION_ID, label: resolveRegionTimeZone(AUTO_REGION_ID).label }, ...REGIONS].map((region) => {
+                {regionOptions(languageId).map((region) => {
                   const isSelected = region.id === regionId;
                   return (
                     <Pressable key={region.id} onPress={() => setRegionId(region.id)}>

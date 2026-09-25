@@ -13,7 +13,6 @@ import {
   CATEGORY_LABELS,
   CURRENT_YEAR_MONTH,
   EventCategory,
-  formatEventDate,
   getDeityById,
   getEventsForDeity,
   getEventsByYearMonth,
@@ -29,7 +28,7 @@ export default function DeityScreen() {
   const { deityId } = useLocalSearchParams<{ deityId: string }>();
   const deity = getDeityById(deityId);
   const theme = useTheme();
-  const { t, categoryLabel, deityName: translatedDeityName } = useTranslation();
+  const { t, categoryLabel, deityName: translatedDeityName, localize, fullDate, languageId } = useTranslation();
   const [filter, setFilter] = useState<EventCategory | 'all'>('all');
   // Reveals a few more months at a time rather than jumping straight to
   // everything - MONTHS_PER_PAGE more each tap of "Show more".
@@ -47,8 +46,8 @@ export default function DeityScreen() {
 
   const allGroups = useMemo(() => {
     const events = filter === 'all' ? allEvents : allEvents.filter((e) => e.category === filter);
-    return getEventsByYearMonth(events);
-  }, [allEvents, filter]);
+    return getEventsByYearMonth(events, languageId);
+  }, [allEvents, filter, languageId]);
 
   // Just the nearest upcoming month by default - a whole year of one
   // deity's events (unlike the Calendar tab, which is meant to be browsed)
@@ -63,7 +62,7 @@ export default function DeityScreen() {
   if (!deity) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText>Deity not found.</ThemedText>
+        <ThemedText>{t('common.deityNotFound')}</ThemedText>
       </ThemedView>
     );
   }
@@ -100,10 +99,10 @@ export default function DeityScreen() {
                       {t('deity.nextUp')} {CATEGORY_STYLE[next.category].icon}
                     </ThemedText>
                     <ThemedText type="subtitle" style={styles.nextName}>
-                      {next.name}
+                      {localize(next).name}
                     </ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">
-                      {formatEventDate(next.date)}
+                      {fullDate(next.date)}
                     </ThemedText>
                   </ThemedView>
                 </Pressable>

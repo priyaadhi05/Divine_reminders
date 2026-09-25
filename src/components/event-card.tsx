@@ -4,12 +4,15 @@ import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { CATEGORY_LABELS, DeityEvent, formatEventDate } from '@/data/events';
+import { CATEGORY_LABELS, DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 
 export function EventCard({ event }: { event: DeityEvent }) {
   const theme = useTheme();
+  const { localize, shortDate, categoryLabel } = useTranslation();
+  const shown = localize(event);
   const { colorKey, icon } = CATEGORY_STYLE[event.category];
   const accentColor = theme[colorKey];
 
@@ -19,7 +22,7 @@ export function EventCard({ event }: { event: DeityEvent }) {
       style={({ pressed }) => pressed && styles.pressed}>
       <ThemedView type="backgroundElement" style={[styles.card, { borderLeftColor: accentColor }]}>
         <ThemedView type="backgroundElement" style={styles.dateColumn}>
-          <ThemedText type="smallBold">{formatEventDate(event.date).split(',')[1]?.trim()}</ThemedText>
+          <ThemedText type="smallBold">{shortDate(event.date)}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {event.date.slice(0, 4)}
           </ThemedText>
@@ -27,15 +30,17 @@ export function EventCard({ event }: { event: DeityEvent }) {
         <ThemedView type="backgroundElement" style={styles.textColumn}>
           <ThemedView type="backgroundElement" style={styles.nameRow}>
             <ThemedText style={styles.icon}>{icon}</ThemedText>
-            <ThemedText type="smallBold">{event.name}</ThemedText>
+            <ThemedText type="smallBold">{shown.name}</ThemedText>
           </ThemedView>
-          <ThemedText type="small" themeColor="textSecondary">
-            {event.tamilName}
-          </ThemedText>
+          {!!shown.tamilName && (
+            <ThemedText type="small" themeColor="textSecondary">
+              {shown.tamilName}
+            </ThemedText>
+          )}
         </ThemedView>
         <ThemedView type="backgroundElement" style={[styles.categoryPill, { backgroundColor: accentColor }]}>
           <ThemedText type="small" style={[styles.categoryPillText, { color: theme.primaryText }]}>
-            {CATEGORY_LABELS[event.category]}
+            {categoryLabel(event.category, CATEGORY_LABELS[event.category])}
           </ThemedText>
         </ThemedView>
       </ThemedView>

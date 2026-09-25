@@ -7,6 +7,8 @@ import lakshmiData from '@/assets/data/lakshmi-events.json';
 import muruganData from '@/assets/data/murugan-events.json';
 import shivaData from '@/assets/data/shiva-events.json';
 import vishnuData from '@/assets/data/vishnu-events.json';
+import { formatDateTime, formatFullDate, formatMonthLabel } from '@/lib/i18n/content';
+import { DEFAULT_LANGUAGE_ID } from '@/lib/i18n/languages';
 
 export type EventCategory =
   | 'festival'
@@ -266,14 +268,12 @@ export function getEventsByYear(): Map<string, DeityEvent[]> {
   return byYear;
 }
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
 // Keyed and sorted as "YYYY-MM" so callers can derive a display label
 // ("November 2026") without re-parsing the key.
-export function getEventsByYearMonth(events: DeityEvent[]): { key: string; label: string; events: DeityEvent[] }[] {
+export function getEventsByYearMonth(
+  events: DeityEvent[],
+  languageId: string = DEFAULT_LANGUAGE_ID
+): { key: string; label: string; events: DeityEvent[] }[] {
   const byMonth = new Map<string, DeityEvent[]>();
   for (const e of [...events].sort((a, b) => a.date.localeCompare(b.date))) {
     const key = e.date.slice(0, 7); // YYYY-MM
@@ -282,24 +282,11 @@ export function getEventsByYearMonth(events: DeityEvent[]): { key: string; label
   }
   return Array.from(byMonth.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, monthEvents]) => {
-      const [year, month] = key.split('-');
-      return { key, label: `${MONTH_NAMES[Number(month) - 1]} ${year}`, events: monthEvents };
-    });
+    .map(([key, monthEvents]) => ({ key, label: formatMonthLabel(key, languageId), events: monthEvents }));
 }
 
-export function formatEventDate(dateStr: string): string {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(Date.UTC(y, m - 1, d));
-  return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-}
-
-function formatInTimeZone(iso: string, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    timeZone,
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(iso));
+export function formatEventDate(dateStr: string, languageId: string = DEFAULT_LANGUAGE_ID): string {
+  return formatFullDate(dateStr, languageId);
 }
 
 export interface PeriodTiming {
@@ -313,13 +300,18 @@ export interface PeriodTiming {
 // Formats an event's precise tithi/nakshatra window in the given timezone
 // (the user's selected region, or auto-detected device zone) and IST, since
 // IST is the panchangam's own reference timezone and useful to show alongside.
-export function formatPeriodTiming(event: DeityEvent, timeZone: string, regionLabel: string): PeriodTiming | null {
+export function formatPeriodTiming(
+  event: DeityEvent,
+  timeZone: string,
+  regionLabel: string,
+  languageId: string = DEFAULT_LANGUAGE_ID
+): PeriodTiming | null {
   if (!event.periodStartUTC || !event.periodEndUTC) return null;
   return {
-    startLocal: formatInTimeZone(event.periodStartUTC, timeZone),
-    endLocal: formatInTimeZone(event.periodEndUTC, timeZone),
-    startIST: formatInTimeZone(event.periodStartUTC, 'Asia/Kolkata'),
-    endIST: formatInTimeZone(event.periodEndUTC, 'Asia/Kolkata'),
+    startLocal: formatDateTime(event.periodStartUTC, timeZone, languageId),
+    endLocal: formatDateTime(event.periodEndUTC, timeZone, languageId),
+    startIST: formatDateTime(event.periodStartUTC, 'Asia/Kolkata', languageId),
+    endIST: formatDateTime(event.periodEndUTC, 'Asia/Kolkata', languageId),
     regionLabel,
   };
 }

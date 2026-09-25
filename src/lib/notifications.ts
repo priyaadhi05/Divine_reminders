@@ -11,6 +11,9 @@ import {
   getUpcomingEvents,
   type DeityEvent,
 } from '@/data/events';
+import { getContent } from '@/lib/i18n/content';
+import { DEFAULT_LANGUAGE_ID } from '@/lib/i18n/languages';
+import { messageContext } from '@/lib/share-greeting';
 
 // Local (on-device) reminders only - no push server, no account, no cost.
 // Not supported on web (expo-notifications has no web implementation).
@@ -20,6 +23,7 @@ const ENABLED_KEY = 'divine-calendar:reminders-enabled';
 const FOLLOWED_TOPICS_KEY = 'divine-calendar:followed-topics';
 const LEAD_DAYS_KEY = 'divine-calendar:reminder-lead-days';
 const ONBOARDED_KEY = 'divine-calendar:onboarded';
+const LANGUAGE_KEY = 'divine-calendar:selected-language'; // written by LanguageProvider
 const NOTIFICATION_PREFIX = 'divine-calendar-reminder-';
 const CHANNEL_ID = 'divine-calendar-reminders';
 const REMINDER_HOUR = 9; // fires at 9am local device time on each countdown day
@@ -61,10 +65,11 @@ if (SUPPORTED) {
   });
 }
 
-// Notification title/body for the 3-day / 2-day / 1-day / today countdown.
-// Each lead day gets its own wording rather than reusing one template with
-// only the day count swapped in, so a followed topic's three nudges read as
-// a build-up rather than the same line repeated three times, e.g.:
+// Notification title/body for the 3-day / 2-day / 1-day / today countdown,
+// in the selected language (see each lib/i18n/content/<lang>.ts). Each lead
+// day gets its own wording rather than reusing one template with only the
+// day count swapped in, so a followed topic's three nudges read as a
+// build-up rather than the same line repeated three times, e.g.:
 //   3 days: "🦚 Murugan's special day is in 3 days" / "Thaipusam is coming
 //     up on Feb 1 - a good time to start planning. 🙏"
 //   1 day:  "🦚 Murugan's special day is tomorrow" / "Tomorrow is Thaipusam -
@@ -73,56 +78,20 @@ if (SUPPORTED) {
 //     family with strength, wisdom and grace. 🙏"
 // Events with no single owning deity (e.g. the monthly Amavasai/Pournami)
 // get their own neutral phrasing instead of falling back to deity wording.
-export function notificationTitle(event: DeityEvent, daysBefore: number): string {
-  const deity = getDeityById(event.deity);
-  const symbol = deity?.symbol ?? (event.category === 'pournami' ? '🌕' : event.category === 'amavasai' ? '🌚' : '🪔');
-  if (daysBefore === 0) return `${symbol} Today is ${event.name}`;
-  if (!deity) {
-    return daysBefore === 1 ? `${symbol} ${event.name} is tomorrow` : `${symbol} ${event.name} is in ${daysBefore} days`;
-  }
-  if (daysBefore === 1) return `${symbol} ${deity.name}'s special day is tomorrow`;
-  return `${symbol} ${deity.name}'s special day is in ${daysBefore} days`;
+export function notificationTitle(event: DeityEvent, daysBefore: number, languageId: string = DEFAULT_LANGUAGE_ID): string {
+  return getContent(languageId).notificationTitle(messageContext(event, languageId), daysBefore);
 }
 
-export function notificationBody(event: DeityEvent, daysBefore: number): string {
-  const deity = getDeityById(event.deity);
-
-  if (daysBefore === 0) {
-    if (!deity) return `${event.significance} 🙏`;
-    return `May ${deity.honorific} ${deity.name} bless you and your family with strength, wisdom and grace. 🙏`;
-  }
-  if (daysBefore === 1) {
-    return `Tomorrow is ${event.name} - take a moment tonight to prepare your heart. 🙏`;
-  }
-  const shortDate = new Date(`${event.date}T00:00:00Z`).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'UTC',
-  });
-  return `${event.name} is coming up on ${shortDate} - a good time to start planning. 🙏`;
+export function notificationBody(event: DeityEvent, daysBefore: number, languageId: string = DEFAULT_LANGUAGE_ID): string {
+  return getContent(languageId).notificationBody(messageContext(event, languageId), daysBefore);
 }
 
 // First-person countdown line, voiced as whichever deity the event belongs
 // to - used for the home companion card's spoken (TTS) line. Events with no
 // owning deity (Amavasai/Pournami) are voiced neutrally rather than
 // borrowing another deity's greeting.
-export function reminderLine(event: DeityEvent, daysBefore?: number): string {
-  const deity = getDeityById(event.deity);
-  const when =
-    daysBefore === undefined
-      ? `on ${new Date(`${event.date}T00:00:00Z`).toLocaleDateString('en-US', {
-          weekday: 'long',
-          month: 'long',
-          day: 'numeric',
-          timeZone: 'UTC',
-        })}`
-      : daysBefore === 1
-        ? 'tomorrow'
-        : `in ${daysBefore} days`;
-  if (!deity) {
-    return `${event.name} (${event.tamilName}) is ${when}. ${event.significance}`;
-  }
-  return `${deity.greeting} I'm ${deity.name}, reminding you - ${event.name} (${event.tamilName}) is ${when}. ${event.significance}`;
+export function reminderLine(event: DeityEvent, languageId: string = DEFAULT_LANGUAGE_ID, daysBefore?: number): string {
+  return getContent(languageId).reminderLine(messageContext(event, languageId, true), daysBefore);
 }
 
 export async function areRemindersEnabled(): Promise<boolean> {
@@ -321,6 +290,7 @@ export async function scheduleUpcomingReminders(): Promise<void> {
 
   const followed = await getFollowedTopics();
   const leadDaysMap = await getLeadDaysMap();
+  const languageId = (await AsyncStorage.getItem(LANGUAGE_KEY)) ?? DEFAULT_LANGUAGE_ID;
   const upcoming = getUpcomingEvents()
     .filter((e) => followed.has(topicKey(e.deity, e.category)))
     .slice(0, MAX_SCHEDULED_EVENTS);
@@ -337,8 +307,8 @@ export async function scheduleUpcomingReminders(): Promise<void> {
       await Notifications.scheduleNotificationAsync({
         identifier: `${NOTIFICATION_PREFIX}${event.id}-${daysBefore}d`,
         content: {
-          title: notificationTitle(event, daysBefore),
-          body: notificationBody(event, daysBefore),
+          title: notificationTitle(event, daysBefore, languageId),
+          body: notificationBody(event, daysBefore, languageId),
           data: { eventId: event.id },
         },
         trigger: {

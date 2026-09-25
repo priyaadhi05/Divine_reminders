@@ -1,5 +1,12 @@
 import { useLanguage } from '@/contexts/language-context';
-import type { EventCategory } from '@/data/events';
+import type { DeityEvent, EventCategory } from '@/data/events';
+import {
+  formatDateNoYear,
+  formatFullDate,
+  formatShortDate,
+  localizeEvent,
+  localizedRegionLabel,
+} from '@/lib/i18n/content';
 import { translatedCategoryLabel, translatedDeityName } from '@/lib/i18n/labels';
 import { DEFAULT_LANGUAGE_ID } from '@/lib/i18n/languages';
 import { TRANSLATIONS, type TranslationKey } from '@/lib/i18n/translations';
@@ -34,5 +41,13 @@ export function useTranslation() {
 
   const deityName = (deityId: string, fallback: string): string => translatedDeityName(languageId, deityId, fallback);
 
-  return { t, relativeDay, categoryLabel, deityName, languageId };
+  // Generated event content (name, description, significance, basis, Tamil
+  // month) and dates, in the active language - see lib/i18n/content.
+  const localize = (event: DeityEvent): DeityEvent => localizeEvent(event, languageId);
+  const fullDate = (dateStr: string): string => formatFullDate(dateStr, languageId);
+  const dateNoYear = (dateStr: string): string => formatDateNoYear(dateStr, languageId);
+  const shortDate = (dateStr: string): string => formatShortDate(dateStr, languageId);
+  const regionLabel = (regionId: string, fallback: string): string => localizedRegionLabel(regionId, fallback, languageId);
+
+  return { t, relativeDay, categoryLabel, deityName, localize, fullDate, dateNoYear, shortDate, regionLabel, languageId };
 }

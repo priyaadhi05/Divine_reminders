@@ -7,6 +7,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { getVersesForDeity, localizedField, localizedLabel, type VerseEntry } from '@/lib/devotional-verses';
+import { localizedVerseScript, localizedVerseTitle } from '@/lib/i18n/content';
 
 // Mantras, slogans, and parayanam (recitation) texts for one deity - kept
 // entirely in-app (see devotional-verses.ts - no more linking out to an
@@ -53,8 +54,10 @@ function VerseCard({ verse }: { verse: VerseEntry }) {
       <ThemedText type="small" themeColor="textSecondary">
         {localizedLabel(verse.label, languageId)}
       </ThemedText>
-      <ThemedText type="smallBold">{verse.title}</ThemedText>
-      {verse.script && <ThemedText style={styles.script}>{verse.script}</ThemedText>}
+      <ThemedText type="smallBold">{localizedVerseTitle(verse.title, languageId)}</ThemedText>
+      {verse.script && (
+        <ThemedText style={styles.script}>{localizedVerseScript(verse.title, verse.script, languageId)}</ThemedText>
+      )}
       {meaning && (
         <ThemedText type="small" style={styles.meaning}>
           {t('deity.meaning')}: {meaning}

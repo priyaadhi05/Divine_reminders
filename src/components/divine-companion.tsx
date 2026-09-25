@@ -10,6 +10,7 @@ import type { DeityEvent } from '@/data/events';
 import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
+import { getContent } from '@/lib/i18n/content';
 import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } from '@/lib/notifications';
 
 // A reminder "companion" card: shows the next event (across any deity) as a
@@ -26,7 +27,7 @@ interface DivineCompanionProps {
 
 export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, languageId } = useTranslation();
   const playNotifySound = useNotifySound();
   const [speaking, setSpeaking] = useState(false);
   const [remindersOn, setRemindersOn] = useState(false);
@@ -50,7 +51,7 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
     transform: [{ scale: 1 + talk.value * 0.25 }],
   }));
 
-  const line = nextEvent ? reminderLine(nextEvent) : t('mascot.nothingNew');
+  const line = nextEvent ? reminderLine(nextEvent, languageId) : t('mascot.nothingNew');
 
   const handleTap = () => {
     if (speaking) {
@@ -60,6 +61,7 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
     }
     setSpeaking(true);
     Speech.speak(line, {
+      language: getContent(languageId).speechLanguage,
       onDone: () => setSpeaking(false),
       onStopped: () => setSpeaking(false),
       onError: () => setSpeaking(false),
@@ -88,7 +90,7 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
       <Pressable
         onPress={handleTap}
         accessibilityRole="button"
-        accessibilityLabel="Tap to hear the next reminder aloud">
+        accessibilityLabel={t('mascot.tapToHear')}>
         <ThemedView type="backgroundSelected" style={styles.bubble}>
           <ThemedText type="small" numberOfLines={4}>
             <Animated.Text style={iconStyle}>{speaking ? '🔊 ' : '🙏 '}</Animated.Text>

@@ -1,10 +1,7 @@
-// UI-chrome translations only (buttons, labels, section headers) - not the
-// astronomically-generated event names/descriptions or devotional content,
-// which stay in their original language (mostly English + the Tamil names
-// already carried on every event). Translating a few dozen interface labels
-// accurately is tractable; translating ~1500 generated event descriptions
-// and every prayer/mantra into four more languages is a much larger content
-// project of its own, so it's deliberately out of scope here.
+// UI-chrome translations (buttons, labels, section headers, alerts). The
+// generated event content - names, descriptions, significance, dates,
+// devotional practice/prayer, reminder and share wording - is translated in
+// lib/i18n/content/<lang>.ts instead, keyed by the event's English name.
 export type TranslationKey = keyof typeof EN;
 
 const EN = {
@@ -112,6 +109,29 @@ const EN = {
 
   'share.sentWith': '🪔 Sent with Bhakti Reminder',
   'share.getTheApp': 'Get the app: {{url}}',
+
+  'common.cancel': 'Cancel',
+  'common.errorTitle': 'Something went wrong',
+  'common.eventNotFound': 'Event not found.',
+  'common.deityNotFound': 'Deity not found.',
+  'onboarding.saveFailed': 'You can try again anytime from "Manage my deities" on Home.',
+  'share.pictureShared': 'Picture {{done}} of {{total}} shared',
+  'share.sendNext': 'Send the next one now?',
+  'share.stop': 'Stop',
+  'share.next': 'Next ({{n}} of {{total}})',
+  'share.textOnly': 'Share text only',
+  'share.photoUnsupportedTitle': 'Sharing a photo isn’t supported here',
+  'share.photoUnsupportedBody':
+    'This browser/device can’t attach a photo or video to a share. Open the app on your phone to share the image, or continue with text only.',
+  'share.sheetFailed': 'Couldn’t open the share sheet',
+  'share.tryAgain': 'Please try again.',
+  'share.failedTitle': 'Couldn’t share',
+  'share.webFailedBody': 'This browser can’t share a photo. Open the app on your phone to share it, or continue with text only.',
+  'share.chooseApp': 'Choose {{app}} to share',
+  'share.needPictureTitle': 'Select a picture first',
+  'share.needPictureBody': '{{app}} needs a picture or video to share - tap one above, then try again.',
+  'share.permissionTitle': 'Permission needed',
+  'share.permissionBody': 'Allow photo library access to add a photo or video to share.',
 } as const;
 
 const TA: Record<TranslationKey, string> = {
@@ -193,7 +213,7 @@ const TA: Record<TranslationKey, string> = {
   'event.whatDevoteesDo': 'பக்தர்கள் வழக்கமாகச் செய்வது',
   'event.simplePrayer': 'எளிய பிரார்த்தனை',
   'event.panchangamBasis': 'பஞ்சாங்க அடிப்படை',
-  'event.timingNote': '{{region}} க்காகக் காட்டப்படுகிறது. பஞ்சாங்க குறிப்பு (IST): {{startIST}} → {{endIST}}',
+  'event.timingNote': '{{region}} க்காகக் காட்டப்படுகிறது. பஞ்சாங்க குறிப்பு (இந்திய நேரம்): {{startIST}} → {{endIST}}',
 
   'leadDays.3': '3 நாட்களுக்கு முன்',
   'leadDays.2': '2 நாட்களுக்கு முன்',
@@ -219,6 +239,29 @@ const TA: Record<TranslationKey, string> = {
 
   'share.sentWith': '🪔 பக்தி நினைவூட்டி மூலம் அனுப்பப்பட்டது',
   'share.getTheApp': 'செயலியைப் பெற: {{url}}',
+
+  'common.cancel': 'ரத்து செய்',
+  'common.errorTitle': 'ஏதோ தவறு நடந்தது',
+  'common.eventNotFound': 'நிகழ்வு கிடைக்கவில்லை.',
+  'common.deityNotFound': 'தெய்வம் கிடைக்கவில்லை.',
+  'onboarding.saveFailed': 'முகப்புத் திரையில் உள்ள "எனது தெய்வங்களை நிர்வகி" மூலம் எப்போது வேண்டுமானாலும் மீண்டும் முயலலாம்.',
+  'share.pictureShared': '{{total}} படங்களில் {{done}} பகிரப்பட்டது',
+  'share.sendNext': 'அடுத்ததை இப்போது அனுப்பவா?',
+  'share.stop': 'நிறுத்து',
+  'share.next': 'அடுத்தது ({{total}} இல் {{n}})',
+  'share.textOnly': 'உரையை மட்டும் பகிர்',
+  'share.photoUnsupportedTitle': 'இங்கே படத்தைப் பகிர முடியாது',
+  'share.photoUnsupportedBody':
+    'இந்த உலாவி/சாதனத்தால் பகிர்வுடன் படம் அல்லது வீடியோவை இணைக்க முடியாது. படத்தைப் பகிர உங்கள் தொலைபேசியில் செயலியைத் திறக்கவும், அல்லது உரையுடன் மட்டும் தொடரவும்.',
+  'share.sheetFailed': 'பகிர்வுத் தாளைத் திறக்க முடியவில்லை',
+  'share.tryAgain': 'மீண்டும் முயலவும்.',
+  'share.failedTitle': 'பகிர முடியவில்லை',
+  'share.webFailedBody': 'இந்த உலாவியால் படத்தைப் பகிர முடியாது. பகிர உங்கள் தொலைபேசியில் செயலியைத் திறக்கவும், அல்லது உரையுடன் மட்டும் தொடரவும்.',
+  'share.chooseApp': 'பகிர {{app}} ஐத் தேர்ந்தெடுக்கவும்',
+  'share.needPictureTitle': 'முதலில் ஒரு படத்தைத் தேர்ந்தெடுக்கவும்',
+  'share.needPictureBody': '{{app}} இல் பகிர ஒரு படம் அல்லது வீடியோ தேவை - மேலே ஒன்றைத் தட்டி, மீண்டும் முயலவும்.',
+  'share.permissionTitle': 'அனுமதி தேவை',
+  'share.permissionBody': 'பகிர படம் அல்லது வீடியோ சேர்க்க புகைப்பட நூலக அணுகலை அனுமதிக்கவும்.',
 };
 
 const TE: Record<TranslationKey, string> = {
@@ -300,7 +343,7 @@ const TE: Record<TranslationKey, string> = {
   'event.whatDevoteesDo': 'భక్తులు సాంప్రదాయంగా చేసేది',
   'event.simplePrayer': 'సరళమైన ప్రార్థన',
   'event.panchangamBasis': 'పంచాంగ ఆధారం',
-  'event.timingNote': '{{region}} కోసం చూపబడింది. పంచాంగ సూచన (IST): {{startIST}} → {{endIST}}',
+  'event.timingNote': '{{region}} కోసం చూపబడింది. పంచాంగ సూచన (భారత కాలమానం): {{startIST}} → {{endIST}}',
 
   'leadDays.3': '3 రోజుల ముందు',
   'leadDays.2': '2 రోజుల ముందు',
@@ -326,6 +369,29 @@ const TE: Record<TranslationKey, string> = {
 
   'share.sentWith': '🪔 భక్తి రిమైండర్ ద్వారా పంపబడింది',
   'share.getTheApp': 'యాప్‌ను పొందండి: {{url}}',
+
+  'common.cancel': 'రద్దు చేయి',
+  'common.errorTitle': 'ఏదో పొరపాటు జరిగింది',
+  'common.eventNotFound': 'కార్యక్రమం కనుగొనబడలేదు.',
+  'common.deityNotFound': 'దేవత కనుగొనబడలేదు.',
+  'onboarding.saveFailed': 'హోమ్‌లోని "నా దేవతలను నిర్వహించు" నుండి ఎప్పుడైనా మళ్లీ ప్రయత్నించవచ్చు.',
+  'share.pictureShared': '{{total}} చిత్రాల్లో {{done}} పంచుకోబడింది',
+  'share.sendNext': 'తదుపరిది ఇప్పుడు పంపాలా?',
+  'share.stop': 'ఆపు',
+  'share.next': 'తదుపరి ({{total}} లో {{n}})',
+  'share.textOnly': 'వచనం మాత్రమే పంచుకో',
+  'share.photoUnsupportedTitle': 'ఇక్కడ ఫోటో పంచుకోవడం సాధ్యం కాదు',
+  'share.photoUnsupportedBody':
+    'ఈ బ్రౌజర్/పరికరం షేర్‌కు ఫోటో లేదా వీడియోను జత చేయలేదు. చిత్రాన్ని పంచుకోవడానికి మీ ఫోన్‌లో యాప్‌ను తెరవండి, లేదా వచనంతో మాత్రమే కొనసాగండి.',
+  'share.sheetFailed': 'షేర్ షీట్‌ను తెరవలేకపోయాం',
+  'share.tryAgain': 'దయచేసి మళ్లీ ప్రయత్నించండి.',
+  'share.failedTitle': 'పంచుకోలేకపోయాం',
+  'share.webFailedBody': 'ఈ బ్రౌజర్ ఫోటోను పంచుకోలేదు. పంచుకోవడానికి మీ ఫోన్‌లో యాప్‌ను తెరవండి, లేదా వచనంతో మాత్రమే కొనసాగండి.',
+  'share.chooseApp': 'పంచుకోవడానికి {{app}} ఎంచుకోండి',
+  'share.needPictureTitle': 'ముందుగా ఒక చిత్రాన్ని ఎంచుకోండి',
+  'share.needPictureBody': '{{app}} లో పంచుకోవడానికి చిత్రం లేదా వీడియో అవసరం - పైన ఒకదాన్ని తాకి, మళ్లీ ప్రయత్నించండి.',
+  'share.permissionTitle': 'అనుమతి అవసరం',
+  'share.permissionBody': 'పంచుకోవడానికి ఫోటో లేదా వీడియో జోడించడానికి ఫోటో లైబ్రరీ యాక్సెస్‌ను అనుమతించండి.',
 };
 
 const KN: Record<TranslationKey, string> = {
@@ -407,7 +473,7 @@ const KN: Record<TranslationKey, string> = {
   'event.whatDevoteesDo': 'ಭಕ್ತರು ಸಾಂಪ್ರದಾಯಿಕವಾಗಿ ಏನು ಮಾಡುತ್ತಾರೆ',
   'event.simplePrayer': 'ಸರಳ ಪ್ರಾರ್ಥನೆ',
   'event.panchangamBasis': 'ಪಂಚಾಂಗ ಆಧಾರ',
-  'event.timingNote': '{{region}}಼ಗಾಗಿ ತೋರಿಸಲಾಗಿದೆ. ಪಂಚಾಂಗ ಉಲ್ಲೇಖ (IST): {{startIST}} → {{endIST}}',
+  'event.timingNote': '{{region}} ಗಾಗಿ ತೋರಿಸಲಾಗಿದೆ. ಪಂಚಾಂಗ ಉಲ್ಲೇಖ (ಭಾರತೀಯ ಕಾಲಮಾನ): {{startIST}} → {{endIST}}',
 
   'leadDays.3': '3 ದಿನಗಳ ಮೊದಲು',
   'leadDays.2': '2 ದಿನಗಳ ಮೊದಲು',
@@ -433,6 +499,29 @@ const KN: Record<TranslationKey, string> = {
 
   'share.sentWith': '🪔 ಭಕ್ತಿ ರಿಮೈಂಡರ್ ಮೂಲಕ ಕಳುಹಿಸಲಾಗಿದೆ',
   'share.getTheApp': 'ಆ್ಯಪ್ ಪಡೆಯಿರಿ: {{url}}',
+
+  'common.cancel': 'ರದ್ದುಮಾಡಿ',
+  'common.errorTitle': 'ಏನೋ ತಪ್ಪಾಗಿದೆ',
+  'common.eventNotFound': 'ಕಾರ್ಯಕ್ರಮ ಕಂಡುಬಂದಿಲ್ಲ.',
+  'common.deityNotFound': 'ದೇವರು ಕಂಡುಬಂದಿಲ್ಲ.',
+  'onboarding.saveFailed': 'ಮುಖಪುಟದಲ್ಲಿರುವ "ನನ್ನ ದೇವರುಗಳನ್ನು ನಿರ್ವಹಿಸಿ" ಮೂಲಕ ಯಾವಾಗ ಬೇಕಾದರೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಬಹುದು.',
+  'share.pictureShared': '{{total}} ಚಿತ್ರಗಳಲ್ಲಿ {{done}} ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ',
+  'share.sendNext': 'ಮುಂದಿನದನ್ನು ಈಗ ಕಳುಹಿಸಬೇಕೇ?',
+  'share.stop': 'ನಿಲ್ಲಿಸಿ',
+  'share.next': 'ಮುಂದಿನದು ({{total}} ರಲ್ಲಿ {{n}})',
+  'share.textOnly': 'ಪಠ್ಯ ಮಾತ್ರ ಹಂಚಿಕೊಳ್ಳಿ',
+  'share.photoUnsupportedTitle': 'ಇಲ್ಲಿ ಫೋಟೋ ಹಂಚಿಕೊಳ್ಳಲು ಸಾಧ್ಯವಿಲ್ಲ',
+  'share.photoUnsupportedBody':
+    'ಈ ಬ್ರೌಸರ್/ಸಾಧನವು ಹಂಚಿಕೆಗೆ ಫೋಟೋ ಅಥವಾ ವೀಡಿಯೊವನ್ನು ಲಗತ್ತಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಚಿತ್ರವನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ಆ್ಯಪ್ ತೆರೆಯಿರಿ, ಅಥವಾ ಪಠ್ಯದೊಂದಿಗೆ ಮಾತ್ರ ಮುಂದುವರಿಯಿರಿ.',
+  'share.sheetFailed': 'ಹಂಚಿಕೆ ಹಾಳೆಯನ್ನು ತೆರೆಯಲಾಗಲಿಲ್ಲ',
+  'share.tryAgain': 'ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'share.failedTitle': 'ಹಂಚಿಕೊಳ್ಳಲಾಗಲಿಲ್ಲ',
+  'share.webFailedBody': 'ಈ ಬ್ರೌಸರ್ ಫೋಟೋ ಹಂಚಿಕೊಳ್ಳಲು ಸಾಧ್ಯವಿಲ್ಲ. ಹಂಚಿಕೊಳ್ಳಲು ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ಆ್ಯಪ್ ತೆರೆಯಿರಿ, ಅಥವಾ ಪಠ್ಯದೊಂದಿಗೆ ಮಾತ್ರ ಮುಂದುವರಿಯಿರಿ.',
+  'share.chooseApp': 'ಹಂಚಿಕೊಳ್ಳಲು {{app}} ಆಯ್ಕೆಮಾಡಿ',
+  'share.needPictureTitle': 'ಮೊದಲು ಒಂದು ಚಿತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+  'share.needPictureBody': '{{app}} ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಲು ಚಿತ್ರ ಅಥವಾ ವೀಡಿಯೊ ಬೇಕು - ಮೇಲೆ ಒಂದನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ, ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'share.permissionTitle': 'ಅನುಮತಿ ಬೇಕು',
+  'share.permissionBody': 'ಹಂಚಿಕೊಳ್ಳಲು ಫೋಟೋ ಅಥವಾ ವೀಡಿಯೊ ಸೇರಿಸಲು ಫೋಟೋ ಲೈಬ್ರರಿ ಪ್ರವೇಶವನ್ನು ಅನುಮತಿಸಿ.',
 };
 
 const HI: Record<TranslationKey, string> = {
@@ -514,7 +603,7 @@ const HI: Record<TranslationKey, string> = {
   'event.whatDevoteesDo': 'भक्त परंपरागत रूप से क्या करते हैं',
   'event.simplePrayer': 'सरल प्रार्थना',
   'event.panchangamBasis': 'पंचांग आधार',
-  'event.timingNote': '{{region}} के लिए दिखाया गया है। पंचांग संदर्भ (IST): {{startIST}} → {{endIST}}',
+  'event.timingNote': '{{region}} के लिए दिखाया गया है। पंचांग संदर्भ (भारतीय मानक समय): {{startIST}} → {{endIST}}',
 
   'leadDays.3': '3 दिन पहले',
   'leadDays.2': '2 दिन पहले',
@@ -540,6 +629,29 @@ const HI: Record<TranslationKey, string> = {
 
   'share.sentWith': '🪔 भक्ति रिमाइंडर के साथ भेजा गया',
   'share.getTheApp': 'ऐप पाएं: {{url}}',
+
+  'common.cancel': 'रद्द करें',
+  'common.errorTitle': 'कुछ गलत हो गया',
+  'common.eventNotFound': 'कार्यक्रम नहीं मिला।',
+  'common.deityNotFound': 'देवता नहीं मिले।',
+  'onboarding.saveFailed': 'आप होम पर "मेरे देवता प्रबंधित करें" से कभी भी फिर से कोशिश कर सकते हैं।',
+  'share.pictureShared': '{{total}} में से {{done}} चित्र साझा किया गया',
+  'share.sendNext': 'क्या अगला अभी भेजें?',
+  'share.stop': 'रोकें',
+  'share.next': 'अगला ({{total}} में से {{n}})',
+  'share.textOnly': 'केवल संदेश साझा करें',
+  'share.photoUnsupportedTitle': 'यहाँ फ़ोटो साझा नहीं की जा सकती',
+  'share.photoUnsupportedBody':
+    'यह ब्राउज़र/डिवाइस साझा करते समय फ़ोटो या वीडियो नहीं जोड़ सकता। चित्र साझा करने के लिए अपने फ़ोन पर ऐप खोलें, या केवल संदेश के साथ जारी रखें।',
+  'share.sheetFailed': 'साझा करने की शीट नहीं खुल सकी',
+  'share.tryAgain': 'कृपया फिर से कोशिश करें।',
+  'share.failedTitle': 'साझा नहीं हो सका',
+  'share.webFailedBody': 'यह ब्राउज़र फ़ोटो साझा नहीं कर सकता। साझा करने के लिए अपने फ़ोन पर ऐप खोलें, या केवल संदेश के साथ जारी रखें।',
+  'share.chooseApp': 'साझा करने के लिए {{app}} चुनें',
+  'share.needPictureTitle': 'पहले एक चित्र चुनें',
+  'share.needPictureBody': '{{app}} पर साझा करने के लिए चित्र या वीडियो चाहिए - ऊपर एक पर टैप करें, फिर से कोशिश करें।',
+  'share.permissionTitle': 'अनुमति आवश्यक',
+  'share.permissionBody': 'साझा करने के लिए फ़ोटो या वीडियो जोड़ने हेतु फ़ोटो लाइब्रेरी की अनुमति दें।',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = {

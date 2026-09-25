@@ -9,7 +9,6 @@ import { Spacing } from '@/constants/theme';
 import {
   CATEGORY_LABELS,
   daysUntil,
-  formatEventDate,
   GENERAL_DEITY_ID,
   getGeneralCategories,
   getUpcomingGeneralEvents,
@@ -33,7 +32,7 @@ const UPCOMING_PREVIEW_COUNT = 6;
 
 export function LunarDaysCard() {
   const theme = useTheme();
-  const { t, categoryLabel, relativeDay } = useTranslation();
+  const { t, categoryLabel, relativeDay, localize, dateNoYear } = useTranslation();
   const [followed, setFollowed] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -99,7 +98,7 @@ export function LunarDaysCard() {
               <ThemedText type="small">
                 {icon}{' '}
                 {next
-                  ? t('lunar.next', { name: next.name, date: formatEventDate(next.date).split(',').slice(0, 2).join(',') })
+                  ? t('lunar.next', { name: localize(next).name, date: dateNoYear(next.date) })
                   : t('lunar.noUpcoming', { category: categoryLabel(category, CATEGORY_LABELS[category]) })}
               </ThemedText>
               {next && (

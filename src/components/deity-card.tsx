@@ -4,7 +4,7 @@ import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing, ThemeColor } from '@/constants/theme';
-import { formatEventDate, getUpcomingEvents, type Deity } from '@/data/events';
+import { getUpcomingEvents, type Deity } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -13,7 +13,7 @@ import { useTranslation } from '@/hooks/use-translation';
 // that deity's own detail/calendar screen.
 export function DeityCard({ deity, accentColor }: { deity: Deity; accentColor: ThemeColor }) {
   const theme = useTheme();
-  const { t, deityName } = useTranslation();
+  const { t, deityName, localize, dateNoYear } = useTranslation();
   const [next] = getUpcomingEvents(1, deity.id);
   const accent = theme[accentColor];
 
@@ -31,7 +31,7 @@ export function DeityCard({ deity, accentColor }: { deity: Deity; accentColor: T
           </ThemedText>
           {next && (
             <ThemedText type="small" style={[styles.nextLine, { color: accent }]} numberOfLines={1}>
-              {t('deity.nextLabel')}: {next.name} · {formatEventDate(next.date).split(',').slice(0, 2).join(',')}
+              {t('deity.nextLabel')}: {localize(next).name} · {dateNoYear(next.date)}
             </ThemedText>
           )}
         </ThemedView>

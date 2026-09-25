@@ -11,13 +11,13 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
-import { CATEGORY_LABELS, formatEventDate, formatPeriodTiming, getDeityById, getEventById } from '@/data/events';
+import { CATEGORY_LABELS, formatPeriodTiming, getDeityById, getEventById } from '@/data/events';
 import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { APP_INSTALL_URL } from '@/lib/app-info';
 import { CATEGORY_STYLE } from '@/lib/category-style';
-import { getDevotionalContent } from '@/lib/devotional-content';
+import { getDevotional } from '@/lib/i18n/content';
 import {
   areRemindersEnabled,
   enableReminders,
@@ -34,7 +34,7 @@ export default function EventDetailScreen() {
   const event = getEventById(id);
   const { regionId: homeRegionId } = useRegion();
   const theme = useTheme();
-  const { t, categoryLabel, deityName: translatedDeityName } = useTranslation();
+  const { t, categoryLabel, deityName: translatedDeityName, localize, fullDate, languageId } = useTranslation();
   const playNotifySound = useNotifySound();
   const [reminderOn, setReminderOn] = useState(false);
   const [leadDays, setLeadDays] = useState<number[]>([3, 2, 1]);
@@ -62,16 +62,17 @@ export default function EventDetailScreen() {
   if (!event) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText>Event not found.</ThemedText>
+        <ThemedText>{t('common.eventNotFound')}</ThemedText>
       </ThemedView>
     );
   }
 
-  const { timeZone, label: regionLabel } = resolveRegionTimeZone(viewingRegionId);
-  const timing = formatPeriodTiming(event, timeZone, regionLabel);
+  const { timeZone, label: regionLabel } = resolveRegionTimeZone(viewingRegionId, languageId);
+  const timing = formatPeriodTiming(event, timeZone, regionLabel, languageId);
+  const shown = localize(event);
   const { colorKey, icon } = CATEGORY_STYLE[event.category];
   const accentColor = theme[colorKey];
-  const { practice, prayer } = getDevotionalContent(event);
+  const { practice, prayer } = getDevotional(event, languageId);
 
   const handleSetReminder = async () => {
     if (busy) return;
@@ -109,7 +110,7 @@ export default function EventDetailScreen() {
   // an install link once one actually exists (see lib/app-info.ts) - sharing
   // is how this app grows, so it shouldn't read as an anonymous forwarded
   // text.
-  const greeting = buildGreeting(event);
+  const greeting = buildGreeting(event, languageId);
   const fullShareMessage = [
     greeting,
     APP_INSTALL_URL ? `${t('share.sentWith')}\n${t('share.getTheApp', { url: APP_INSTALL_URL })}` : t('share.sentWith'),
@@ -122,16 +123,18 @@ export default function EventDetailScreen() {
           <ThemedView style={styles.categoryRow}>
             <ThemedText style={styles.categoryIcon}>{icon}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {categoryLabel(event.category, CATEGORY_LABELS[event.category])} · {event.tamilMonth}
+              {categoryLabel(event.category, CATEGORY_LABELS[event.category])} · {shown.tamilMonth}
             </ThemedText>
           </ThemedView>
           <ThemedText type="title" style={styles.title}>
-            {event.name}
+            {shown.name}
           </ThemedText>
-          <ThemedText type="subtitle" style={[styles.tamilName, { color: accentColor }]}>
-            {event.tamilName}
-          </ThemedText>
-          <ThemedText type="smallBold">{formatEventDate(event.date)}</ThemedText>
+          {!!shown.tamilName && (
+            <ThemedText type="subtitle" style={[styles.tamilName, { color: accentColor }]}>
+              {shown.tamilName}
+            </ThemedText>
+          )}
+          <ThemedText type="smallBold">{fullDate(event.date)}</ThemedText>
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={[styles.reminderCard, { borderLeftColor: accentColor }]}>
@@ -246,8 +249,8 @@ export default function EventDetailScreen() {
 
         <ThemedView style={styles.section}>
           <ThemedText type="smallBold">{t('event.whyMatters')}</ThemedText>
-          <ThemedText>{event.description}</ThemedText>
-          <ThemedText style={styles.significance}>{event.significance}</ThemedText>
+          <ThemedText>{shown.description}</ThemedText>
+          <ThemedText style={styles.significance}>{shown.significance}</ThemedText>
         </ThemedView>
 
         <ThemedView style={styles.section}>
@@ -263,7 +266,7 @@ export default function EventDetailScreen() {
         <ThemedView style={styles.section}>
           <ThemedText type="smallBold">{t('event.panchangamBasis')}</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
-            {event.basis}
+            {shown.basis}
           </ThemedText>
         </ThemedView>
       </SafeAreaView>

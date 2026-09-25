@@ -6,7 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { AUTO_REGION_ID, REGIONS, resolveRegionTimeZone } from '@/lib/regions';
+import { regionOptions, resolveRegionTimeZone } from '@/lib/regions';
 
 // Controlled, not tied to a persisted "home" region itself - on Home, this
 // changes the actual home region (via useRegion), but on the event detail
@@ -24,9 +24,9 @@ export function RegionSelector({
   label?: string;
   sheetTitle?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, languageId } = useTranslation();
   const [open, setOpen] = useState(false);
-  const current = resolveRegionTimeZone(regionId);
+  const current = resolveRegionTimeZone(regionId, languageId);
 
   return (
     <>
@@ -48,7 +48,7 @@ export function RegionSelector({
                   {sheetTitle ?? t('region.chooseHome')}
                 </ThemedText>
                 <FlatList
-                  data={[{ id: AUTO_REGION_ID, label: resolveRegionTimeZone(AUTO_REGION_ID).label }, ...REGIONS]}
+                  data={regionOptions(languageId)}
                   keyExtractor={(item) => item.id}
                   style={styles.list}
                   renderItem={({ item }) => {

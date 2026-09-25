@@ -49,14 +49,14 @@ function isDismissal(error: unknown): boolean {
   return text.includes('abort') || text.includes('cancel') || text.includes('dismiss');
 }
 
-const askNext = (done: number, total: number) =>
+const askNext = (t: ReturnType<typeof useTranslation>['t'], done: number, total: number) =>
   new Promise<boolean>((resolve) =>
     Alert.alert(
-      `Picture ${done} of ${total} shared`,
-      'Send the next one now?',
+      t('share.pictureShared', { done, total }),
+      t('share.sendNext'),
       [
-        { text: 'Stop', style: 'cancel', onPress: () => resolve(false) },
-        { text: `Next (${done + 1} of ${total})`, onPress: () => resolve(true) },
+        { text: t('share.stop'), style: 'cancel', onPress: () => resolve(false) },
+        { text: t('share.next', { n: done + 1, total }), onPress: () => resolve(true) },
       ],
       { cancelable: false, onDismiss: () => resolve(false) }
     )
@@ -150,14 +150,10 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   // one after another, asking before each next one.
   const shareViaSheet = async (items: ShareMedia[], dialogTitle?: string) => {
     if (!(await Sharing.isAvailableAsync())) {
-      Alert.alert(
-        'Sharing a photo isn’t supported here',
-        'This browser/device can’t attach a photo or video to a share. Open the app on your phone to share the image, or continue with text only.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Share text only', onPress: shareTextViaSheet },
-        ]
-      );
+      Alert.alert(t('share.photoUnsupportedTitle'), t('share.photoUnsupportedBody'), [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('share.textOnly'), onPress: shareTextViaSheet },
+      ]);
       return;
     }
     for (let i = 0; i < items.length; i++) {
@@ -170,11 +166,12 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
         });
       } catch (error) {
         if (!isDismissal(error)) {
-          Alert.alert('Couldn’t open the share sheet', error instanceof Error ? error.message : String(error));
+          console.warn('shareAsync failed', error);
+          Alert.alert(t('share.sheetFailed'), t('share.tryAgain'));
         }
         return;
       }
-      if (i < items.length - 1 && !(await askNext(i + 1, items.length))) return;
+      if (i < items.length - 1 && !(await askNext(t, i + 1, items.length))) return;
     }
   };
 
@@ -200,14 +197,10 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       await navigator.share(navigator.canShare && !navigator.canShare(shareData) ? { files } : shareData);
     } catch (error) {
       if (!isDismissal(error)) {
-        Alert.alert(
-          'Couldn’t share',
-          'This browser can’t share a photo. Open the app on your phone to share it, or continue with text only.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Share text only', onPress: shareTextViaSheet },
-          ]
-        );
+        Alert.alert(t('share.failedTitle'), t('share.webFailedBody'), [
+          { text: t('common.cancel'), style: 'cancel' },
+          { text: t('share.textOnly'), onPress: shareTextViaSheet },
+        ]);
       }
     }
   };
@@ -216,7 +209,7 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     canWebShare ? shareViaWebShare(items) : shareViaSheet(await withCaptions(items), dialogTitle);
 
   const shareToWhatsApp = async () => {
-    if (chosen.length > 0) return shareSelected(chosen, 'Choose WhatsApp to share');
+    if (chosen.length > 0) return shareSelected(chosen, t('share.chooseApp', { app: t('share.whatsapp') }));
     // No picture selected: the universal wa.me link opens the WhatsApp app
     // (native) or WhatsApp Web (browser) directly with the message
     // pre-filled - the one direct route there is, either way.
@@ -228,15 +221,15 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   };
 
   const needPicture = (app: string) =>
-    Alert.alert('Select a picture first', `${app} needs a picture or video to share - tap one above, then try again.`);
+    Alert.alert(t('share.needPictureTitle'), t('share.needPictureBody', { app }));
 
   const shareToInstagram = async () => {
-    if (chosen.length === 0) return needPicture('Instagram');
-    await shareSelected(chosen, 'Choose Instagram to share');
+    if (chosen.length === 0) return needPicture(t('share.instagram'));
+    await shareSelected(chosen, t('share.chooseApp', { app: t('share.instagram') }));
   };
 
   const shareToFacebook = async () =>
-    chosen.length > 0 ? shareSelected(chosen, 'Choose Facebook to share') : shareTextViaSheet();
+    chosen.length > 0 ? shareSelected(chosen, t('share.chooseApp', { app: t('share.facebook') })) : shareTextViaSheet();
 
   const shareMore = async () => (chosen.length > 0 ? shareSelected(chosen) : shareTextViaSheet());
 
@@ -246,7 +239,7 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Permission needed', 'Allow photo library access to add a photo or video to share.');
+        Alert.alert(t('share.permissionTitle'), t('share.permissionBody'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({

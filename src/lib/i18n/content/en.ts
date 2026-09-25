@@ -1,18 +1,10 @@
-import type { DeityEvent, EventCategory } from '@/data/events';
+import type { LanguageContent, MessageContext } from './types';
 
-// "What devotees traditionally do" and "A simple prayer" for the event
-// detail screen - the content behind "See the significance →" in a
-// notification. Kept separate from the astronomically-generated
-// description/significance fields (which explain *what* the day is);
-// this is about *how* someone might mark it.
-export interface DevotionalContent {
-  practice: string;
-  prayer: string;
-}
+// English is the source language: the generated event text in
+// assets/data/*.json is already English, so its lookup tables are empty and
+// every field falls through to the original string.
 
-// Fallback content by category - covers every monthly/recurring observance
-// and any festival without its own override below.
-const CATEGORY_CONTENT: Record<EventCategory, DevotionalContent> = {
+const DEVOTIONAL_BY_CATEGORY: LanguageContent['devotionalByCategory'] = {
   festival: {
     practice: 'Visit a temple if you can, wear something clean and bright, and share festive food with family.',
     prayer: 'Thank you for this day of grace. Bless my family with health, peace, and togetherness.',
@@ -65,7 +57,7 @@ const CATEGORY_CONTENT: Record<EventCategory, DevotionalContent> = {
 
 // Overrides for specific, well-known festivals that deserve their own words
 // rather than the generic category text.
-const NAME_OVERRIDES: Record<string, DevotionalContent> = {
+const DEVOTIONAL_BY_NAME: LanguageContent['devotionalByName'] = {
   Thaipusam: {
     practice:
       'Kavadi bearers complete their vow with a procession to the temple; others visit a Murugan temple, break coconuts, and offer milk (paal kudam).',
@@ -169,6 +161,77 @@ const NAME_OVERRIDES: Record<string, DevotionalContent> = {
   },
 };
 
-export function getDevotionalContent(event: DeityEvent): DevotionalContent {
-  return NAME_OVERRIDES[event.name] ?? CATEGORY_CONTENT[event.category];
-}
+const whenLong = (ctx: MessageContext, daysBefore?: number) =>
+  daysBefore === undefined ? `on ${ctx.date}` : daysBefore === 1 ? 'tomorrow' : `in ${daysBefore} days`;
+
+export const EN_CONTENT: LanguageContent = {
+  speechLanguage: 'en-US',
+
+  months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  weekdays: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+  fullDate: (w, m, d, y) => `${w}, ${m} ${d}, ${y}`,
+  dateNoYear: (w, m, d) => `${w}, ${m} ${d}`,
+  shortDate: (m, d) => `${m} ${d}`,
+  monthLabel: (m, y) => `${m} ${y}`,
+  dateTime: (d, m, y, time) => `${d} ${m.slice(0, 3)} ${y}, ${time}`,
+
+  events: {},
+  tamilMonths: {},
+
+  deityGreetings: {
+    murugan: 'Vel Vel!',
+    vishnu: 'Om Namo Narayanaya!',
+    shiva: 'Om Namah Shivaya!',
+    durga: 'Om Shakti!',
+    ganesha: 'Om Gam Ganapataye Namaha!',
+    ayyappan: 'Swamiye Saranam Ayyappa!',
+    hanuman: 'Om Hanumate Namaha!',
+    lakshmi: 'Om Shreem Mahalakshmiyei Namaha!',
+  },
+  honorifics: { Lord: 'Lord', Goddess: 'Goddess' },
+  regions: {},
+  autoRegion: (tz) => `Auto (${tz})`,
+
+  verseTitles: {},
+  verseScripts: {},
+
+  devotionalByCategory: DEVOTIONAL_BY_CATEGORY,
+  devotionalByName: DEVOTIONAL_BY_NAME,
+
+  reminderLine: (ctx, daysBefore) =>
+    ctx.deityName
+      ? `${ctx.greeting} I'm ${ctx.deityName}, reminding you - ${ctx.name} is ${whenLong(ctx, daysBefore)}. ${ctx.significance}`
+      : `${ctx.name} is ${whenLong(ctx, daysBefore)}. ${ctx.significance}`,
+
+  notificationTitle: (ctx, daysBefore) => {
+    if (daysBefore === 0) return `${ctx.symbol} Today is ${ctx.name}`;
+    if (!ctx.deityName) {
+      return daysBefore === 1 ? `${ctx.symbol} ${ctx.name} is tomorrow` : `${ctx.symbol} ${ctx.name} is in ${daysBefore} days`;
+    }
+    if (daysBefore === 1) return `${ctx.symbol} ${ctx.deityName}'s special day is tomorrow`;
+    return `${ctx.symbol} ${ctx.deityName}'s special day is in ${daysBefore} days`;
+  },
+
+  notificationBody: (ctx, daysBefore) => {
+    if (daysBefore === 0) {
+      if (!ctx.deityName) return `${ctx.significance} 🙏`;
+      return `May ${ctx.honorific} ${ctx.deityName} bless you and your family with strength, wisdom and grace. 🙏`;
+    }
+    if (daysBefore === 1) return `Tomorrow is ${ctx.name} - take a moment tonight to prepare your heart. 🙏`;
+    return `${ctx.name} is coming up on ${ctx.date} - a good time to start planning. 🙏`;
+  },
+
+  shareGreeting: (ctx, n) => {
+    const owner = ctx.deityName ? `${ctx.honorific} ${ctx.deityName}` : null;
+    const forOwner = owner ? ` - a very special day for ${owner}` : '';
+    let when: string;
+    if (n === 0) when = `Today is ${ctx.name}${forOwner}.`;
+    else if (n === 1) when = `Tomorrow is ${ctx.name}${forOwner}.`;
+    else if (n > 1) when = `${ctx.name} is on ${ctx.fullDate}, ${n} days from now${forOwner}.`;
+    else when = `${ctx.name} falls on ${ctx.fullDate}${forOwner}.`;
+    const blessing = owner
+      ? `May ${owner} bless you and your family with strength, wisdom, peace and grace. ${ctx.symbol}`
+      : `May this sacred day fill your home with peace, health and happiness. ${ctx.symbol}`;
+    return `Hi beloved 🙏\n\n${when}\n\n${blessing}`;
+  },
+};

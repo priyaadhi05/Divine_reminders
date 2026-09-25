@@ -2,8 +2,9 @@
 // entirely in-app and shown in the reader's selected UI language, rather
 // than linking out to an external page that ignores it. Short mantras are
 // quoted here in full, original script (never translated - it's the same
-// sounds regardless of reading language, so it stays as-is; only its
-// meaning and context are localized). Long-form hymns (a 100+ line kavasam,
+// sounds regardless of reading language; it's only transliterated into the
+// reader's script via lib/i18n/content, while its meaning and context are
+// translated here). Long-form hymns (a 100+ line kavasam,
 // an ashtakam whose composer's copyright status is unclear, 1,300+
 // individual Tiruppugazh songs) aren't fabricated or truncated here -
 // there's no complete, verified text of those I can respectfully quote, so
@@ -22,8 +23,8 @@ const LABEL_TEXT: Record<VerseLabel, Record<string, string>> = {
 
 export interface VerseEntry {
   label: VerseLabel;
-  title: string; // its name - kept as Roman transliteration in every language, same as a proper noun (the mantra itself isn't reworded per language, so neither is its name)
-  script?: string; // the verse itself, original script, when short/certain enough to quote in full
+  title: string; // its name in Roman transliteration - also the key for its per-language spelling in lib/i18n/content (verseTitles)
+  script?: string; // the verse itself, original script, when short/certain enough to quote in full - lib/i18n/content (verseScripts) holds it transliterated into each reader's script
   meaning?: Record<string, string>; // localized plain-language translation of what the script says - only for entries with a script
   note: Record<string, string>; // localized context: what it is, when/why it's recited
 }

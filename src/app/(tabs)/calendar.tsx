@@ -35,7 +35,7 @@ export default function CalendarScreen() {
   const [visibleYearCount, setVisibleYearCount] = useState(1);
   useEffect(() => setVisibleYearCount(1), [filter]);
   const theme = useTheme();
-  const { t, categoryLabel } = useTranslation();
+  const { t, categoryLabel, languageId } = useTranslation();
 
   const filters: { key: EventCategory | 'all'; label: string; icon: string; colorKey: ThemeColor }[] = [
     { key: 'all', label: t('common.all'), icon: '📿', colorKey: 'success' },
@@ -48,8 +48,8 @@ export default function CalendarScreen() {
 
   const allGroups = useMemo(() => {
     const events = filter === 'all' ? getAllEvents() : getAllEvents().filter((e) => e.category === filter);
-    return getEventsByYearMonth(events);
-  }, [filter]);
+    return getEventsByYearMonth(events, languageId);
+  }, [filter, languageId]);
 
   // Only the current year's upcoming months by default - ten years of every
   // deity's events on one page is overwhelming. "Show more" reveals one

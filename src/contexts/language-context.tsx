@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 import { DEFAULT_LANGUAGE_ID } from '@/lib/i18n/languages';
+import { scheduleUpcomingReminders } from '@/lib/notifications';
 
 const STORAGE_KEY = 'divine-calendar:selected-language';
 
@@ -26,7 +27,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLanguageId = (id: string) => {
     setLanguageIdState(id);
-    AsyncStorage.setItem(STORAGE_KEY, id);
+    // Already-scheduled notifications carry their text baked in, so
+    // re-schedule them once the new language is saved.
+    AsyncStorage.setItem(STORAGE_KEY, id).then(() => scheduleUpcomingReminders());
   };
 
   return <LanguageContext.Provider value={{ languageId, setLanguageId }}>{children}</LanguageContext.Provider>;
