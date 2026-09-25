@@ -1,0 +1,61 @@
+import { useEffect } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
+import { stopIfSpeaking, useSpeech } from '@/hooks/use-speech';
+import { useTheme } from '@/hooks/use-theme';
+import { useTranslation } from '@/hooks/use-translation';
+import { getLanguageById } from '@/lib/i18n/languages';
+
+// "🔊 Listen" / "⏹ Stop" pill that reads `text` aloud in the selected
+// language (see hooks/use-speech.ts). If the device has no voice for that
+// language, it says so inline - an Alert wouldn't show on web.
+export function ListenButton({ speechKey, text }: { speechKey: string; text: string }) {
+  const theme = useTheme();
+  const { t, languageId } = useTranslation();
+  const { speakingKey, missingVoiceKey, toggle } = useSpeech();
+  const speaking = speakingKey === speechKey;
+
+  // Leaving the screen shouldn't leave it talking.
+  useEffect(() => () => stopIfSpeaking(speechKey), [speechKey]);
+
+  return (
+    <ThemedView style={styles.wrap}>
+      <Pressable
+        onPress={() => toggle(speechKey, text)}
+        accessibilityRole="button"
+        accessibilityLabel={speaking ? t('listen.stop') : t('listen.play')}
+        style={({ pressed }) => pressed && styles.pressed}>
+        <ThemedView
+          style={[styles.pill, { borderColor: theme.secondary }, speaking && { backgroundColor: theme.secondary }]}>
+          <ThemedText type="smallBold" style={{ color: speaking ? theme.primaryText : theme.secondary }}>
+            {speaking ? `⏹ ${t('listen.stop')}` : `🔊 ${t('listen.play')}`}
+          </ThemedText>
+        </ThemedView>
+      </Pressable>
+      {missingVoiceKey === speechKey && (
+        <ThemedText type="small" themeColor="textSecondary">
+          {t('listen.noVoice', { language: getLanguageById(languageId).nativeLabel })}
+        </ThemedText>
+      )}
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrap: {
+    alignItems: 'flex-start',
+    gap: Spacing.half,
+  },
+  pressed: {
+    opacity: 0.7,
+  },
+  pill: {
+    borderWidth: 1.5,
+    borderRadius: Spacing.five,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
+  },
+});

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet } from 'react-native';
-import * as Speech from 'expo-speech';
 import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';
 
 import { ThemedText } from '@/components/themed-text';
@@ -8,9 +7,10 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import type { DeityEvent } from '@/data/events';
 import { useNotifySound } from '@/hooks/use-notify-sound';
+import { stopIfSpeaking, useSpeech } from '@/hooks/use-speech';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { getContent } from '@/lib/i18n/content';
+import { getLanguageById } from '@/lib/i18n/languages';
 import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } from '@/lib/notifications';
 
 // A reminder "companion" card: shows the next event (across any deity) as a
@@ -21,6 +21,8 @@ import { areRemindersEnabled, disableReminders, enableReminders, reminderLine } 
 // icon while speaking. (Named for what it does, not "MuruganMascot" as it
 // was originally - it's always voiced whichever deity the next event
 // belongs to, never Murugan specifically.)
+const SPEECH_KEY = 'companion';
+
 interface DivineCompanionProps {
   nextEvent?: DeityEvent;
 }
@@ -29,7 +31,8 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
   const theme = useTheme();
   const { t, languageId } = useTranslation();
   const playNotifySound = useNotifySound();
-  const [speaking, setSpeaking] = useState(false);
+  const { speakingKey, missingVoiceKey, toggle } = useSpeech();
+  const speaking = speakingKey === SPEECH_KEY;
   const [remindersOn, setRemindersOn] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -45,7 +48,7 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
       : withTiming(0, { duration: 100 });
   }, [speaking, talk]);
 
-  useEffect(() => () => void Speech.stop(), []);
+  useEffect(() => () => stopIfSpeaking(SPEECH_KEY), []);
 
   const iconStyle = useAnimatedStyle(() => ({
     transform: [{ scale: 1 + talk.value * 0.25 }],
@@ -53,20 +56,7 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
 
   const line = nextEvent ? reminderLine(nextEvent, languageId) : t('mascot.nothingNew');
 
-  const handleTap = () => {
-    if (speaking) {
-      Speech.stop();
-      setSpeaking(false);
-      return;
-    }
-    setSpeaking(true);
-    Speech.speak(line, {
-      language: getContent(languageId).speechLanguage,
-      onDone: () => setSpeaking(false),
-      onStopped: () => setSpeaking(false),
-      onError: () => setSpeaking(false),
-    });
-  };
+  const handleTap = () => toggle(SPEECH_KEY, line);
 
   const handleToggleReminders = async () => {
     if (busy) return;
@@ -99,6 +89,11 @@ export function DivineCompanion({ nextEvent }: DivineCompanionProps) {
           <ThemedText type="small" themeColor="textSecondary" style={styles.tapHint}>
             {speaking ? t('mascot.tapToStop') : t('mascot.tapToHear')}
           </ThemedText>
+          {missingVoiceKey === SPEECH_KEY && (
+            <ThemedText type="small" themeColor="textSecondary">
+              {t('listen.noVoice', { language: getLanguageById(languageId).nativeLabel })}
+            </ThemedText>
+          )}
         </ThemedView>
       </Pressable>
 

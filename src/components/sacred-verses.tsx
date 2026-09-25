@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
+import { ListenButton } from '@/components/listen-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -48,16 +49,25 @@ function VerseCard({ verse }: { verse: VerseEntry }) {
   const { t, languageId } = useTranslation();
   const meaning = localizedField(verse.meaning, languageId);
   const note = localizedField(verse.note, languageId);
+  const title = localizedVerseTitle(verse.title, languageId);
+  const script = verse.script ? localizedVerseScript(verse.title, verse.script, languageId) : undefined;
+  // The mantra itself first, then what it means and when it's recited.
+  const listenText = [
+    `${title}.`,
+    script,
+    meaning ? `${t('deity.meaning')}: ${meaning}` : undefined,
+    note,
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return (
     <ThemedView type="backgroundElement" style={[styles.card, { borderLeftColor: theme.secondary }]}>
       <ThemedText type="small" themeColor="textSecondary">
         {localizedLabel(verse.label, languageId)}
       </ThemedText>
-      <ThemedText type="smallBold">{localizedVerseTitle(verse.title, languageId)}</ThemedText>
-      {verse.script && (
-        <ThemedText style={styles.script}>{localizedVerseScript(verse.title, verse.script, languageId)}</ThemedText>
-      )}
+      <ThemedText type="smallBold">{title}</ThemedText>
+      {script && <ThemedText style={styles.script}>{script}</ThemedText>}
       {meaning && (
         <ThemedText type="small" style={styles.meaning}>
           {t('deity.meaning')}: {meaning}
@@ -68,6 +78,7 @@ function VerseCard({ verse }: { verse: VerseEntry }) {
           {note}
         </ThemedText>
       )}
+      <ListenButton speechKey={`verse:${verse.title}`} text={listenText} />
     </ThemedView>
   );
 }

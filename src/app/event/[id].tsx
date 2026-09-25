@@ -5,6 +5,7 @@ import { SymbolView } from 'expo-symbols';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LeadDaysRow } from '@/components/lead-days-row';
+import { ListenButton } from '@/components/listen-button';
 import { RegionSelector } from '@/components/region-selector';
 import { SharePanel } from '@/components/share-panel';
 import { ThemedText } from '@/components/themed-text';
@@ -73,6 +74,13 @@ export default function EventDetailScreen() {
   const { colorKey, icon } = CATEGORY_STYLE[event.category];
   const accentColor = theme[colorKey];
   const { practice, prayer } = getDevotional(event, languageId);
+  // Everything below the header, read top to bottom - what "Listen" speaks.
+  const listenText = [
+    `${shown.name}. ${fullDate(event.date)}.`,
+    `${t('event.whyMatters')}. ${shown.description} ${shown.significance}`,
+    `${t('event.whatDevoteesDo')}. ${practice}`,
+    `${t('event.simplePrayer')}. ${prayer}`,
+  ].join('\n');
 
   const handleSetReminder = async () => {
     if (busy) return;
@@ -135,6 +143,9 @@ export default function EventDetailScreen() {
             </ThemedText>
           )}
           <ThemedText type="smallBold">{fullDate(event.date)}</ThemedText>
+          <ThemedView style={styles.listenRow}>
+            <ListenButton speechKey={`event:${event.id}`} text={listenText} />
+          </ThemedView>
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={[styles.reminderCard, { borderLeftColor: accentColor }]}>
@@ -310,6 +321,9 @@ const styles = StyleSheet.create({
   tamilName: {
     fontSize: 20,
     lineHeight: 26,
+  },
+  listenRow: {
+    marginTop: Spacing.one,
   },
   reminderCard: {
     gap: Spacing.three,

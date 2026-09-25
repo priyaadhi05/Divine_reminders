@@ -40,6 +40,10 @@ const EN = {
   'mascot.remindersOn': '🔔 Reminders on',
   'mascot.mobileOnly': ' (mobile only)',
   'mascot.nothingNew': "Nothing new on the horizon just yet - check back soon.",
+  'listen.play': 'Listen',
+  'listen.stop': 'Stop',
+  'listen.noVoice':
+    "This device has no {{language}} voice installed, so it can't read this aloud. Add one in your phone's text-to-speech settings (Android: Google Text-to-Speech → Install voice data; iPhone: Settings → Accessibility → Spoken Content → Voices).",
 
   'lunar.heading': 'Amavasai & Pournami',
   'lunar.subtitle': 'Every month, for everyone',
@@ -170,6 +174,10 @@ const TA: Record<TranslationKey, string> = {
   'mascot.remindersOn': '🔔 நினைவூட்டல்கள் இயங்குகின்றன',
   'mascot.mobileOnly': ' (கைபேசியில் மட்டும்)',
   'mascot.nothingNew': 'இப்போதைக்கு புதிதாக எதுவும் இல்லை - விரைவில் மீண்டும் பாருங்கள்.',
+  'listen.play': 'கேளுங்கள்',
+  'listen.stop': 'நிறுத்து',
+  'listen.noVoice':
+    'இந்தச் சாதனத்தில் {{language}} குரல் நிறுவப்படவில்லை, எனவே இதை உரக்கப் படிக்க முடியாது. உங்கள் தொலைபேசியின் உரை-ஒலி அமைப்புகளில் ஒன்றைச் சேர்க்கவும் (ஆண்ட்ராய்டு: கூகிள் உரை-ஒலி → குரல் தரவை நிறுவு; ஐபோன்: அமைப்புகள் → அணுகல்தன்மை → பேசும் உள்ளடக்கம் → குரல்கள்).',
 
   'lunar.heading': 'அமாவாசை & பௌர்ணமி',
   'lunar.subtitle': 'ஒவ்வொரு மாதமும், அனைவருக்கும்',
@@ -300,6 +308,10 @@ const TE: Record<TranslationKey, string> = {
   'mascot.remindersOn': '🔔 రిమైండర్‌లు ఆన్‌లో ఉన్నాయి',
   'mascot.mobileOnly': ' (మొబైల్‌లో మాత్రమే)',
   'mascot.nothingNew': 'ప్రస్తుతానికి కొత్తది ఏమీ లేదు - త్వరలో మళ్ళీ చూడండి.',
+  'listen.play': 'వినండి',
+  'listen.stop': 'ఆపు',
+  'listen.noVoice':
+    'ఈ పరికరంలో {{language}} వాయిస్ ఇన్‌స్టాల్ కాలేదు, కాబట్టి దీన్ని గట్టిగా చదవలేదు. మీ ఫోన్ టెక్స్ట్-టు-స్పీచ్ సెట్టింగ్‌లలో ఒకదాన్ని జోడించండి (ఆండ్రాయిడ్: గూగుల్ టెక్స్ట్-టు-స్పీచ్ → వాయిస్ డేటాను ఇన్‌స్టాల్ చేయి; ఐఫోన్: సెట్టింగ్‌లు → యాక్సెసిబిలిటీ → మాట్లాడే కంటెంట్ → వాయిస్‌లు).',
 
   'lunar.heading': 'అమావాస్య & పౌర్ణమి',
   'lunar.subtitle': 'ప్రతి నెలా, అందరికీ',
@@ -430,6 +442,10 @@ const KN: Record<TranslationKey, string> = {
   'mascot.remindersOn': '🔔 ಜ್ಞಾಪನೆಗಳು ಆನ್ ಆಗಿವೆ',
   'mascot.mobileOnly': ' (ಮೊಬೈಲ್‌ನಲ್ಲಿ ಮಾತ್ರ)',
   'mascot.nothingNew': 'ಸದ್ಯಕ್ಕೆ ಹೊಸದೇನೂ ಇಲ್ಲ - ಶೀಘ್ರದಲ್ಲೇ ಮತ್ತೆ ನೋಡಿ.',
+  'listen.play': 'ಕೇಳಿ',
+  'listen.stop': 'ನಿಲ್ಲಿಸಿ',
+  'listen.noVoice':
+    'ಈ ಸಾಧನದಲ್ಲಿ {{language}} ಧ್ವನಿ ಸ್ಥಾಪನೆಯಾಗಿಲ್ಲ, ಆದ್ದರಿಂದ ಇದನ್ನು ಓದಿ ಹೇಳಲು ಸಾಧ್ಯವಿಲ್ಲ. ನಿಮ್ಮ ಫೋನ್‌ನ ಪಠ್ಯದಿಂದ-ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಒಂದನ್ನು ಸೇರಿಸಿ (ಆಂಡ್ರಾಯ್ಡ್: ಗೂಗಲ್ ಪಠ್ಯದಿಂದ-ಧ್ವನಿ → ಧ್ವನಿ ಡೇಟಾ ಸ್ಥಾಪಿಸಿ; ಐಫೋನ್: ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಪ್ರವೇಶಿಸುವಿಕೆ → ಮಾತನಾಡುವ ವಿಷಯ → ಧ್ವನಿಗಳು).',
 
   'lunar.heading': 'ಅಮಾವಾಸ್ಯೆ & ಹುಣ್ಣಿಮೆ',
   'lunar.subtitle': 'ಪ್ರತಿ ತಿಂಗಳು, ಎಲ್ಲರಿಗೂ',
@@ -560,6 +576,10 @@ const HI: Record<TranslationKey, string> = {
   'mascot.remindersOn': '🔔 रिमाइंडर चालू हैं',
   'mascot.mobileOnly': ' (केवल मोबाइल पर)',
   'mascot.nothingNew': 'अभी कुछ नया नहीं है - जल्द ही फिर देखें।',
+  'listen.play': 'सुनें',
+  'listen.stop': 'रोकें',
+  'listen.noVoice':
+    'इस डिवाइस में {{language}} आवाज़ इंस्टॉल नहीं है, इसलिए इसे पढ़कर नहीं सुनाया जा सकता। अपने फ़ोन की टेक्स्ट-टू-स्पीच सेटिंग में एक आवाज़ जोड़ें (एंड्रॉइड: गूगल टेक्स्ट-टू-स्पीच → आवाज़ डेटा इंस्टॉल करें; आईफ़ोन: सेटिंग्स → एक्सेसिबिलिटी → बोली जाने वाली सामग्री → आवाज़ें)।',
 
   'lunar.heading': 'अमावस्या और पूर्णिमा',
   'lunar.subtitle': 'हर महीने, सभी के लिए',
