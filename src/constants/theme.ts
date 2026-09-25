@@ -7,35 +7,36 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-// Traditional South Indian temple palette: vermillion (kumkum/Vel) as
-// primary, gold/saffron as accent, peacock teal as secondary (Murugan's
-// vehicle). Warm off-white in light mode, deep maroon-black in dark mode.
+// Temple-garden palette: deep leaf green as primary, with kumkum red and
+// deep saffron as contrasting accents. Soft green-white in light mode,
+// deep forest green in dark mode. Every text/background pair used in the
+// app meets WCAG AA (4.5:1) - many readers are older, so contrast matters.
 export const Colors = {
   light: {
-    text: '#2B1A15',
-    textSecondary: '#7A6155',
-    background: '#FDF8F3',
-    backgroundElement: '#F5EBE0',
-    backgroundSelected: '#EBD9C4',
-    primary: '#B0301F',
+    text: '#10261A',
+    textSecondary: '#3B5A45',
+    background: '#F1F8F1',
+    backgroundElement: '#E1EFE0',
+    backgroundSelected: '#C8E2C6',
+    primary: '#1B5E20',
     primaryText: '#FFFFFF',
-    accent: '#D4A017',
-    secondary: '#0F6B5C',
+    accent: '#9A5200',
+    secondary: '#A32A17',
     maroon: '#6B1E14',
-    success: '#2E7D32',
+    success: '#00695C',
   },
   dark: {
-    text: '#F5EBE0',
-    textSecondary: '#C9B8AE',
-    background: '#1A0F0C',
-    backgroundElement: '#2B1A15',
-    backgroundSelected: '#3D241C',
-    primary: '#E0543D',
-    primaryText: '#1A0F0C',
-    accent: '#E6B84D',
-    secondary: '#3FA593',
-    maroon: '#A6452F',
-    success: '#5FBF6B',
+    text: '#E6F4E8',
+    textSecondary: '#A8C7B0',
+    background: '#0B1A10',
+    backgroundElement: '#142A1B',
+    backgroundSelected: '#1F3D29',
+    primary: '#6FCF76',
+    primaryText: '#0B1A10',
+    accent: '#F5B342',
+    secondary: '#FF8A70',
+    maroon: '#EF7B6E',
+    success: '#4DB6AC',
   },
 } as const;
 
