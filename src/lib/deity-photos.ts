@@ -41,6 +41,16 @@ const DEITY_PHOTO_ASSETS: Record<string, number[]> = {
     require('@/assets/deity-photos/ayyappan-3.jpg'),
     require('@/assets/deity-photos/ayyappan-4.jpg'),
   ],
+  hanuman: [
+    require('@/assets/deity-photos/hanuman-1.jpg'),
+    require('@/assets/deity-photos/hanuman-2.jpg'),
+    require('@/assets/deity-photos/hanuman-3.jpg'),
+  ],
+  lakshmi: [
+    require('@/assets/deity-photos/lakshmi-1.jpg'),
+    require('@/assets/deity-photos/lakshmi-2.jpg'),
+    require('@/assets/deity-photos/lakshmi-3.jpg'),
+  ],
 };
 
 // Bundled assets need resolving to an on-disk file before the native share
