@@ -6,7 +6,6 @@ import { Asset } from 'expo-asset';
 // share the generated card from lib/deity-cards.ts.
 const DEITY_PHOTO_ASSETS: Record<string, number[]> = {
   murugan: [
-    require('@/assets/deity-photos/murugan-1.jpg'),
     require('@/assets/deity-photos/murugan-2.jpg'),
     require('@/assets/deity-photos/murugan-3.jpg'),
     require('@/assets/deity-photos/murugan-4.jpg'),
@@ -19,10 +18,8 @@ const DEITY_PHOTO_ASSETS: Record<string, number[]> = {
     require('@/assets/deity-photos/durga-1.jpg'),
     require('@/assets/deity-photos/durga-2.jpg'),
     require('@/assets/deity-photos/durga-3.jpg'),
-    require('@/assets/deity-photos/durga-4.jpg'),
   ],
   vishnu: [
-    require('@/assets/deity-photos/vishnu-1.jpg'),
     require('@/assets/deity-photos/vishnu-2.jpg'),
     require('@/assets/deity-photos/vishnu-3.jpg'),
     require('@/assets/deity-photos/vishnu-4.jpg'),
@@ -41,12 +38,9 @@ const DEITY_PHOTO_ASSETS: Record<string, number[]> = {
   hanuman: [
     require('@/assets/deity-photos/hanuman-1.jpg'),
     require('@/assets/deity-photos/hanuman-2.jpg'),
-    require('@/assets/deity-photos/hanuman-3.jpg'),
   ],
   lakshmi: [
     require('@/assets/deity-photos/lakshmi-1.jpg'),
-    require('@/assets/deity-photos/lakshmi-2.jpg'),
-    require('@/assets/deity-photos/lakshmi-3.jpg'),
   ],
 };
 
