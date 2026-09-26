@@ -182,8 +182,15 @@ export function getGeneralCategories(): EventCategory[] {
   return ordered;
 }
 
+// Built once: every event across every dataset, in date order, plus an id
+// index - looked up on nearly every screen, so not re-flattened per call.
+const ALL_EVENTS: DeityEvent[] = [...DEITIES.flatMap((d) => d.dataset.events), ...getGeneralEvents()].sort((a, b) =>
+  a.date.localeCompare(b.date)
+);
+const EVENTS_BY_ID = new Map(ALL_EVENTS.map((e) => [e.id, e]));
+
 export function getAllEvents(): DeityEvent[] {
-  return [...DEITIES.flatMap((d) => d.dataset.events), ...getGeneralEvents()];
+  return [...ALL_EVENTS];
 }
 
 export function getEventsForDeity(deityId: string): DeityEvent[] {
@@ -206,7 +213,7 @@ export function getCategoriesForDeity(deityId: string): EventCategory[] {
 }
 
 export function getEventById(id: string): DeityEvent | undefined {
-  return getAllEvents().find((e) => e.id === id);
+  return EVENTS_BY_ID.get(id);
 }
 
 function todayISTDateStr(): string {
@@ -217,7 +224,7 @@ function todayISTDateStr(): string {
 
 export function getUpcomingEvents(limit?: number, deityId?: string): DeityEvent[] {
   const today = todayISTDateStr();
-  const pool = deityId ? getEventsForDeity(deityId) : getAllEvents();
+  const pool = deityId ? getEventsForDeity(deityId) : ALL_EVENTS;
   const upcoming = pool.filter((e) => e.date >= today).sort((a, b) => a.date.localeCompare(b.date));
   return limit ? upcoming.slice(0, limit) : upcoming;
 }

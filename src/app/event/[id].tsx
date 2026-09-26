@@ -5,7 +5,6 @@ import { SymbolView } from 'expo-symbols';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LeadDaysRow } from '@/components/lead-days-row';
-import { ListenButton } from '@/components/listen-button';
 import { RegionSelector } from '@/components/region-selector';
 import { SharePanel } from '@/components/share-panel';
 import { ThemedText } from '@/components/themed-text';
@@ -13,20 +12,13 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
 import { CATEGORY_LABELS, formatPeriodTiming, getDeityById, getEventById } from '@/data/events';
-import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { APP_INSTALL_URL } from '@/lib/app-info';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import { getDevotional } from '@/lib/i18n/content';
-import {
-  areRemindersEnabled,
-  enableReminders,
-  getTopicLeadDays,
-  isTopicFollowed,
-  setTopicFollowed,
-  setTopicLeadDays,
-} from '@/lib/notifications';
+import { getTopicLeadDays, isTopicFollowed, setTopicFollowed, setTopicLeadDays } from '@/lib/notifications';
+import { ensureRemindersAllowed } from '@/lib/reminder-permission';
 import { resolveRegionTimeZone } from '@/lib/regions';
 import { buildGreeting } from '@/lib/share-greeting';
 
@@ -36,7 +28,6 @@ export default function EventDetailScreen() {
   const { regionId: homeRegionId } = useRegion();
   const theme = useTheme();
   const { t, categoryLabel, deityName: translatedDeityName, localize, fullDate, languageId } = useTranslation();
-  const playNotifySound = useNotifySound();
   const [reminderOn, setReminderOn] = useState(false);
   const [leadDays, setLeadDays] = useState<number[]>([3, 2, 1]);
   const [busy, setBusy] = useState(false);
@@ -74,13 +65,6 @@ export default function EventDetailScreen() {
   const { colorKey, icon } = CATEGORY_STYLE[event.category];
   const accentColor = theme[colorKey];
   const { practice, prayer } = getDevotional(event, languageId);
-  // Everything below the header, read top to bottom - what "Listen" speaks.
-  const listenText = [
-    `${shown.name}. ${fullDate(event.date)}.`,
-    `${t('event.whyMatters')}. ${shown.description} ${shown.significance}`,
-    `${t('event.whatDevoteesDo')}. ${practice}`,
-    `${t('event.simplePrayer')}. ${prayer}`,
-  ].join('\n');
 
   const handleSetReminder = async () => {
     if (busy) return;
@@ -88,8 +72,7 @@ export default function EventDetailScreen() {
     try {
       const next = !reminderOn;
       if (next) {
-        if (!(await areRemindersEnabled())) await enableReminders();
-        playNotifySound();
+        await ensureRemindersAllowed(t);
       }
       await setTopicFollowed(event.deity, event.category, next);
       setReminderOn(next);
@@ -143,9 +126,6 @@ export default function EventDetailScreen() {
             </ThemedText>
           )}
           <ThemedText type="smallBold">{fullDate(event.date)}</ThemedText>
-          <ThemedView style={styles.listenRow}>
-            <ListenButton speechKey={`event:${event.id}`} text={listenText} />
-          </ThemedView>
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={[styles.reminderCard, { borderLeftColor: accentColor }]}>
@@ -321,9 +301,6 @@ const styles = StyleSheet.create({
   tamilName: {
     fontSize: 20,
     lineHeight: 26,
-  },
-  listenRow: {
-    marginTop: Spacing.one,
   },
   reminderCard: {
     gap: Spacing.three,

@@ -1,27 +1,19 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 
-import { ListenButton } from '@/components/listen-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { CATEGORY_LABELS, daysUntil, DeityEvent } from '@/data/events';
+import { CATEGORY_LABELS, DeityEvent } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 
 export function EventCard({ event }: { event: DeityEvent }) {
   const theme = useTheme();
-  const { localize, shortDate, fullDate, relativeDay, categoryLabel } = useTranslation();
+  const { localize, shortDate, categoryLabel } = useTranslation();
   const shown = localize(event);
   const category = categoryLabel(event.category, CATEGORY_LABELS[event.category]);
-  const listenText = [
-    `${shown.name}. ${fullDate(event.date)}.`,
-    daysUntil(event.date) >= 0 ? `${relativeDay(daysUntil(event.date))}.` : undefined,
-    category === shown.name ? shown.significance : `${category}. ${shown.significance}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
   const { colorKey, icon } = CATEGORY_STYLE[event.category];
   const accentColor = theme[colorKey];
 
@@ -52,7 +44,6 @@ export function EventCard({ event }: { event: DeityEvent }) {
             {category}
           </ThemedText>
         </ThemedView>
-        <ListenButton compact speechKey={`card:${event.id}`} text={listenText} />
       </ThemedView>
     </Pressable>
   );

@@ -249,8 +249,10 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       });
       const asset = result.canceled ? undefined : result.assets[0];
       if (!asset) return;
-      const next: ShareMedia = { uri: asset.uri, type: asset.type === 'video' ? 'video' : 'image' };
-      await setShareMedia(deityId, next);
+      const picked: ShareMedia = { uri: asset.uri, type: asset.type === 'video' ? 'video' : 'image' };
+      // Falls back to the picker's own copy if keeping it fails - it still
+      // works for now, it just won't be remembered.
+      const next = (await setShareMedia(deityId, picked).catch(() => null)) ?? picked;
       setCustomMedia(next);
       setSelectedUris([...selection.filter((u) => u !== customMedia?.uri), next.uri]);
     } finally {

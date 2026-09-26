@@ -7,13 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { CATEGORY_LABELS, getCategoriesForDeity } from '@/data/events';
-import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import {
-  areRemindersEnabled,
-  enableReminders,
   getDeityFollowState,
   getTopicLeadDays,
   isTopicFollowed,
@@ -22,6 +19,7 @@ import {
   setTopicLeadDays,
   type DeityFollowState,
 } from '@/lib/notifications';
+import { ensureRemindersAllowed } from '@/lib/reminder-permission';
 
 // A single bell summarizes notification state for this deity (off / some /
 // all); tapping it opens a dropdown with the actual controls - an "every
@@ -38,7 +36,6 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
   const [topicState, setTopicState] = useState<Record<string, boolean>>({});
   const [leadDaysState, setLeadDaysState] = useState<Record<string, number[]>>({});
   const [busy, setBusy] = useState(false);
-  const playNotifySound = useNotifySound();
 
   const refresh = async () => {
     setDeityState(await getDeityFollowState(deityId));
@@ -54,15 +51,11 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deityId]);
 
-  // `turningOn` plays the confirmation chime only when the action actually
-  // switches something on (never for turning off, never for a lead-days
-  // change, which isn't a fresh "notify me" decision).
-  const withPermission = async (turningOn: boolean, action: () => Promise<void>) => {
+  const withPermission = async (action: () => Promise<void>) => {
     if (busy) return;
     setBusy(true);
     try {
-      if (!(await areRemindersEnabled())) await enableReminders();
-      if (turningOn) playNotifySound();
+      await ensureRemindersAllowed(t);
       await action();
       await refresh();
     } finally {
@@ -119,7 +112,7 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
             icon="🙏"
             on={deityState === 'all'}
             disabled={busy}
-            onPress={() => withPermission(deityState !== 'all', () => setDeityFollowed(deityId, deityState !== 'all'))}
+            onPress={() => withPermission(() => setDeityFollowed(deityId, deityState !== 'all'))}
           />
 
           {categories.length > 1 && (
@@ -137,14 +130,14 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
                       icon={CATEGORY_STYLE[cat].icon}
                       on={on}
                       disabled={busy}
-                      onPress={() => withPermission(!on, () => setTopicFollowed(deityId, cat, !on))}
+                      onPress={() => withPermission(() => setTopicFollowed(deityId, cat, !on))}
                     />
                     {on && (
                       <ThemedView style={styles.leadDaysIndent}>
                         <LeadDaysRow
                           days={leadDaysState[cat] ?? [3, 2, 1]}
                           disabled={busy}
-                          onChange={(days) => withPermission(false, () => setTopicLeadDays(deityId, cat, days))}
+                          onChange={(days) => withPermission(() => setTopicLeadDays(deityId, cat, days))}
                         />
                       </ThemedView>
                     )}

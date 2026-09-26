@@ -14,10 +14,10 @@ import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, TopTabInset, Spacing, ThemeColor } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
-import { DEITIES, type Deity, type DeityEvent } from '@/data/events';
+import { DEITIES, type Deity } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { getFollowedDeities, getFollowedUpcomingEvents } from '@/lib/notifications';
+import { getFollowedDeities } from '@/lib/notifications';
 
 // One accent color per deity, cycling through the palette by the deity's
 // position in DEITIES - stable regardless of which subset is followed or
@@ -32,15 +32,13 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const { regionId, setRegionId } = useRegion();
   const [followedDeities, setFollowedDeities] = useState<Deity[]>([]);
-  const [nextOverall, setNextOverall] = useState<DeityEvent | undefined>();
 
   // Reload whenever Home regains focus (e.g. coming back from "Manage my
-  // deities" or a deity's notify toggles), so the list of deities and the
-  // companion card's countdown always reflect the current follow selection.
+  // deities" or a deity's notify toggles), so the list of deities always
+  // reflects the current follow selection.
   useFocusEffect(
     useCallback(() => {
       getFollowedDeities().then(setFollowedDeities);
-      getFollowedUpcomingEvents(1).then(([first]) => setNextOverall(first));
     }, [])
   );
 
@@ -66,7 +64,7 @@ export default function HomeScreen() {
                 </ThemedText>
               </ThemedView>
 
-              <DivineCompanion nextEvent={nextOverall} />
+              <DivineCompanion />
 
               <LunarDaysCard />
 

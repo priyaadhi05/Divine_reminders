@@ -3,7 +3,6 @@ import { Pressable, StyleSheet } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
 
 import { EventCard } from '@/components/event-card';
-import { ListenButton } from '@/components/listen-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -16,11 +15,11 @@ import {
   type DeityEvent,
   type EventCategory,
 } from '@/data/events';
-import { useNotifySound } from '@/hooks/use-notify-sound';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
-import { areRemindersEnabled, enableReminders, isTopicFollowed, setTopicFollowed } from '@/lib/notifications';
+import { isTopicFollowed, setTopicFollowed } from '@/lib/notifications';
+import { ensureRemindersAllowed } from '@/lib/reminder-permission';
 
 // Amavasai (new moon) and Pournami (full moon) happen every lunar month
 // regardless of which deities someone follows, so - unlike the rest of
@@ -37,7 +36,6 @@ export function LunarDaysCard() {
   const [followed, setFollowed] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
-  const playNotifySound = useNotifySound();
 
   const categories = useMemo(() => getGeneralCategories(), []);
 
@@ -64,23 +62,13 @@ export function LunarDaysCard() {
 
   const preview = upcoming.slice(0, UPCOMING_PREVIEW_COUNT);
 
-  // Same lines the card shows, for its Listen button.
-  const nextLine = (category: EventCategory) => {
-    const next = nextByCategory[category];
-    return next
-      ? `${t('lunar.next', { name: localize(next).name, date: dateNoYear(next.date) })}, ${relativeDay(daysUntil(next.date))}.`
-      : `${t('lunar.noUpcoming', { category: categoryLabel(category, CATEGORY_LABELS[category]) })}.`;
-  };
-  const listenText = [`${t('lunar.heading')}. ${t('lunar.subtitle')}.`, ...categories.map(nextLine)].join('\n');
-
   const toggleFollow = async (category: EventCategory) => {
     if (busy) return;
     setBusy(true);
     try {
       const next = !followed[category];
       if (next) {
-        if (!(await areRemindersEnabled())) await enableReminders();
-        playNotifySound();
+        await ensureRemindersAllowed(t);
       }
       await setTopicFollowed(GENERAL_DEITY_ID, category, next);
       setFollowed((f) => ({ ...f, [category]: next }));
@@ -96,7 +84,6 @@ export function LunarDaysCard() {
         <ThemedText type="small" themeColor="textSecondary">
           {t('lunar.subtitle')}
         </ThemedText>
-        <ListenButton speechKey="lunar-days" text={listenText} />
       </ThemedView>
 
       {categories.map((category) => {

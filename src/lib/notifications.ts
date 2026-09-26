@@ -86,14 +86,6 @@ export function notificationBody(event: DeityEvent, daysBefore: number, language
   return getContent(languageId).notificationBody(messageContext(event, languageId), daysBefore);
 }
 
-// First-person countdown line, voiced as whichever deity the event belongs
-// to - used for the home companion card's spoken (TTS) line. Events with no
-// owning deity (Amavasai/Pournami) are voiced neutrally rather than
-// borrowing another deity's greeting.
-export function reminderLine(event: DeityEvent, languageId: string = DEFAULT_LANGUAGE_ID, daysBefore?: number): string {
-  return getContent(languageId).reminderLine(messageContext(event, languageId, true), daysBefore);
-}
-
 export async function areRemindersEnabled(): Promise<boolean> {
   if (!SUPPORTED) return false;
   return (await AsyncStorage.getItem(ENABLED_KEY)) === 'true';
@@ -173,6 +165,20 @@ export async function getDeityFollowState(deityId: string): Promise<DeityFollowS
 
 // Bulk follow/unfollow every category for one deity at once - the "notify me
 // for all of Shiva" toggle.
+// Onboarding's "Save my deities": the whole deity selection in one write
+// (and one reschedule). General topics like Amavasai/Pournami are left as
+// they are.
+export async function setFollowedDeities(deityIds: Set<string>): Promise<void> {
+  const topics = await getFollowedTopics();
+  for (const deity of DEITIES) {
+    for (const category of getCategoriesForDeity(deity.id)) {
+      if (deityIds.has(deity.id)) topics.add(topicKey(deity.id, category));
+      else topics.delete(topicKey(deity.id, category));
+    }
+  }
+  await saveFollowedTopics(topics);
+}
+
 export async function setDeityFollowed(deityId: string, follow: boolean): Promise<void> {
   const topics = await getFollowedTopics();
   for (const category of getCategoriesForDeity(deityId)) {
@@ -251,9 +257,17 @@ async function ensureChannel(): Promise<void> {
 // Requests OS permission and, if granted, schedules the upcoming window and
 // persists the on/off preference. Returns whether reminders ended up enabled
 // (the caller uses this to reflect the real permission outcome in the UI).
+export async function hasNotificationPermission(): Promise<boolean> {
+  if (!SUPPORTED) return false;
+  return (await Notifications.getPermissionsAsync()).granted;
+}
+
 export async function enableReminders(): Promise<boolean> {
   if (!SUPPORTED) return false;
 
+  // Android 13+ only shows the permission prompt once a notification channel
+  // exists, so create it before asking.
+  await ensureChannel();
   const existing = await Notifications.getPermissionsAsync();
   let granted = existing.granted;
   if (!granted) {
@@ -262,10 +276,7 @@ export async function enableReminders(): Promise<boolean> {
   }
 
   await AsyncStorage.setItem(ENABLED_KEY, String(granted));
-  if (granted) {
-    await ensureChannel();
-    await scheduleUpcomingReminders();
-  }
+  if (granted) await scheduleUpcomingReminders();
   return granted;
 }
 
@@ -281,7 +292,17 @@ export async function disableReminders(): Promise<void> {
 // cancel-and-reschedule outright rather than diffing; call this on app
 // launch/foreground and whenever a follow preference or lead-day choice
 // changes.
-export async function scheduleUpcomingReminders(): Promise<void> {
+// Runs are chained one after another: launch, a language change and several
+// follow toggles can all ask at once, and two overlapping cancel-and-reschedule
+// passes could otherwise interleave and leave stale reminders behind.
+let scheduling: Promise<void> = Promise.resolve();
+
+export function scheduleUpcomingReminders(): Promise<void> {
+  scheduling = scheduling.then(rescheduleAll).catch((err) => console.warn('scheduling reminders failed', err));
+  return scheduling;
+}
+
+async function rescheduleAll(): Promise<void> {
   if (!SUPPORTED) return;
   if (!(await areRemindersEnabled())) return;
 

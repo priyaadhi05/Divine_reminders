@@ -3,7 +3,6 @@ import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ListenButton } from '@/components/listen-button';
 import { LogoMark } from '@/components/logo-mark';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -11,11 +10,10 @@ import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { useRegion } from '@/contexts/region-context';
 import { DEITIES } from '@/data/events';
-import { useSpeech } from '@/hooks/use-speech';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { LANGUAGES } from '@/lib/i18n/languages';
-import { enableReminders, getFollowedDeities, markOnboarded, setDeityFollowed } from '@/lib/notifications';
+import { enableReminders, getFollowedDeities, markOnboarded, setFollowedDeities } from '@/lib/notifications';
 import { regionOptions } from '@/lib/regions';
 
 // First-run flow, three short steps: language, home country/region (this is
@@ -32,7 +30,6 @@ export default function OnboardingScreen() {
   const theme = useTheme();
   const { t, deityName } = useTranslation();
   const { languageId, setLanguageId } = useLanguage();
-  const { speak } = useSpeech();
   const { regionId, setRegionId } = useRegion();
   const { step: initialStep } = useLocalSearchParams<{ step?: Step }>();
   const [step, setStep] = useState<Step>(initialStep === 'deities' ? 'deities' : 'language');
@@ -60,22 +57,15 @@ export default function OnboardingScreen() {
     setBusy(true);
     // Every deity gets set explicitly (followed or not), not just the ones
     // picked this time - otherwise unchecking a previously-followed deity
-    // would do nothing and it'd stay followed. Each is isolated: a failure
-    // requesting OS permission (or saving one deity's follow state)
-    // shouldn't cascade into skipping the rest.
+    // would do nothing and it'd stay followed. A failure requesting OS
+    // permission shouldn't stop the selection from being saved.
     try {
       try {
         await enableReminders();
       } catch (err) {
         console.warn('enableReminders failed during onboarding', err);
       }
-      for (const deity of DEITIES) {
-        try {
-          await setDeityFollowed(deity.id, selected.has(deity.id));
-        } catch (err) {
-          console.warn(`setDeityFollowed(${deity.id}) failed during onboarding`, err);
-        }
-      }
+      await setFollowedDeities(selected);
       await markOnboarded();
       router.replace('/');
     } catch (err) {
@@ -103,7 +93,6 @@ export default function OnboardingScreen() {
               <ThemedText themeColor="textSecondary" style={styles.subheading}>
                 {t('onboarding.languageSubheading')}
               </ThemedText>
-              <ListenButton speechKey={'onboarding:language-step'} text={`${t('onboarding.languageHeading')}. ${t('onboarding.languageSubheading')}`} />
 
               <ThemedView style={styles.grid}>
                 {LANGUAGES.map((language) => {
@@ -111,11 +100,7 @@ export default function OnboardingScreen() {
                   return (
                     <Pressable
                       key={language.id}
-                      onPress={() => {
-                        setLanguageId(language.id);
-                        // Says e.g. "ಕನ್ನಡ" in Kannada, so someone who can't read the list still hears what they picked.
-                        speak('onboarding:language', language.nativeLabel, language.id);
-                      }}
+                      onPress={() => setLanguageId(language.id)}
                       style={styles.cardWrap}>
                       <ThemedView
                         type="backgroundElement"
@@ -147,7 +132,6 @@ export default function OnboardingScreen() {
               <ThemedText themeColor="textSecondary" style={styles.subheading}>
                 {t('onboarding.locationSubheading')}
               </ThemedText>
-              <ListenButton speechKey={'onboarding:location-step'} text={[`${t('onboarding.locationHeading')}. ${t('onboarding.locationSubheading')}`, ...regionOptions(languageId).map((r) => r.label)].join('\n')} />
 
               <ThemedView style={styles.list}>
                 {regionOptions(languageId).map((region) => {
@@ -181,7 +165,6 @@ export default function OnboardingScreen() {
               <ThemedText themeColor="textSecondary" style={styles.subheading}>
                 {t('onboarding.deitySubheading')}
               </ThemedText>
-              <ListenButton speechKey={'onboarding:deity-step'} text={[`${t('onboarding.deityHeading')}. ${t('onboarding.deitySubheading')}`, ...DEITIES.map((d) => deityName(d.id, d.name))].join('\n')} />
 
               <ThemedView style={styles.grid}>
                 {DEITIES.map((deity) => {
@@ -189,10 +172,7 @@ export default function OnboardingScreen() {
                   return (
                     <Pressable
                       key={deity.id}
-                      onPress={() => {
-                        toggleDeity(deity.id);
-                        speak('onboarding:deity', deityName(deity.id, deity.name));
-                      }}
+                      onPress={() => toggleDeity(deity.id)}
                       style={styles.cardWrap}>
                       <ThemedView
                         type="backgroundElement"
