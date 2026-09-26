@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 
+import { DeityLogo } from '@/components/deity-logo';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing, ThemeColor } from '@/constants/theme';
@@ -22,9 +23,7 @@ export function DeityCard({ deity, accentColor }: { deity: Deity; accentColor: T
       onPress={() => router.push({ pathname: '/deity/[deityId]', params: { deityId: deity.id } })}
       style={({ pressed }) => pressed && styles.pressed}>
       <ThemedView type="backgroundElement" style={[styles.card, { borderColor: accent }]}>
-        <ThemedView style={[styles.symbolBadge, { backgroundColor: accent }]}>
-          <ThemedText style={styles.symbol}>{deity.symbol}</ThemedText>
-        </ThemedView>
+        <DeityLogo deity={deity} size={56} />
         <ThemedView type="backgroundElement" style={styles.textColumn}>
           <ThemedText type="subtitle" style={styles.name}>
             {deityName(deity.id, deity.name)}
@@ -52,16 +51,6 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderRadius: Spacing.four,
     borderWidth: 2,
-  },
-  symbolBadge: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  symbol: {
-    fontSize: 26,
   },
   textColumn: {
     flex: 1,

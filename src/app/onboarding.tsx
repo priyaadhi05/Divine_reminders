@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DeityLogo } from '@/components/deity-logo';
 import { LogoMark } from '@/components/logo-mark';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -177,7 +178,7 @@ export default function OnboardingScreen() {
                       <ThemedView
                         type="backgroundElement"
                         style={[styles.card, isSelected && { borderColor: theme.primary, backgroundColor: theme.backgroundSelected }]}>
-                        <ThemedText style={styles.cardSymbol}>{deity.symbol}</ThemedText>
+                        <DeityLogo deity={deity} size={72} />
                         <ThemedText type="smallBold">{deityName(deity.id, deity.name)}</ThemedText>
                         <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
                       </ThemedView>
@@ -242,10 +243,6 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     alignItems: 'center',
     gap: Spacing.half,
-  },
-  cardSymbol: {
-    fontSize: 32,
-    lineHeight: 40,
   },
   heart: {
     fontSize: 18,

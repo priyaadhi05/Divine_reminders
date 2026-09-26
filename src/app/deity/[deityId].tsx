@@ -3,6 +3,7 @@ import { Pressable, SectionList, StyleSheet } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { DeityLogo } from '@/components/deity-logo';
 import { EventCard } from '@/components/event-card';
 import { NotifyPanel } from '@/components/notify-panel';
 import { SacredVerses } from '@/components/sacred-verses';
@@ -81,7 +82,7 @@ export default function DeityScreen() {
           ListHeaderComponent={
             <ThemedView style={styles.header}>
               <ThemedView style={[styles.hero, { backgroundColor: theme.primary }]}>
-                <ThemedText style={styles.heroSymbol}>{deity.symbol}</ThemedText>
+                <DeityLogo deity={deity} size={112} />
                 <ThemedText type="title" style={[styles.heroTitle, { color: theme.primaryText }]}>
                   {localizedName}
                 </ThemedText>
@@ -221,10 +222,6 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     alignItems: 'center',
     gap: Spacing.half,
-  },
-  heroSymbol: {
-    fontSize: 36,
-    lineHeight: 44,
   },
   heroTitle: {
     fontSize: 34,
