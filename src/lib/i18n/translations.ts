@@ -35,13 +35,13 @@ const EN = {
   'home.emptyTitle': 'No sacred days yet',
   'home.emptySubtitle': "Choose which deities are meaningful to you and they'll show up here, each with what's coming next.",
 
-  'mascot.enableReminders': '🔕 Enable reminders',
-  'mascot.remindersOn': '🔔 Reminders on',
   'mascot.mobileOnly': ' (mobile only)',
   'home.about': 'Deiva Dinam keeps track of festivals, vrathams and monthly sacred days for the deities you follow, and reminds you on your phone a few days before each one - so you never miss a special day.',
   'notify.blockedTitle': 'Notifications are turned off',
   'notify.blockedBody': "To get reminders, allow notifications for Deiva Dinam in your phone's Settings.",
   'notify.openSettings': 'Open Settings',
+  'reminders.heading': 'Reminders are set for these events',
+  'reminders.subtitle': 'You\'ll get a nudge before each one - tap to change',
   'lunar.heading': 'Amavasai & Pournami',
   'lunar.subtitle': 'Every month, for everyone',
   'lunar.next': 'Next {{name}}: {{date}}',
@@ -99,11 +99,8 @@ const EN = {
   'share.videoReady': 'Video ready to share',
   'share.cardReady': 'Our card - ready to share',
   'share.useOwnInstead': 'Use my own photo or video instead',
-  'share.selectedCount': '{{count}} selected',
   'share.noneSelected': 'None selected - WhatsApp gets just the text',
 
-  'nav.home': 'Home',
-  'nav.calendar': 'Calendar',
 
   'calendar.title': 'Calendar',
   'calendar.subtitle': 'All events across every deity · festivals, vrathams & monthly observances',
@@ -116,10 +113,6 @@ const EN = {
   'common.eventNotFound': 'Event not found.',
   'common.deityNotFound': 'Deity not found.',
   'onboarding.saveFailed': 'You can try again anytime from "Manage my deities" on Home.',
-  'share.pictureShared': 'Picture {{done}} of {{total}} shared',
-  'share.sendNext': 'Send the next one now?',
-  'share.stop': 'Stop',
-  'share.next': 'Next ({{n}} of {{total}})',
   'share.textOnly': 'Share text only',
   'share.photoUnsupportedTitle': 'Sharing a photo isn’t supported here',
   'share.photoUnsupportedBody':
@@ -133,6 +126,11 @@ const EN = {
   'share.needPictureBody': '{{app}} needs a picture or video to share - tap one above, then try again.',
   'share.permissionTitle': 'Permission needed',
   'share.permissionBody': 'Allow photo library access to add a photo or video to share.',
+  'reminders.notificationsOff': "Notifications are off, so these won't alert you. Tap to turn them on.",
+  'reminders.showAll': 'Show all {{count}} →',
+  'reminders.showLess': 'Show less',
+  'home.openCalendar': '📅 See the full festival calendar →',
+  'share.pickOne': 'One picture is sent, with the message and app link',
 } as const;
 
 const TA: Record<TranslationKey, string> = {
@@ -166,13 +164,13 @@ const TA: Record<TranslationKey, string> = {
   'home.emptyTitle': 'இன்னும் விசேஷ நாட்கள் இல்லை',
   'home.emptySubtitle': 'உங்களுக்கு முக்கியமான தெய்வங்களைத் தேர்ந்தெடுக்கவும் - அவை அடுத்து வரும் நாளுடன் இங்கே தோன்றும்.',
 
-  'mascot.enableReminders': '🔕 நினைவூட்டல்களை இயக்கு',
-  'mascot.remindersOn': '🔔 நினைவூட்டல்கள் இயங்குகின்றன',
   'mascot.mobileOnly': ' (கைபேசியில் மட்டும்)',
   'home.about': 'Deiva Dinam நீங்கள் வழிபடும் தெய்வங்களின் திருவிழாக்கள், விரதங்கள் மற்றும் மாதாந்திர புனித நாட்களைக் கண்காணித்து, ஒவ்வொன்றுக்கும் சில நாட்களுக்கு முன்பே உங்கள் தொலைபேசியில் நினைவூட்டுகிறது - எந்த சிறப்பு நாளையும் தவறவிடாமல் இருக்க.',
   'notify.blockedTitle': 'அறிவிப்புகள் அணைக்கப்பட்டுள்ளன',
   'notify.blockedBody': 'நினைவூட்டல்களைப் பெற, உங்கள் தொலைபேசியின் அமைப்புகளில் Deiva Dinam-க்கு அறிவிப்புகளை அனுமதிக்கவும்.',
   'notify.openSettings': 'அமைப்புகளைத் திற',
+  'reminders.heading': 'இந்த நிகழ்வுகளுக்கு நினைவூட்டல் வைக்கப்பட்டுள்ளது',
+  'reminders.subtitle': 'ஒவ்வொன்றுக்கும் முன்பே நினைவூட்டுவோம் - மாற்ற தொடவும்',
   'lunar.heading': 'அமாவாசை & பௌர்ணமி',
   'lunar.subtitle': 'ஒவ்வொரு மாதமும், அனைவருக்கும்',
   'lunar.next': 'அடுத்த {{name}}: {{date}}',
@@ -230,11 +228,8 @@ const TA: Record<TranslationKey, string> = {
   'share.videoReady': 'வீடியோ பகிரத் தயார்',
   'share.cardReady': 'எங்கள் அட்டை - பகிரத் தயார்',
   'share.useOwnInstead': 'எனது சொந்த புகைப்படம்/வீடியோவைப் பயன்படுத்து',
-  'share.selectedCount': '{{count}} தேர்ந்தெடுக்கப்பட்டது',
   'share.noneSelected': 'எதுவும் தேர்ந்தெடுக்கவில்லை - வாட்ஸ்அப்பில் உரை மட்டும் செல்லும்',
 
-  'nav.home': 'முகப்பு',
-  'nav.calendar': 'நாட்காட்டி',
 
   'calendar.title': 'நாட்காட்டி',
   'calendar.subtitle': 'ஒவ்வொரு தெய்வத்தின் அனைத்து நிகழ்வுகளும் · திருவிழாக்கள், விரதங்கள் & மாதாந்திர நாட்கள்',
@@ -247,10 +242,6 @@ const TA: Record<TranslationKey, string> = {
   'common.eventNotFound': 'நிகழ்வு கிடைக்கவில்லை.',
   'common.deityNotFound': 'தெய்வம் கிடைக்கவில்லை.',
   'onboarding.saveFailed': 'முகப்புத் திரையில் உள்ள "எனது தெய்வங்களை நிர்வகி" மூலம் எப்போது வேண்டுமானாலும் மீண்டும் முயலலாம்.',
-  'share.pictureShared': '{{total}} படங்களில் {{done}} பகிரப்பட்டது',
-  'share.sendNext': 'அடுத்ததை இப்போது அனுப்பவா?',
-  'share.stop': 'நிறுத்து',
-  'share.next': 'அடுத்தது ({{total}} இல் {{n}})',
   'share.textOnly': 'உரையை மட்டும் பகிர்',
   'share.photoUnsupportedTitle': 'இங்கே படத்தைப் பகிர முடியாது',
   'share.photoUnsupportedBody':
@@ -264,6 +255,11 @@ const TA: Record<TranslationKey, string> = {
   'share.needPictureBody': '{{app}} இல் பகிர ஒரு படம் அல்லது வீடியோ தேவை - மேலே ஒன்றைத் தட்டி, மீண்டும் முயலவும்.',
   'share.permissionTitle': 'அனுமதி தேவை',
   'share.permissionBody': 'பகிர படம் அல்லது வீடியோ சேர்க்க புகைப்பட நூலக அணுகலை அனுமதிக்கவும்.',
+  'reminders.notificationsOff': 'அறிவிப்புகள் அணைக்கப்பட்டுள்ளன, அதனால் இவை உங்களை எச்சரிக்காது. இயக்க தொடவும்.',
+  'reminders.showAll': 'அனைத்து {{count}} ஐயும் காட்டு →',
+  'reminders.showLess': 'குறைவாகக் காட்டு',
+  'home.openCalendar': '📅 முழு விழா நாட்காட்டியைப் பார் →',
+  'share.pickOne': 'ஒரு படம், செய்தி மற்றும் செயலி இணைப்புடன் அனுப்பப்படும்',
 };
 
 const TE: Record<TranslationKey, string> = {
@@ -297,13 +293,13 @@ const TE: Record<TranslationKey, string> = {
   'home.emptyTitle': 'ఇంకా విశేష దినాలు లేవు',
   'home.emptySubtitle': 'మీకు ముఖ్యమైన దేవతలను ఎంచుకోండి - అవి తర్వాత రాబోయే దానితో పాటు ఇక్కడ కనిపిస్తాయి.',
 
-  'mascot.enableReminders': '🔕 రిమైండర్‌లను ప్రారంభించు',
-  'mascot.remindersOn': '🔔 రిమైండర్‌లు ఆన్‌లో ఉన్నాయి',
   'mascot.mobileOnly': ' (మొబైల్‌లో మాత్రమే)',
   'home.about': 'Deiva Dinam మీరు ఆరాధించే దేవతల పండుగలు, వ్రతాలు మరియు నెలవారీ పవిత్ర దినాలను గుర్తుంచుకుని, ప్రతి దానికి కొన్ని రోజుల ముందే మీ ఫోన్‌లో గుర్తు చేస్తుంది - ఏ ప్రత్యేక రోజునూ మీరు కోల్పోకుండా.',
   'notify.blockedTitle': 'నోటిఫికేషన్లు ఆఫ్‌లో ఉన్నాయి',
   'notify.blockedBody': 'రిమైండర్లు పొందడానికి, మీ ఫోన్ సెట్టింగ్స్‌లో Deiva Dinam కోసం నోటిఫికేషన్లను అనుమతించండి.',
   'notify.openSettings': 'సెట్టింగ్స్ తెరవండి',
+  'reminders.heading': 'ఈ సందర్భాలకు రిమైండర్లు సెట్ చేయబడ్డాయి',
+  'reminders.subtitle': 'ప్రతి దానికి ముందే మీకు గుర్తు చేస్తాం - మార్చడానికి నొక్కండి',
   'lunar.heading': 'అమావాస్య & పౌర్ణమి',
   'lunar.subtitle': 'ప్రతి నెలా, అందరికీ',
   'lunar.next': 'తదుపరి {{name}}: {{date}}',
@@ -361,11 +357,8 @@ const TE: Record<TranslationKey, string> = {
   'share.videoReady': 'వీడియో పంచుకోవడానికి సిద్ధంగా ఉంది',
   'share.cardReady': 'మా కార్డ్ - పంచుకోవడానికి సిద్ధం',
   'share.useOwnInstead': 'నా సొంత ఫోటో లేదా వీడియోను ఉపయోగించు',
-  'share.selectedCount': '{{count}} ఎంచుకున్నారు',
   'share.noneSelected': 'ఏదీ ఎంచుకోలేదు - వాట్సాప్‌కు టెక్స్ట్ మాత్రమే వెళ్తుంది',
 
-  'nav.home': 'హోమ్',
-  'nav.calendar': 'క్యాలెండర్',
 
   'calendar.title': 'క్యాలెండర్',
   'calendar.subtitle': 'ప్రతి దేవత యొక్క అన్ని వేడుకలు · పండుగలు, వ్రతాలు & నెలవారీ దినాలు',
@@ -378,10 +371,6 @@ const TE: Record<TranslationKey, string> = {
   'common.eventNotFound': 'కార్యక్రమం కనుగొనబడలేదు.',
   'common.deityNotFound': 'దేవత కనుగొనబడలేదు.',
   'onboarding.saveFailed': 'హోమ్‌లోని "నా దేవతలను నిర్వహించు" నుండి ఎప్పుడైనా మళ్లీ ప్రయత్నించవచ్చు.',
-  'share.pictureShared': '{{total}} చిత్రాల్లో {{done}} పంచుకోబడింది',
-  'share.sendNext': 'తదుపరిది ఇప్పుడు పంపాలా?',
-  'share.stop': 'ఆపు',
-  'share.next': 'తదుపరి ({{total}} లో {{n}})',
   'share.textOnly': 'వచనం మాత్రమే పంచుకో',
   'share.photoUnsupportedTitle': 'ఇక్కడ ఫోటో పంచుకోవడం సాధ్యం కాదు',
   'share.photoUnsupportedBody':
@@ -395,6 +384,11 @@ const TE: Record<TranslationKey, string> = {
   'share.needPictureBody': '{{app}} లో పంచుకోవడానికి చిత్రం లేదా వీడియో అవసరం - పైన ఒకదాన్ని తాకి, మళ్లీ ప్రయత్నించండి.',
   'share.permissionTitle': 'అనుమతి అవసరం',
   'share.permissionBody': 'పంచుకోవడానికి ఫోటో లేదా వీడియో జోడించడానికి ఫోటో లైబ్రరీ యాక్సెస్‌ను అనుమతించండి.',
+  'reminders.notificationsOff': 'నోటిఫికేషన్లు ఆఫ్‌లో ఉన్నాయి, కాబట్టి ఇవి మిమ్మల్ని హెచ్చరించవు. ఆన్ చేయడానికి నొక్కండి.',
+  'reminders.showAll': 'మొత్తం {{count}} చూపించు →',
+  'reminders.showLess': 'తక్కువ చూపించు',
+  'home.openCalendar': '📅 పూర్తి పండుగ క్యాలెండర్ చూడండి →',
+  'share.pickOne': 'ఒక చిత్రం, సందేశం మరియు యాప్ లింక్‌తో పంపబడుతుంది',
 };
 
 const KN: Record<TranslationKey, string> = {
@@ -428,13 +422,13 @@ const KN: Record<TranslationKey, string> = {
   'home.emptyTitle': 'ಇನ್ನೂ ವಿಶೇಷ ದಿನಗಳಿಲ್ಲ',
   'home.emptySubtitle': 'ನಿಮಗೆ ಮುಖ್ಯವಾದ ದೇವರುಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ - ಅವು ಮುಂದಿನ ದಿನದೊಂದಿಗೆ ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.',
 
-  'mascot.enableReminders': '🔕 ಜ್ಞಾಪನೆಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ',
-  'mascot.remindersOn': '🔔 ಜ್ಞಾಪನೆಗಳು ಆನ್ ಆಗಿವೆ',
   'mascot.mobileOnly': ' (ಮೊಬೈಲ್‌ನಲ್ಲಿ ಮಾತ್ರ)',
   'home.about': 'Deiva Dinam ನೀವು ಆರಾಧಿಸುವ ದೇವತೆಗಳ ಹಬ್ಬಗಳು, ವ್ರತಗಳು ಮತ್ತು ಮಾಸಿಕ ಪವಿತ್ರ ದಿನಗಳನ್ನು ಗಮನಿಸಿ, ಪ್ರತಿಯೊಂದಕ್ಕೂ ಕೆಲವು ದಿನಗಳ ಮೊದಲೇ ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ನೆನಪಿಸುತ್ತದೆ - ಯಾವುದೇ ವಿಶೇಷ ದಿನವನ್ನು ನೀವು ತಪ್ಪಿಸಿಕೊಳ್ಳದಂತೆ.',
   'notify.blockedTitle': 'ಅಧಿಸೂಚನೆಗಳು ಆಫ್ ಆಗಿವೆ',
   'notify.blockedBody': 'ಜ್ಞಾಪನೆಗಳನ್ನು ಪಡೆಯಲು, ನಿಮ್ಮ ಫೋನ್‌ನ ಸೆಟ್ಟಿಂಗ್ಸ್‌ನಲ್ಲಿ Deiva Dinam ಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಿ.',
   'notify.openSettings': 'ಸೆಟ್ಟಿಂಗ್ಸ್ ತೆರೆಯಿರಿ',
+  'reminders.heading': 'ಈ ಸಂದರ್ಭಗಳಿಗೆ ಜ್ಞಾಪನೆಗಳನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ',
+  'reminders.subtitle': 'ಪ್ರತಿಯೊಂದಕ್ಕೂ ಮೊದಲೇ ನಿಮಗೆ ನೆನಪಿಸುತ್ತೇವೆ - ಬದಲಾಯಿಸಲು ಒತ್ತಿ',
   'lunar.heading': 'ಅಮಾವಾಸ್ಯೆ & ಹುಣ್ಣಿಮೆ',
   'lunar.subtitle': 'ಪ್ರತಿ ತಿಂಗಳು, ಎಲ್ಲರಿಗೂ',
   'lunar.next': 'ಮುಂದಿನ {{name}}: {{date}}',
@@ -492,11 +486,8 @@ const KN: Record<TranslationKey, string> = {
   'share.videoReady': 'ವೀಡಿಯೊ ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧವಾಗಿದೆ',
   'share.cardReady': 'ನಮ್ಮ ಕಾರ್ಡ್ - ಹಂಚಿಕೊಳ್ಳಲು ಸಿದ್ಧ',
   'share.useOwnInstead': 'ನನ್ನ ಸ್ವಂತ ಫೋಟೋ ಅಥವಾ ವೀಡಿಯೊ ಬಳಸಿ',
-  'share.selectedCount': '{{count}} ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ',
   'share.noneSelected': 'ಯಾವುದೂ ಆಯ್ಕೆಯಾಗಿಲ್ಲ - ವಾಟ್ಸಾಪ್‌ಗೆ ಪಠ್ಯ ಮಾತ್ರ ಹೋಗುತ್ತದೆ',
 
-  'nav.home': 'ಹೋಮ್',
-  'nav.calendar': 'ಕ್ಯಾಲೆಂಡರ್',
 
   'calendar.title': 'ಕ್ಯಾಲೆಂಡರ್',
   'calendar.subtitle': 'ಪ್ರತಿ ದೇವರ ಎಲ್ಲಾ ಕಾರ್ಯಕ್ರಮಗಳು · ಹಬ್ಬಗಳು, ವ್ರತಗಳು & ಮಾಸಿಕ ದಿನಗಳು',
@@ -509,10 +500,6 @@ const KN: Record<TranslationKey, string> = {
   'common.eventNotFound': 'ಕಾರ್ಯಕ್ರಮ ಕಂಡುಬಂದಿಲ್ಲ.',
   'common.deityNotFound': 'ದೇವರು ಕಂಡುಬಂದಿಲ್ಲ.',
   'onboarding.saveFailed': 'ಮುಖಪುಟದಲ್ಲಿರುವ "ನನ್ನ ದೇವರುಗಳನ್ನು ನಿರ್ವಹಿಸಿ" ಮೂಲಕ ಯಾವಾಗ ಬೇಕಾದರೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಬಹುದು.',
-  'share.pictureShared': '{{total}} ಚಿತ್ರಗಳಲ್ಲಿ {{done}} ಹಂಚಿಕೊಳ್ಳಲಾಗಿದೆ',
-  'share.sendNext': 'ಮುಂದಿನದನ್ನು ಈಗ ಕಳುಹಿಸಬೇಕೇ?',
-  'share.stop': 'ನಿಲ್ಲಿಸಿ',
-  'share.next': 'ಮುಂದಿನದು ({{total}} ರಲ್ಲಿ {{n}})',
   'share.textOnly': 'ಪಠ್ಯ ಮಾತ್ರ ಹಂಚಿಕೊಳ್ಳಿ',
   'share.photoUnsupportedTitle': 'ಇಲ್ಲಿ ಫೋಟೋ ಹಂಚಿಕೊಳ್ಳಲು ಸಾಧ್ಯವಿಲ್ಲ',
   'share.photoUnsupportedBody':
@@ -526,6 +513,11 @@ const KN: Record<TranslationKey, string> = {
   'share.needPictureBody': '{{app}} ನಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಲು ಚಿತ್ರ ಅಥವಾ ವೀಡಿಯೊ ಬೇಕು - ಮೇಲೆ ಒಂದನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ, ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   'share.permissionTitle': 'ಅನುಮತಿ ಬೇಕು',
   'share.permissionBody': 'ಹಂಚಿಕೊಳ್ಳಲು ಫೋಟೋ ಅಥವಾ ವೀಡಿಯೊ ಸೇರಿಸಲು ಫೋಟೋ ಲೈಬ್ರರಿ ಪ್ರವೇಶವನ್ನು ಅನುಮತಿಸಿ.',
+  'reminders.notificationsOff': 'ಅಧಿಸೂಚನೆಗಳು ಆಫ್ ಆಗಿವೆ, ಆದ್ದರಿಂದ ಇವು ನಿಮ್ಮನ್ನು ಎಚ್ಚರಿಸುವುದಿಲ್ಲ. ಆನ್ ಮಾಡಲು ಒತ್ತಿ.',
+  'reminders.showAll': 'ಎಲ್ಲಾ {{count}} ತೋರಿಸಿ →',
+  'reminders.showLess': 'ಕಡಿಮೆ ತೋರಿಸಿ',
+  'home.openCalendar': '📅 ಪೂರ್ಣ ಹಬ್ಬದ ಕ್ಯಾಲೆಂಡರ್ ನೋಡಿ →',
+  'share.pickOne': 'ಒಂದು ಚಿತ್ರವನ್ನು ಸಂದೇಶ ಮತ್ತು ಆ್ಯಪ್ ಲಿಂಕ್‌ನೊಂದಿಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ',
 };
 
 const HI: Record<TranslationKey, string> = {
@@ -559,13 +551,13 @@ const HI: Record<TranslationKey, string> = {
   'home.emptyTitle': 'अभी तक कोई खास दिन नहीं',
   'home.emptySubtitle': 'अपने लिए महत्वपूर्ण देवताओं को चुनें - वे आगामी दिन के साथ यहाँ दिखाई देंगे।',
 
-  'mascot.enableReminders': '🔕 रिमाइंडर चालू करें',
-  'mascot.remindersOn': '🔔 रिमाइंडर चालू हैं',
   'mascot.mobileOnly': ' (केवल मोबाइल पर)',
   'home.about': 'Deiva Dinam आपके चुने हुए देवी-देवताओं के त्योहारों, व्रतों और मासिक पवित्र दिनों का ध्यान रखता है, और हर एक से कुछ दिन पहले आपके फ़ोन पर याद दिलाता है - ताकि कोई भी विशेष दिन छूट न जाए।',
   'notify.blockedTitle': 'सूचनाएँ बंद हैं',
   'notify.blockedBody': 'रिमाइंडर पाने के लिए, अपने फ़ोन की सेटिंग्स में Deiva Dinam के लिए सूचनाएँ चालू करें।',
   'notify.openSettings': 'सेटिंग्स खोलें',
+  'reminders.heading': 'इन अवसरों के लिए रिमाइंडर लगे हैं',
+  'reminders.subtitle': 'हर एक से पहले आपको याद दिलाएँगे - बदलने के लिए टैप करें',
   'lunar.heading': 'अमावस्या और पूर्णिमा',
   'lunar.subtitle': 'हर महीने, सभी के लिए',
   'lunar.next': 'अगला {{name}}: {{date}}',
@@ -623,11 +615,8 @@ const HI: Record<TranslationKey, string> = {
   'share.videoReady': 'वीडियो साझा करने के लिए तैयार है',
   'share.cardReady': 'हमारा कार्ड - साझा करने के लिए तैयार',
   'share.useOwnInstead': 'मेरी अपनी फोटो या वीडियो का उपयोग करें',
-  'share.selectedCount': '{{count}} चुनी गईं',
   'share.noneSelected': 'कुछ नहीं चुना - व्हाट्सऐप को सिर्फ़ टेक्स्ट जाएगा',
 
-  'nav.home': 'होम',
-  'nav.calendar': 'कैलेंडर',
 
   'calendar.title': 'कैलेंडर',
   'calendar.subtitle': 'हर देवता के सभी आयोजन · त्योहार, व्रत और मासिक दिन',
@@ -640,10 +629,6 @@ const HI: Record<TranslationKey, string> = {
   'common.eventNotFound': 'कार्यक्रम नहीं मिला।',
   'common.deityNotFound': 'देवता नहीं मिले।',
   'onboarding.saveFailed': 'आप होम पर "मेरे देवता प्रबंधित करें" से कभी भी फिर से कोशिश कर सकते हैं।',
-  'share.pictureShared': '{{total}} में से {{done}} चित्र साझा किया गया',
-  'share.sendNext': 'क्या अगला अभी भेजें?',
-  'share.stop': 'रोकें',
-  'share.next': 'अगला ({{total}} में से {{n}})',
   'share.textOnly': 'केवल संदेश साझा करें',
   'share.photoUnsupportedTitle': 'यहाँ फ़ोटो साझा नहीं की जा सकती',
   'share.photoUnsupportedBody':
@@ -657,6 +642,11 @@ const HI: Record<TranslationKey, string> = {
   'share.needPictureBody': '{{app}} पर साझा करने के लिए चित्र या वीडियो चाहिए - ऊपर एक पर टैप करें, फिर से कोशिश करें।',
   'share.permissionTitle': 'अनुमति आवश्यक',
   'share.permissionBody': 'साझा करने के लिए फ़ोटो या वीडियो जोड़ने हेतु फ़ोटो लाइब्रेरी की अनुमति दें।',
+  'reminders.notificationsOff': 'सूचनाएँ बंद हैं, इसलिए ये आपको याद नहीं दिलाएँगे। चालू करने के लिए टैप करें।',
+  'reminders.showAll': 'सभी {{count}} दिखाएँ →',
+  'reminders.showLess': 'कम दिखाएँ',
+  'home.openCalendar': '📅 पूरा त्योहार कैलेंडर देखें →',
+  'share.pickOne': 'एक तस्वीर संदेश और ऐप लिंक के साथ भेजी जाएगी',
 };
 
 export const TRANSLATIONS: Record<string, Record<TranslationKey, string>> = {

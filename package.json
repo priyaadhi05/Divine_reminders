@@ -1,5 +1,5 @@
 {
-  "name": "divine-calendar",
+  "name": "deiva-dinam",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
@@ -32,6 +32,7 @@
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-share": "^12.3.1",
     "react-native-view-shot": "5.1.0",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.10.1"
@@ -39,6 +40,8 @@
   "devDependencies": {
     "@types/node": "^26.2.0",
     "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.2",
     "tsx": "^4.23.12",
     "typescript": "~6.0.3"
   },

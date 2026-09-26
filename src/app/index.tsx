@@ -11,8 +11,9 @@ import { LunarDaysCard } from '@/components/lunar-days-card';
 import { RegionSelector } from '@/components/region-selector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { UpcomingRemindersCard } from '@/components/upcoming-reminders-card';
 import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, TopTabInset, Spacing, ThemeColor } from '@/constants/theme';
+import { MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import { useRegion } from '@/contexts/region-context';
 import { DEITIES, type Deity } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
@@ -66,23 +67,39 @@ export default function HomeScreen() {
 
               <DivineCompanion />
 
+              <UpcomingRemindersCard />
+
               <LunarDaysCard />
 
-              <ThemedView style={styles.settingsRow}>
-                {/* Sole entry point for changing which deities are followed - the
-                    same screen already lists every available deity with hearts
-                    to pick from (pre-checked to whatever's currently followed),
-                    so a separate "browse" list here would just repeat it. Jumps
-                    straight to that step - language and region below are each
-                    already a direct entry point on their own. */}
-                <Pressable onPress={() => router.push({ pathname: '/onboarding', params: { step: 'deities' } })}>
-                  <ThemedText type="linkPrimary">{t('home.manageDeities')}</ThemedText>
-                </Pressable>
-              </ThemedView>
+              {/* The full calendar used to be its own tab; with no tab bar
+                  it opens on top of Home instead, with a back arrow. */}
+              <Pressable
+                onPress={() => router.push('/calendar')}
+                accessibilityRole="button"
+                style={({ pressed }) => pressed && styles.pressed}>
+                <ThemedView style={[styles.calendarButton, { borderColor: theme.primary }]}>
+                  <ThemedText type="smallBold" style={{ color: theme.primary }}>
+                    {t('home.openCalendar')}
+                  </ThemedText>
+                </ThemedView>
+              </Pressable>
 
-              <ThemedView style={styles.settingsRow}>
-                <RegionSelector regionId={regionId} onChange={setRegionId} />
-                <LanguageSelector />
+              {/* Sole entry point for changing which deities are followed - the
+                  same screen already lists every available deity with hearts
+                  to pick from (pre-checked to whatever's currently followed),
+                  so a separate "browse" list here would just repeat it. Jumps
+                  straight to that step - language and region below are each
+                  already a direct entry point on their own. */}
+              <Pressable onPress={() => router.push({ pathname: '/onboarding', params: { step: 'deities' } })}>
+                <ThemedText type="linkPrimary">{t('home.manageDeities')}</ThemedText>
+              </Pressable>
+
+              {/* One full-width row each rather than side by side - in Tamil,
+                  Telugu or Kannada the two labels together are wider than a
+                  phone screen. */}
+              <ThemedView style={styles.settingsColumn}>
+                <RegionSelector regionId={regionId} onChange={setRegionId} fullWidth />
+                <LanguageSelector fullWidth />
               </ThemedView>
 
               {followedDeities.length === 0 && (
@@ -117,8 +134,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Spacing.three,
-    paddingTop: TopTabInset,
-    paddingBottom: BottomTabInset + Spacing.three,
+    paddingBottom: Spacing.five,
   },
   header: {
     paddingTop: Spacing.three,
@@ -144,10 +160,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     opacity: 0.9,
   },
-  settingsRow: {
-    flexDirection: 'row',
+  pressed: {
+    opacity: 0.7,
+  },
+  calendarButton: {
+    paddingVertical: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.three,
+    borderWidth: 1.5,
     alignItems: 'center',
-    justifyContent: 'space-between',
+  },
+  settingsColumn: {
+    gap: Spacing.two,
   },
   emptyCard: {
     padding: Spacing.four,

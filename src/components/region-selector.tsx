@@ -18,11 +18,13 @@ export function RegionSelector({
   onChange,
   label,
   sheetTitle,
+  fullWidth = false,
 }: {
   regionId: string;
   onChange: (id: string) => void;
   label?: string;
   sheetTitle?: string;
+  fullWidth?: boolean;
 }) {
   const { t, languageId } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -30,12 +32,12 @@ export function RegionSelector({
 
   return (
     <>
-      <Pressable onPress={() => setOpen(true)} style={({ pressed }) => pressed && styles.pressed}>
-        <ThemedView type="backgroundElement" style={styles.trigger}>
-          <ThemedText type="small" themeColor="textSecondary">
+      <Pressable onPress={() => setOpen(true)} style={({ pressed }) => [styles.triggerHost, fullWidth && styles.triggerHostFull, pressed && styles.pressed]}>
+        <ThemedView type="backgroundElement" style={[styles.trigger, fullWidth && styles.triggerFull]}>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
             {label ?? t('home.region')}
           </ThemedText>
-          <ThemedText type="smallBold">{current.label}</ThemedText>
+          <ThemedText type="smallBold" style={[styles.value, fullWidth && styles.valueFull]}>{current.label}</ThemedText>
         </ThemedView>
       </Pressable>
 
@@ -81,6 +83,9 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
+  triggerHost: {
+    maxWidth: '100%',
+  },
   trigger: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -89,6 +94,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     borderRadius: Spacing.five,
     alignSelf: 'flex-start',
+    maxWidth: '100%',
+  },
+  // Home's version: a full-width row, label on the left and the value on the
+  // right.
+  triggerHostFull: {
+    alignSelf: 'stretch',
+  },
+  triggerFull: {
+    alignSelf: 'stretch',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.two,
+    borderRadius: Spacing.three,
+  },
+  label: {
+    flexShrink: 0,
+  },
+  // Lets a long value wrap inside the pill instead of pushing it off-screen.
+  value: {
+    flexShrink: 1,
+  },
+  valueFull: {
+    textAlign: 'right',
   },
   backdrop: {
     flex: 1,

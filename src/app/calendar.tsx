@@ -6,7 +6,7 @@ import { EventCard } from '@/components/event-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, TopTabInset, Spacing, ThemeColor } from '@/constants/theme';
+import { MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import { CATEGORY_LABELS, CURRENT_YEAR, CURRENT_YEAR_MONTH, EventCategory, getAllEvents, getEventsByYearMonth } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -65,7 +65,7 @@ export default function CalendarScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView edges={['bottom']} style={styles.safeArea}>
         <SectionList
           sections={sections}
           keyExtractor={(item) => item.id}
@@ -147,8 +147,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Spacing.three,
-    paddingTop: TopTabInset,
-    paddingBottom: BottomTabInset + Spacing.three,
+    paddingBottom: Spacing.five,
   },
   header: {
     paddingTop: Spacing.four,

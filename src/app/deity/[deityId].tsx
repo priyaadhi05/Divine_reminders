@@ -9,7 +9,7 @@ import { NotifyPanel } from '@/components/notify-panel';
 import { SacredVerses } from '@/components/sacred-verses';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
+import { MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
 import {
   CATEGORY_LABELS,
   CURRENT_YEAR_MONTH,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
+    paddingBottom: Spacing.five,
   },
   header: {
     paddingTop: Spacing.three,

@@ -17,22 +17,26 @@ import { getShareMedia, setShareMedia, type ShareMedia } from '@/lib/share-media
 // Quick-share section for a single event, shown once someone taps "Share with
 // family" (see src/app/event/[id].tsx). Top to bottom:
 //  1. This deity's pictures (lib/deity-photos.ts, plus the branded card from
-//     lib/deity-cards.ts) as a grid - tap any number of them to select /
-//     deselect. Someone's own photo or video can be added and shows first.
+//     lib/deity-cards.ts) as a grid - tap one to pick it (tapping it again
+//     unpicks it, for a text-only share). Only one picture goes out per
+//     share: most apps drop the message when several pictures are sent
+//     together, so the app link would get lost. Someone's own photo or
+//     video can be added and shows first.
 //  2. WhatsApp / Instagram / Facebook / More, which act on the selection.
-// What each button can actually do is limited by the OS: neither Linking nor
-// expo-sharing can open a specific app *with* an attachment, and expo-sharing
-// only attaches one file per share sheet - and neither can carry a caption
-// alongside a picture. So:
+// What each button can actually do is limited by the OS: nothing here can
+// open a specific app *with* an attachment, so every picture share goes
+// through the OS share sheet for the person to pick the app. So:
 //  - WhatsApp with nothing selected opens WhatsApp (app or Web) directly via
 //    the universal wa.me link with the message text pre-filled.
-//  - Every button with pictures selected writes the greeting onto each
-//    selected picture first (see GreetingCard / composeCaption below, since
-//    that's the only way the words travel with the picture on native), then
-//    opens the OS share sheet once per picture (asking before each next
-//    one) for the person to pick the app. On web, the real Web Share API is
-//    used instead when available (see shareViaWebShare) - it can carry the
-//    message and the pictures together in one call, no compositing needed.
+//  - Every button with a picture picked writes the greeting (and the app
+//    link) underneath the whole, uncropped picture first (see GreetingCard /
+//    composeCaption below), then opens the share sheet with that picture
+//    *and* the message, so the link also travels as tappable text
+//    (react-native-share - see shareWithMessage). That's a native module, so
+//    in Expo Go it isn't there and the picture goes out on its own via
+//    expo-sharing, with the link only on the picture. On web, the real Web
+//    Share API is used instead when available (see shareViaWebShare) - it
+//    carries the message and the picture together, no compositing needed.
 interface SharePanelProps {
   deityId: string;
   // The full share message (lib/share-greeting.ts's greeting plus the app's
@@ -49,18 +53,21 @@ function isDismissal(error: unknown): boolean {
   return text.includes('abort') || text.includes('cancel') || text.includes('dismiss');
 }
 
-const askNext = (t: ReturnType<typeof useTranslation>['t'], done: number, total: number) =>
-  new Promise<boolean>((resolve) =>
-    Alert.alert(
-      t('share.pictureShared', { done, total }),
-      t('share.sendNext'),
-      [
-        { text: t('share.stop'), style: 'cancel', onPress: () => resolve(false) },
-        { text: t('share.next', { n: done + 1, total }), onPress: () => resolve(true) },
-      ],
-      { cancelable: false, onDismiss: () => resolve(false) }
-    )
-  );
+// react-native-share looks its native module up as soon as it's imported,
+// which throws in Expo Go (no custom native code there) - so it's loaded
+// lazily, and null means "fall back to expo-sharing, picture only".
+type NativeShare = typeof import('react-native-share').default;
+let nativeShare: NativeShare | null | undefined;
+function loadNativeShare(): NativeShare | null {
+  if (nativeShare === undefined) {
+    try {
+      nativeShare = require('react-native-share').default as NativeShare;
+    } catch {
+      nativeShare = null;
+    }
+  }
+  return nativeShare;
+}
 
 export function SharePanel({ deityId, message }: SharePanelProps) {
   const theme = useTheme();
@@ -68,8 +75,9 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   const [customMedia, setCustomMedia] = useState<ShareMedia | null>(null);
   const [photoUris, setPhotoUris] = useState<string[]>([]);
   const [cardUri, setCardUri] = useState<string | null>(null);
-  // null = untouched, which means "just the first picture"
-  const [selectedUris, setSelectedUris] = useState<string[] | null>(null);
+  // undefined = untouched, which means "the first picture"; null = none
+  // picked (text-only share)
+  const [pickedUri, setPickedUri] = useState<string | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
 
   // Off-screen rig that writes `caption` onto one picture at a time before
@@ -78,10 +86,20 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   // of the picture itself. `captureJob` holds the in-flight request; its
   // `resolve` is called once the composited file is ready.
   const cardRef = useRef<View>(null);
-  const [captureJob, setCaptureJob] = useState<{ uri: string; resolve: (out: string) => void } | null>(null);
+  const [captureJob, setCaptureJob] = useState<{
+    uri: string;
+    aspectRatio: number;
+    resolve: (out: string) => void;
+  } | null>(null);
 
-  const composeCaption = (uri: string): Promise<string> =>
-    new Promise((resolve) => setCaptureJob({ uri, resolve }));
+  // The card is laid out in the photo's own shape, so its size is needed up
+  // front; a square is the fallback if it can't be read.
+  const composeCaption = async (uri: string): Promise<string> => {
+    const aspectRatio = await Image.getSize(uri)
+      .then(({ width, height }) => (width > 0 && height > 0 ? width / height : 1))
+      .catch(() => 1);
+    return new Promise((resolve) => setCaptureJob({ uri, aspectRatio, resolve }));
+  };
 
   const handleCardReady = async () => {
     if (!captureJob) return;
@@ -102,18 +120,12 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   // its own "not supported here" message for that) and react-native-view-shot
   // doesn't reliably capture there either, so compositing is skipped on web
   // rather than hanging in front of that existing message.
-  const withCaptions = async (items: ShareMedia[]): Promise<ShareMedia[]> => {
-    if (Platform.OS === 'web') return items;
-    const out: ShareMedia[] = [];
-    for (const item of items) {
-      out.push(item.type === 'video' ? item : { uri: await composeCaption(item.uri), type: 'image' });
-    }
-    return out;
-  };
+  const withCaption = async (item: ShareMedia): Promise<ShareMedia> =>
+    Platform.OS === 'web' || item.type === 'video' ? item : { uri: await composeCaption(item.uri), type: 'image' };
 
   useEffect(() => {
     let cancelled = false;
-    setSelectedUris(null);
+    setPickedUri(undefined);
     getShareMedia(deityId).then((m) => !cancelled && setCustomMedia(m));
     getDeityPhotoUris(deityId)
       .then((uris) => !cancelled && setPhotoUris(uris))
@@ -132,11 +144,10 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     ...photoUris.map((uri): ShareMedia => ({ uri, type: 'image' })),
     ...(cardUri ? [{ uri: cardUri, type: 'image' } as ShareMedia] : []),
   ];
-  const selection = selectedUris ?? (options[0] ? [options[0].uri] : []);
-  const chosen = options.filter((o) => selection.includes(o.uri));
+  const selectedUri = pickedUri === undefined ? (options[0]?.uri ?? null) : pickedUri;
+  const chosen = options.find((o) => o.uri === selectedUri) ?? null;
 
-  const toggle = (uri: string) =>
-    setSelectedUris(selection.includes(uri) ? selection.filter((u) => u !== uri) : [...selection, uri]);
+  const toggle = (uri: string) => setPickedUri(uri === selectedUri ? null : uri);
 
   const shareTextViaSheet = async () => {
     try {
@@ -146,9 +157,27 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     }
   };
 
-  // The OS share sheet takes one file at a time, so several pictures go out
-  // one after another, asking before each next one.
-  const shareViaSheet = async (items: ShareMedia[], dialogTitle?: string) => {
+  // The picture and the message in one share sheet.
+  const shareWithMessage = async (share: NativeShare, item: ShareMedia, dialogTitle?: string) => {
+    try {
+      await share.open({
+        url: item.uri,
+        type: item.type === 'video' ? 'video/*' : 'image/*',
+        message,
+        title: dialogTitle,
+        failOnCancel: false,
+      });
+    } catch (error) {
+      if (!isDismissal(error)) {
+        console.warn('Share.open failed', error);
+        Alert.alert(t('share.sheetFailed'), t('share.tryAgain'));
+      }
+    }
+  };
+
+  const shareViaSheet = async (item: ShareMedia, dialogTitle?: string) => {
+    const share = loadNativeShare();
+    if (share) return shareWithMessage(share, item, dialogTitle);
     if (!(await Sharing.isAvailableAsync())) {
       Alert.alert(t('share.photoUnsupportedTitle'), t('share.photoUnsupportedBody'), [
         { text: t('common.cancel'), style: 'cancel' },
@@ -156,22 +185,17 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       ]);
       return;
     }
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      try {
-        await Sharing.shareAsync(item.uri, {
-          mimeType: item.type === 'video' ? 'video/*' : 'image/*',
-          UTI: item.type === 'video' ? 'public.movie' : 'public.image',
-          dialogTitle,
-        });
-      } catch (error) {
-        if (!isDismissal(error)) {
-          console.warn('shareAsync failed', error);
-          Alert.alert(t('share.sheetFailed'), t('share.tryAgain'));
-        }
-        return;
+    try {
+      await Sharing.shareAsync(item.uri, {
+        mimeType: item.type === 'video' ? 'video/*' : 'image/*',
+        UTI: item.type === 'video' ? 'public.movie' : 'public.image',
+        dialogTitle,
+      });
+    } catch (error) {
+      if (!isDismissal(error)) {
+        console.warn('shareAsync failed', error);
+        Alert.alert(t('share.sheetFailed'), t('share.tryAgain'));
       }
-      if (i < items.length - 1 && !(await askNext(t, i + 1, items.length))) return;
     }
   };
 
@@ -182,17 +206,15 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   const canWebShare =
     Platform.OS === 'web' && typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
-  const shareViaWebShare = async (items: ShareMedia[]) => {
+  const shareViaWebShare = async (item: ShareMedia) => {
     try {
-      const files = await Promise.all(
-        items.map(async (item, i) => {
-          const blob = await (await fetch(item.uri)).blob();
-          const ext = item.type === 'video' ? 'mp4' : 'jpg';
-          return new File([blob], `divine-reminder-${i + 1}.${ext}`, {
-            type: blob.type || (item.type === 'video' ? 'video/mp4' : 'image/jpeg'),
-          });
-        })
-      );
+      const blob = await (await fetch(item.uri)).blob();
+      const ext = item.type === 'video' ? 'mp4' : 'jpg';
+      const files = [
+        new File([blob], `deiva-dinam.${ext}`, {
+          type: blob.type || (item.type === 'video' ? 'video/mp4' : 'image/jpeg'),
+        }),
+      ];
       const shareData = { text: message, files };
       await navigator.share(navigator.canShare && !navigator.canShare(shareData) ? { files } : shareData);
     } catch (error) {
@@ -205,11 +227,11 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     }
   };
 
-  const shareSelected = async (items: ShareMedia[], dialogTitle?: string) =>
-    canWebShare ? shareViaWebShare(items) : shareViaSheet(await withCaptions(items), dialogTitle);
+  const shareSelected = async (item: ShareMedia, dialogTitle?: string) =>
+    canWebShare ? shareViaWebShare(item) : shareViaSheet(await withCaption(item), dialogTitle);
 
   const shareToWhatsApp = async () => {
-    if (chosen.length > 0) return shareSelected(chosen, t('share.chooseApp', { app: t('share.whatsapp') }));
+    if (chosen) return shareSelected(chosen, t('share.chooseApp', { app: t('share.whatsapp') }));
     // No picture selected: the universal wa.me link opens the WhatsApp app
     // (native) or WhatsApp Web (browser) directly with the message
     // pre-filled - the one direct route there is, either way.
@@ -224,14 +246,14 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
     Alert.alert(t('share.needPictureTitle'), t('share.needPictureBody', { app }));
 
   const shareToInstagram = async () => {
-    if (chosen.length === 0) return needPicture(t('share.instagram'));
+    if (!chosen) return needPicture(t('share.instagram'));
     await shareSelected(chosen, t('share.chooseApp', { app: t('share.instagram') }));
   };
 
   const shareToFacebook = async () =>
-    chosen.length > 0 ? shareSelected(chosen, t('share.chooseApp', { app: t('share.facebook') })) : shareTextViaSheet();
+    chosen ? shareSelected(chosen, t('share.chooseApp', { app: t('share.facebook') })) : shareTextViaSheet();
 
-  const shareMore = async () => (chosen.length > 0 ? shareSelected(chosen) : shareTextViaSheet());
+  const shareMore = async () => (chosen ? shareSelected(chosen) : shareTextViaSheet());
 
   const pickMedia = async () => {
     if (busy) return;
@@ -254,7 +276,7 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
       // works for now, it just won't be remembered.
       const next = (await setShareMedia(deityId, picked).catch(() => null)) ?? picked;
       setCustomMedia(next);
-      setSelectedUris([...selection.filter((u) => u !== customMedia?.uri), next.uri]);
+      setPickedUri(next.uri);
     } finally {
       setBusy(false);
     }
@@ -264,7 +286,7 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
   // nothing - there's always something reasonable to share.
   const removeMedia = async () => {
     await setShareMedia(deityId, null);
-    setSelectedUris(selection.filter((u) => u !== customMedia?.uri));
+    if (selectedUri === customMedia?.uri) setPickedUri(undefined);
     setCustomMedia(null);
   };
 
@@ -275,16 +297,22 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
           <ThemedView type="backgroundElement" style={styles.mediaCardBody}>
             <ThemedView type="backgroundElement" style={styles.grid}>
               {options.map((option) => {
-                const selected = selection.includes(option.uri);
+                const selected = option.uri === selectedUri;
                 return (
                   <Pressable
                     key={option.uri}
                     onPress={() => toggle(option.uri)}
-                    accessibilityRole="button"
+                    accessibilityRole="radio"
                     accessibilityState={{ selected }}>
+                    {/* "contain", not the default "cover" - the whole picture, as
+                        it'll actually be sent, rather than a cropped square. */}
                     <Image
                       source={{ uri: option.uri }}
-                      style={[styles.thumbnail, { borderColor: selected ? theme.primary : 'transparent' }]}
+                      resizeMode="contain"
+                      style={[
+                        styles.thumbnail,
+                        { borderColor: selected ? theme.primary : 'transparent', backgroundColor: theme.backgroundSelected },
+                      ]}
                     />
                     {selected && (
                       <ThemedView style={[styles.check, { backgroundColor: theme.primary }]}>
@@ -297,7 +325,7 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
               })}
             </ThemedView>
             <ThemedText type="small" themeColor="textSecondary">
-              {chosen.length > 0 ? t('share.selectedCount', { count: chosen.length }) : t('share.noneSelected')}
+              {chosen ? t('share.pickOne') : t('share.noneSelected')}
             </ThemedText>
             <ThemedView type="backgroundElement" style={styles.mediaActions}>
               <Pressable onPress={pickMedia} disabled={busy}>
@@ -331,7 +359,13 @@ export function SharePanel({ deityId, message }: SharePanelProps) {
 
       {captureJob && (
         <View style={styles.captureHost} pointerEvents="none">
-          <GreetingCard photoUri={captureJob.uri} caption={message} ref={cardRef} onImageLoad={handleCardReady} />
+          <GreetingCard
+            photoUri={captureJob.uri}
+            aspectRatio={captureJob.aspectRatio}
+            caption={message}
+            ref={cardRef}
+            onImageLoad={handleCardReady}
+          />
         </View>
       )}
     </ThemedView>

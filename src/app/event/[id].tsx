@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, ScrollView, StyleSheet, Switch } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -107,6 +107,37 @@ export default function EventDetailScreen() {
     APP_INSTALL_URL ? `${t('share.sentWith')}\n${t('share.getTheApp', { url: APP_INSTALL_URL })}` : t('share.sentWith'),
   ].join('\n\n');
 
+  // The reminder toggle is just a bell beside the title - outline when off,
+  // filled in the event's color when on - rather than a labelled row with a
+  // switch. The "how many days before" choice appears below once it's on.
+  const reminderBell = REMINDERS_SUPPORTED && (
+    <Pressable
+      onPress={handleSetReminder}
+      disabled={busy}
+      hitSlop={8}
+      accessibilityRole="switch"
+      accessibilityLabel={reminderOn ? t('event.reminderSet') : t('event.setReminder')}
+      accessibilityState={{ checked: reminderOn, disabled: busy }}
+      style={({ pressed }) => [
+        styles.bellButton,
+        {
+          backgroundColor: reminderOn ? accentColor : 'transparent',
+          borderColor: accentColor,
+          opacity: busy ? 0.6 : pressed ? 0.7 : 1,
+        },
+      ]}>
+      <SymbolView
+        name={{
+          ios: reminderOn ? 'bell.fill' : 'bell',
+          android: reminderOn ? 'notifications_active' : 'notifications_none',
+          web: 'notifications',
+        }}
+        size={22}
+        tintColor={reminderOn ? theme.primaryText : accentColor}
+      />
+    </Pressable>
+  );
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <SafeAreaView edges={['bottom']} style={styles.content}>
@@ -117,9 +148,12 @@ export default function EventDetailScreen() {
               {categoryLabel(event.category, CATEGORY_LABELS[event.category])} · {shown.tamilMonth}
             </ThemedText>
           </ThemedView>
-          <ThemedText type="title" style={styles.title}>
-            {shown.name}
-          </ThemedText>
+          <ThemedView style={styles.titleRow}>
+            <ThemedText type="title" style={[styles.title, styles.titleText]}>
+              {shown.name}
+            </ThemedText>
+            {reminderBell}
+          </ThemedView>
           {!!shown.tamilName && (
             <ThemedText type="subtitle" style={[styles.tamilName, { color: accentColor }]}>
               {shown.tamilName}
@@ -128,54 +162,13 @@ export default function EventDetailScreen() {
           <ThemedText type="smallBold">{fullDate(event.date)}</ThemedText>
         </ThemedView>
 
-        {REMINDERS_SUPPORTED && (
+        {REMINDERS_SUPPORTED && reminderOn && (
           <ThemedView type="backgroundElement" style={[styles.reminderCard, { borderLeftColor: accentColor }]}>
-            <Pressable
-              onPress={handleSetReminder}
-              disabled={busy}
-              accessibilityRole="switch"
-              accessibilityState={{ checked: reminderOn, disabled: busy }}>
-              <ThemedView type="backgroundElement" style={styles.reminderRow}>
-                <ThemedView
-                  style={[styles.reminderIconWrap, { backgroundColor: reminderOn ? accentColor : theme.backgroundSelected }]}>
-                  <SymbolView
-                    name={{
-                      ios: reminderOn ? 'bell.fill' : 'bell',
-                      android: reminderOn ? 'notifications_active' : 'notifications_none',
-                      web: 'notifications',
-                    }}
-                    size={18}
-                    tintColor={reminderOn ? theme.primaryText : theme.textSecondary}
-                  />
-                </ThemedView>
-                <ThemedView type="backgroundElement" style={styles.reminderTextWrap}>
-                  <ThemedText type="smallBold">{reminderOn ? t('event.reminderSet') : t('event.setReminder')}</ThemedText>
-                  {!reminderOn && (
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {t('notify.requiresPermission')}
-                    </ThemedText>
-                  )}
-                </ThemedView>
-                <Switch
-                  value={reminderOn}
-                  disabled={busy}
-                  pointerEvents="none"
-                  trackColor={{ false: theme.backgroundSelected, true: accentColor }}
-                  thumbColor={Platform.OS === 'android' ? (reminderOn ? theme.primaryText : '#FFFFFF') : undefined}
-                />
-              </ThemedView>
-            </Pressable>
-
-            {reminderOn && (
-              <ThemedView type="backgroundElement" style={styles.leadDaysSection}>
-                <ThemedView style={[styles.reminderDivider, { backgroundColor: accentColor }]} />
-                <ThemedText type="small" themeColor="textSecondary">
-                  {t('event.appliesTo', { category: categoryLabel(event.category, CATEGORY_LABELS[event.category]) })}
-                  {localizedDeityName ? t('event.forDeity', { name: localizedDeityName }) : ''}
-                </ThemedText>
-                <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
-              </ThemedView>
-            )}
+            <ThemedText type="small" themeColor="textSecondary">
+              {t('event.appliesTo', { category: categoryLabel(event.category, CATEGORY_LABELS[event.category]) })}
+              {localizedDeityName ? t('event.forDeity', { name: localizedDeityName }) : ''}
+            </ThemedText>
+            <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
           </ThemedView>
         )}
 
@@ -304,34 +297,27 @@ const styles = StyleSheet.create({
     fontSize: 20,
     lineHeight: 26,
   },
-  reminderCard: {
-    gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
-    borderLeftWidth: 4,
-  },
-  reminderRow: {
+  titleRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: Spacing.two,
   },
-  reminderIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  titleText: {
+    flex: 1,
+  },
+  bellButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  reminderTextWrap: {
-    flex: 1,
-    gap: Spacing.half,
-  },
-  reminderDivider: {
-    height: 1,
-    opacity: 0.2,
-  },
-  leadDaysSection: {
+  reminderCard: {
     gap: Spacing.two,
+    padding: Spacing.three,
+    borderRadius: Spacing.three,
+    borderLeftWidth: 4,
   },
   button: {
     paddingVertical: Spacing.two,
@@ -363,10 +349,14 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
     borderLeftWidth: 4,
   },
+  // Wraps so the "See in" region pill drops below the heading when both
+  // don't fit on one line (long region names, Tamil/Telugu/Kannada).
   timingHeader: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: Spacing.two,
   },
   timingHeaderLeft: {
     flexDirection: 'row',

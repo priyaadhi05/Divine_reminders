@@ -11,6 +11,12 @@ import { getNotificationEventId, hasOnboarded, scheduleUpcomingReminders } from 
 
 SplashScreen.preventAutoHideAsync();
 
+// A deep link straight to a deity or event screen still gets Home
+// underneath it, so there's a back button to it.
+export const unstable_settings = {
+  anchor: 'index',
+};
+
 // Keeps the rolling reminder window (see scheduleUpcomingReminders) fresh and
 // routes a tapped reminder notification straight to that event's detail
 // screen - both a cold start (app launched by tapping it) and a tap while
@@ -54,10 +60,12 @@ export default function RootLayout() {
       <LanguageProvider>
         <RegionProvider>
           <AnimatedSplashOverlay />
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          {/* No tab bar - Home is the root and every other screen is pushed
+              on top of it with just a back arrow (no title, and no "Back" /
+              previous-screen label next to the arrow). */}
+          <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal', title: '' }}>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-            <Stack.Screen name="event/[id]" options={{ title: '' }} />
           </Stack>
         </RegionProvider>
       </LanguageProvider>
