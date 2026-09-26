@@ -12,7 +12,7 @@ export interface ShareMedia {
 }
 
 function storageKey(deityId: string): string {
-  return `divine-calendar:share-media:${deityId}`;
+  return `deiva-dinam:share-media:${deityId}`;
 }
 
 // The picker hands back a file in the OS cache, which the OS is free to

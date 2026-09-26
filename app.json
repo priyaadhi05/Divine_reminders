@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "divinecalendar",
+    "scheme": "deivadinam",
     "userInterfaceStyle": "automatic",
     "android": {
       "adaptiveIcon": {
@@ -15,13 +15,13 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.divinereminder.app",
+      "package": "com.deivadinam.app",
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW"
       ]
     },
     "ios": {
-      "bundleIdentifier": "com.divinereminder.app",
+      "bundleIdentifier": "com.deivadinam.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },

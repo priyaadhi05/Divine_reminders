@@ -21,13 +21,13 @@ import { messageContext } from '@/lib/share-greeting';
 export const REMINDERS_SUPPORTED = Platform.OS !== 'web';
 const SUPPORTED = REMINDERS_SUPPORTED;
 
-const ENABLED_KEY = 'divine-calendar:reminders-enabled';
-const FOLLOWED_TOPICS_KEY = 'divine-calendar:followed-topics';
-const LEAD_DAYS_KEY = 'divine-calendar:reminder-lead-days';
-const ONBOARDED_KEY = 'divine-calendar:onboarded';
-const LANGUAGE_KEY = 'divine-calendar:selected-language'; // written by LanguageProvider
-const NOTIFICATION_PREFIX = 'divine-calendar-reminder-';
-const CHANNEL_ID = 'divine-calendar-reminders';
+const ENABLED_KEY = 'deiva-dinam:reminders-enabled';
+const FOLLOWED_TOPICS_KEY = 'deiva-dinam:followed-topics';
+const LEAD_DAYS_KEY = 'deiva-dinam:reminder-lead-days';
+const ONBOARDED_KEY = 'deiva-dinam:onboarded';
+const LANGUAGE_KEY = 'deiva-dinam:selected-language'; // written by LanguageProvider
+const NOTIFICATION_PREFIX = 'deiva-dinam-reminder-';
+const CHANNEL_ID = 'deiva-dinam-reminders';
 const REMINDER_HOUR = 9; // fires at 9am local device time on each countdown day
 
 // The countdown per followed event: a heads-up 3 days out, again at 2 days,

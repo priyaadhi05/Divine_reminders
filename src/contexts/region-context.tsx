@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 
 import { AUTO_REGION_ID } from '@/lib/regions';
 
-const STORAGE_KEY = 'divine-calendar:selected-region';
+const STORAGE_KEY = 'deiva-dinam:selected-region';
 
 interface RegionContextValue {
   regionId: string;

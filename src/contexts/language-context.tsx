@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { DEFAULT_LANGUAGE_ID } from '@/lib/i18n/languages';
 import { scheduleUpcomingReminders } from '@/lib/notifications';
 
-const STORAGE_KEY = 'divine-calendar:selected-language';
+const STORAGE_KEY = 'deiva-dinam:selected-language';
 
 interface LanguageContextValue {
   languageId: string;
