@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Deiva Dinam",
-    "slug": "divine-calendar",
+    "slug": "divine-reminder",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -65,15 +65,15 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "ecabd0ab-3189-4743-9857-453d260af615"
+        "projectId": "b7a0b235-4747-4d78-bc58-4156c6b07a43"
       }
     },
-    "owner": "priyaravi",
+    "owner": "priyaravis-team",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/ecabd0ab-3189-4743-9857-453d260af615"
+      "url": "https://u.expo.dev/b7a0b235-4747-4d78-bc58-4156c6b07a43"
     }
   }
 }
