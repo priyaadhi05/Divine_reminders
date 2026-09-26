@@ -11,6 +11,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import {
+  REMINDERS_SUPPORTED,
   getDeityFollowState,
   getTopicLeadDays,
   isTopicFollowed,
@@ -27,7 +28,11 @@ import { ensureRemindersAllowed } from '@/lib/reminder-permission';
 // Monthly Krithigai) with its own lead-day picker once turned on. Keeping
 // all of that tucked away by default means the deity page reads as one
 // tidy row instead of a wall of always-visible chips.
-export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName: string }) {
+export function NotifyPanel(props: { deityId: string; deityName: string }) {
+  return REMINDERS_SUPPORTED ? <NotifyPanelBody {...props} /> : null;
+}
+
+function NotifyPanelBody({ deityId, deityName }: { deityId: string; deityName: string }) {
   const theme = useTheme();
   const { t, categoryLabel } = useTranslation();
   const categories = getCategoriesForDeity(deityId);
@@ -87,7 +92,6 @@ export function NotifyPanel({ deityId, deityName }: { deityId: string; deityName
           </ThemedView>
           <ThemedText type="smallBold" style={styles.summaryText}>
             {summaryLabel}
-            {Platform.OS === 'web' ? t('mascot.mobileOnly') : ''}
           </ThemedText>
           <SymbolView
             name={{ ios: 'chevron.down', android: 'expand_more', web: 'expand_more' }}

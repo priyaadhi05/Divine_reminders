@@ -17,7 +17,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { APP_INSTALL_URL } from '@/lib/app-info';
 import { CATEGORY_STYLE } from '@/lib/category-style';
 import { getDevotional } from '@/lib/i18n/content';
-import { getTopicLeadDays, isTopicFollowed, setTopicFollowed, setTopicLeadDays } from '@/lib/notifications';
+import { REMINDERS_SUPPORTED, getTopicLeadDays, isTopicFollowed, setTopicFollowed, setTopicLeadDays } from '@/lib/notifications';
 import { ensureRemindersAllowed } from '@/lib/reminder-permission';
 import { resolveRegionTimeZone } from '@/lib/regions';
 import { buildGreeting } from '@/lib/share-greeting';
@@ -128,54 +128,56 @@ export default function EventDetailScreen() {
           <ThemedText type="smallBold">{fullDate(event.date)}</ThemedText>
         </ThemedView>
 
-        <ThemedView type="backgroundElement" style={[styles.reminderCard, { borderLeftColor: accentColor }]}>
-          <Pressable
-            onPress={handleSetReminder}
-            disabled={busy}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: reminderOn, disabled: busy }}>
-            <ThemedView type="backgroundElement" style={styles.reminderRow}>
-              <ThemedView
-                style={[styles.reminderIconWrap, { backgroundColor: reminderOn ? accentColor : theme.backgroundSelected }]}>
-                <SymbolView
-                  name={{
-                    ios: reminderOn ? 'bell.fill' : 'bell',
-                    android: reminderOn ? 'notifications_active' : 'notifications_none',
-                    web: 'notifications',
-                  }}
-                  size={18}
-                  tintColor={reminderOn ? theme.primaryText : theme.textSecondary}
+        {REMINDERS_SUPPORTED && (
+          <ThemedView type="backgroundElement" style={[styles.reminderCard, { borderLeftColor: accentColor }]}>
+            <Pressable
+              onPress={handleSetReminder}
+              disabled={busy}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: reminderOn, disabled: busy }}>
+              <ThemedView type="backgroundElement" style={styles.reminderRow}>
+                <ThemedView
+                  style={[styles.reminderIconWrap, { backgroundColor: reminderOn ? accentColor : theme.backgroundSelected }]}>
+                  <SymbolView
+                    name={{
+                      ios: reminderOn ? 'bell.fill' : 'bell',
+                      android: reminderOn ? 'notifications_active' : 'notifications_none',
+                      web: 'notifications',
+                    }}
+                    size={18}
+                    tintColor={reminderOn ? theme.primaryText : theme.textSecondary}
+                  />
+                </ThemedView>
+                <ThemedView type="backgroundElement" style={styles.reminderTextWrap}>
+                  <ThemedText type="smallBold">{reminderOn ? t('event.reminderSet') : t('event.setReminder')}</ThemedText>
+                  {!reminderOn && (
+                    <ThemedText type="small" themeColor="textSecondary">
+                      {t('notify.requiresPermission')}
+                    </ThemedText>
+                  )}
+                </ThemedView>
+                <Switch
+                  value={reminderOn}
+                  disabled={busy}
+                  pointerEvents="none"
+                  trackColor={{ false: theme.backgroundSelected, true: accentColor }}
+                  thumbColor={Platform.OS === 'android' ? (reminderOn ? theme.primaryText : '#FFFFFF') : undefined}
                 />
               </ThemedView>
-              <ThemedView type="backgroundElement" style={styles.reminderTextWrap}>
-                <ThemedText type="smallBold">{reminderOn ? t('event.reminderSet') : t('event.setReminder')}</ThemedText>
-                {!reminderOn && (
-                  <ThemedText type="small" themeColor="textSecondary">
-                    {t('notify.requiresPermission')}
-                  </ThemedText>
-                )}
-              </ThemedView>
-              <Switch
-                value={reminderOn}
-                disabled={busy}
-                pointerEvents="none"
-                trackColor={{ false: theme.backgroundSelected, true: accentColor }}
-                thumbColor={Platform.OS === 'android' ? (reminderOn ? theme.primaryText : '#FFFFFF') : undefined}
-              />
-            </ThemedView>
-          </Pressable>
+            </Pressable>
 
-          {reminderOn && (
-            <ThemedView type="backgroundElement" style={styles.leadDaysSection}>
-              <ThemedView style={[styles.reminderDivider, { backgroundColor: accentColor }]} />
-              <ThemedText type="small" themeColor="textSecondary">
-                {t('event.appliesTo', { category: categoryLabel(event.category, CATEGORY_LABELS[event.category]) })}
-                {localizedDeityName ? t('event.forDeity', { name: localizedDeityName }) : ''}
-              </ThemedText>
-              <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
-            </ThemedView>
-          )}
-        </ThemedView>
+            {reminderOn && (
+              <ThemedView type="backgroundElement" style={styles.leadDaysSection}>
+                <ThemedView style={[styles.reminderDivider, { backgroundColor: accentColor }]} />
+                <ThemedText type="small" themeColor="textSecondary">
+                  {t('event.appliesTo', { category: categoryLabel(event.category, CATEGORY_LABELS[event.category]) })}
+                  {localizedDeityName ? t('event.forDeity', { name: localizedDeityName }) : ''}
+                </ThemedText>
+                <LeadDaysRow days={leadDays} disabled={busy} onChange={handleChangeLeadDays} />
+              </ThemedView>
+            )}
+          </ThemedView>
+        )}
 
         <Pressable onPress={() => setShareOpen((v) => !v)}>
           <ThemedView style={[styles.button, styles.buttonOutline, { borderColor: theme.primary }]}>

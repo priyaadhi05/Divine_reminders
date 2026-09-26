@@ -18,7 +18,7 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { CATEGORY_STYLE } from '@/lib/category-style';
-import { isTopicFollowed, setTopicFollowed } from '@/lib/notifications';
+import { REMINDERS_SUPPORTED, isTopicFollowed, setTopicFollowed } from '@/lib/notifications';
 import { ensureRemindersAllowed } from '@/lib/reminder-permission';
 
 // Amavasai (new moon) and Pournami (full moon) happen every lunar month
@@ -105,21 +105,23 @@ export function LunarDaysCard() {
                 </ThemedText>
               )}
             </ThemedView>
-            <Pressable
-              onPress={() => toggleFollow(category)}
-              disabled={busy}
-              accessibilityRole="button"
-              accessibilityState={{ selected: on, disabled: busy }}>
-              <ThemedView
-                type="backgroundElement"
-                style={[styles.enableButton, { borderColor: theme[colorKey] }, on && { backgroundColor: theme[colorKey] }]}>
-                <ThemedText
-                  type="small"
-                  style={on ? { color: theme.primaryText, fontWeight: '700' } : { color: theme[colorKey] }}>
-                  {on ? `✓ ${t('lunar.enabled')}` : t('lunar.enable')}
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
+            {REMINDERS_SUPPORTED && (
+              <Pressable
+                onPress={() => toggleFollow(category)}
+                disabled={busy}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on, disabled: busy }}>
+                <ThemedView
+                  type="backgroundElement"
+                  style={[styles.enableButton, { borderColor: theme[colorKey] }, on && { backgroundColor: theme[colorKey] }]}>
+                  <ThemedText
+                    type="small"
+                    style={on ? { color: theme.primaryText, fontWeight: '700' } : { color: theme[colorKey] }}>
+                    {on ? `✓ ${t('lunar.enabled')}` : t('lunar.enable')}
+                  </ThemedText>
+                </ThemedView>
+              </Pressable>
+            )}
           </ThemedView>
         );
       })}

@@ -16,8 +16,10 @@ import { DEFAULT_LANGUAGE_ID } from '@/lib/i18n/languages';
 import { messageContext } from '@/lib/share-greeting';
 
 // Local (on-device) reminders only - no push server, no account, no cost.
-// Not supported on web (expo-notifications has no web implementation).
-const SUPPORTED = Platform.OS !== 'web';
+// Not supported on web (expo-notifications has no web implementation), so
+// every reminder control is hidden there rather than shown doing nothing.
+export const REMINDERS_SUPPORTED = Platform.OS !== 'web';
+const SUPPORTED = REMINDERS_SUPPORTED;
 
 const ENABLED_KEY = 'divine-calendar:reminders-enabled';
 const FOLLOWED_TOPICS_KEY = 'divine-calendar:followed-topics';

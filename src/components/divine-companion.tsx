@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
-import { areRemindersEnabled, disableReminders, enableReminders } from '@/lib/notifications';
+import { areRemindersEnabled, disableReminders, enableReminders, REMINDERS_SUPPORTED } from '@/lib/notifications';
 import { alertRemindersBlocked } from '@/lib/reminder-permission';
 
 // Home's intro card: a plain line on what the app does, and the toggle for
@@ -47,16 +47,17 @@ export function DivineCompanion() {
         </ThemedText>
       </ThemedView>
 
-      <Pressable
-        onPress={handleToggleReminders}
-        disabled={busy}
-        style={[styles.bell, { borderColor: theme.accent, opacity: busy ? 0.6 : 1 }]}
-        accessibilityRole="button">
-        <ThemedText type="smallBold">
-          {remindersOn ? t('mascot.remindersOn') : t('mascot.enableReminders')}
-          {Platform.OS === 'web' ? t('mascot.mobileOnly') : ''}
-        </ThemedText>
-      </Pressable>
+      {REMINDERS_SUPPORTED && (
+        <Pressable
+          onPress={handleToggleReminders}
+          disabled={busy}
+          style={[styles.bell, { borderColor: theme.accent, opacity: busy ? 0.6 : 1 }]}
+          accessibilityRole="button">
+          <ThemedText type="smallBold">
+            {remindersOn ? t('mascot.remindersOn') : t('mascot.enableReminders')}
+          </ThemedText>
+        </Pressable>
+      )}
     </ThemedView>
   );
 }
