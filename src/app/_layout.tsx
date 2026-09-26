@@ -6,7 +6,6 @@ import { Platform, useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { LanguageProvider } from '@/contexts/language-context';
-import { RegionProvider } from '@/contexts/region-context';
 import { getNotificationEventId, hasOnboarded, scheduleUpcomingReminders } from '@/lib/notifications';
 
 SplashScreen.preventAutoHideAsync();
@@ -58,8 +57,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <LanguageProvider>
-        <RegionProvider>
-          <AnimatedSplashOverlay />
+        <AnimatedSplashOverlay />
           {/* No tab bar - Home is the root and every other screen is pushed
               on top of it with just a back arrow (no title, and no "Back" /
               previous-screen label next to the arrow). */}
@@ -67,7 +65,6 @@ export default function RootLayout() {
             <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           </Stack>
-        </RegionProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

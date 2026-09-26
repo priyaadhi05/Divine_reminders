@@ -9,29 +9,25 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
-import { useRegion } from '@/contexts/region-context';
 import { DEITIES } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { LANGUAGES } from '@/lib/i18n/languages';
 import { enableReminders, getFollowedDeities, markOnboarded, setFollowedDeities } from '@/lib/notifications';
-import { regionOptions } from '@/lib/regions';
 
-// First-run flow, three short steps: language, home country/region (this is
-// what decides what time a festival's precise timing shows in - see the
-// event detail screen's "See in" selector for a one-off peek at another
-// country without changing this), then which deities to follow. Re-run from
-// Home's "Manage my deities" to add/remove deities - that link jumps
-// straight to the deities step via ?step=deities, since language and region
-// each have their own direct entry point on Home now and don't need
-// re-visiting just to change who you follow.
-type Step = 'language' | 'location' | 'deities';
+// First-run flow, two short steps: language, then which deities to follow.
+// There's no "where do you live" step - festival timings always show in the
+// phone's own time zone (see the event detail screen). Re-run from Home's
+// "Manage my deities" to add/remove deities - that link jumps straight to
+// the deities step via ?step=deities, since language has its own direct
+// entry point on Home and doesn't need re-visiting just to change who you
+// follow.
+type Step = 'language' | 'deities';
 
 export default function OnboardingScreen() {
   const theme = useTheme();
   const { t, deityName } = useTranslation();
   const { languageId, setLanguageId } = useLanguage();
-  const { regionId, setRegionId } = useRegion();
   const { step: initialStep } = useLocalSearchParams<{ step?: Step }>();
   const [step, setStep] = useState<Step>(initialStep === 'deities' ? 'deities' : 'language');
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -111,39 +107,6 @@ export default function OnboardingScreen() {
                           {language.label}
                         </ThemedText>
                         <ThemedText style={styles.heart}>{isSelected ? '❤️' : '🤍'}</ThemedText>
-                      </ThemedView>
-                    </Pressable>
-                  );
-                })}
-              </ThemedView>
-
-              <Pressable onPress={() => setStep('location')} style={[styles.primaryButton, { backgroundColor: theme.primary }]}>
-                <ThemedText type="smallBold" style={{ color: theme.primaryText }}>
-                  {t('onboarding.continue')}
-                </ThemedText>
-              </Pressable>
-            </>
-          )}
-
-          {step === 'location' && (
-            <>
-              <ThemedText type="title" style={styles.heading}>
-                {t('onboarding.locationHeading')}
-              </ThemedText>
-              <ThemedText themeColor="textSecondary" style={styles.subheading}>
-                {t('onboarding.locationSubheading')}
-              </ThemedText>
-
-              <ThemedView style={styles.list}>
-                {regionOptions(languageId).map((region) => {
-                  const isSelected = region.id === regionId;
-                  return (
-                    <Pressable key={region.id} onPress={() => setRegionId(region.id)}>
-                      <ThemedView
-                        type={isSelected ? 'backgroundSelected' : 'backgroundElement'}
-                        style={[styles.listOption, isSelected && { borderColor: theme.primary }]}>
-                        <ThemedText type={isSelected ? 'smallBold' : 'small'}>{region.label}</ThemedText>
-                        {isSelected && <ThemedText>❤️</ThemedText>}
                       </ThemedView>
                     </Pressable>
                   );
@@ -247,18 +210,6 @@ const styles = StyleSheet.create({
   heart: {
     fontSize: 18,
     marginTop: Spacing.one,
-  },
-  list: {
-    gap: Spacing.two,
-  },
-  listOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: Spacing.three,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    padding: Spacing.three,
   },
   primaryButton: {
     marginTop: Spacing.three,

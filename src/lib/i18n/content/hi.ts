@@ -280,7 +280,7 @@ export const HI_CONTENT: LanguageContent = {
     'south-africa': 'दक्षिण अफ़्रीका',
     uae: 'संयुक्त अरब अमीरात (दुबई)',
   },
-  autoRegion: () => 'स्वचालित (इस डिवाइस का समय क्षेत्र)',
+  autoRegion: (tz) => `स्थानीय समय (${tz.split('/').pop()?.replace(/_/g, ' ') ?? tz})`,
 
   verseTitles: {
     'Vetri Vel Veeravel': 'वेट्रि वेल वीरवेल',

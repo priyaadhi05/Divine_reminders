@@ -8,13 +8,11 @@ import { DivineCompanion } from '@/components/divine-companion';
 import { LanguageSelector } from '@/components/language-selector';
 import { LogoMark } from '@/components/logo-mark';
 import { LunarDaysCard } from '@/components/lunar-days-card';
-import { RegionSelector } from '@/components/region-selector';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { UpcomingRemindersCard } from '@/components/upcoming-reminders-card';
 import { WebBadge } from '@/components/web-badge';
 import { MaxContentWidth, Spacing, ThemeColor } from '@/constants/theme';
-import { useRegion } from '@/contexts/region-context';
 import { DEITIES, type Deity } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -31,7 +29,6 @@ const DEITY_ACCENTS: Record<string, ThemeColor> = Object.fromEntries(
 export default function HomeScreen() {
   const theme = useTheme();
   const { t } = useTranslation();
-  const { regionId, setRegionId } = useRegion();
   const [followedDeities, setFollowedDeities] = useState<Deity[]>([]);
 
   // Reload whenever Home regains focus (e.g. coming back from "Manage my
@@ -88,19 +85,15 @@ export default function HomeScreen() {
                   same screen already lists every available deity with hearts
                   to pick from (pre-checked to whatever's currently followed),
                   so a separate "browse" list here would just repeat it. Jumps
-                  straight to that step - language and region below are each
-                  already a direct entry point on their own. */}
+                  straight to that step - language below is already a direct
+                  entry point on its own. */}
               <Pressable onPress={() => router.push({ pathname: '/onboarding', params: { step: 'deities' } })}>
                 <ThemedText type="linkPrimary">{t('home.manageDeities')}</ThemedText>
               </Pressable>
 
-              {/* One full-width row each rather than side by side - in Tamil,
-                  Telugu or Kannada the two labels together are wider than a
-                  phone screen. */}
-              <ThemedView style={styles.settingsColumn}>
-                <RegionSelector regionId={regionId} onChange={setRegionId} fullWidth />
-                <LanguageSelector fullWidth />
-              </ThemedView>
+              {/* No region setting - festival timings always follow the
+                  phone's own time zone (see the event detail screen). */}
+              <LanguageSelector fullWidth />
 
               {followedDeities.length === 0 && (
                 <ThemedView type="backgroundElement" style={styles.emptyCard}>
@@ -169,9 +162,6 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
     borderWidth: 1.5,
     alignItems: 'center',
-  },
-  settingsColumn: {
-    gap: Spacing.two,
   },
   emptyCard: {
     padding: Spacing.four,

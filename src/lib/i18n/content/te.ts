@@ -280,7 +280,7 @@ export const TE_CONTENT: LanguageContent = {
     'south-africa': 'దక్షిణ ఆఫ్రికా',
     uae: 'యూఏఈ (దుబాయ్)',
   },
-  autoRegion: () => 'ఆటో (ఈ పరికరం సమయ మండలం)',
+  autoRegion: (tz) => `స్థానిక సమయం (${tz.split('/').pop()?.replace(/_/g, ' ') ?? tz})`,
 
   verseTitles: {
     'Vetri Vel Veeravel': 'వెట్రి వేల్ వీరవేల్',

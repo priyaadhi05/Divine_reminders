@@ -190,7 +190,7 @@ export const EN_CONTENT: LanguageContent = {
   },
   honorifics: { Lord: 'Lord', Goddess: 'Goddess' },
   regions: {},
-  autoRegion: (tz) => `Auto (${tz})`,
+  autoRegion: (tz) => `Local time (${tz.split('/').pop()?.replace(/_/g, ' ') ?? tz})`,
 
   verseTitles: {},
   verseScripts: {},

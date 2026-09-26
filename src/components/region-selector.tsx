@@ -8,36 +8,32 @@ import { Spacing } from '@/constants/theme';
 import { useTranslation } from '@/hooks/use-translation';
 import { regionOptions, resolveRegionTimeZone } from '@/lib/regions';
 
-// Controlled, not tied to a persisted "home" region itself - on Home, this
-// changes the actual home region (via useRegion), but on the event detail
-// screen it's a one-off "what would this look like in Germany?" peek that
-// doesn't touch that home setting - see the `sheetTitle` passed at each call
-// site, which is the only thing that differs between the two.
+// The event detail screen's "See in" pill: a one-off "what would this look
+// like in Germany?" peek at a festival's timing in another country. Nothing
+// is saved - the page always opens on the phone's own time zone.
 export function RegionSelector({
   regionId,
   onChange,
   label,
   sheetTitle,
-  fullWidth = false,
 }: {
   regionId: string;
   onChange: (id: string) => void;
-  label?: string;
-  sheetTitle?: string;
-  fullWidth?: boolean;
+  label: string;
+  sheetTitle: string;
 }) {
-  const { t, languageId } = useTranslation();
+  const { languageId } = useTranslation();
   const [open, setOpen] = useState(false);
   const current = resolveRegionTimeZone(regionId, languageId);
 
   return (
     <>
-      <Pressable onPress={() => setOpen(true)} style={({ pressed }) => [styles.triggerHost, fullWidth && styles.triggerHostFull, pressed && styles.pressed]}>
-        <ThemedView type="backgroundElement" style={[styles.trigger, fullWidth && styles.triggerFull]}>
+      <Pressable onPress={() => setOpen(true)} style={({ pressed }) => [styles.triggerHost, pressed && styles.pressed]}>
+        <ThemedView type="backgroundElement" style={styles.trigger}>
           <ThemedText type="small" themeColor="textSecondary" style={styles.label}>
-            {label ?? t('home.region')}
+            {label}
           </ThemedText>
-          <ThemedText type="smallBold" style={[styles.value, fullWidth && styles.valueFull]}>{current.label}</ThemedText>
+          <ThemedText type="smallBold" style={styles.value}>{current.label}</ThemedText>
         </ThemedView>
       </Pressable>
 
@@ -47,7 +43,7 @@ export function RegionSelector({
             <ThemedView type="background" style={styles.sheet}>
               <SafeAreaView edges={['bottom']}>
                 <ThemedText type="smallBold" style={styles.sheetTitle}>
-                  {sheetTitle ?? t('region.chooseHome')}
+                  {sheetTitle}
                 </ThemedText>
                 <FlatList
                   data={regionOptions(languageId)}
@@ -96,26 +92,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     maxWidth: '100%',
   },
-  // Home's version: a full-width row, label on the left and the value on the
-  // right.
-  triggerHostFull: {
-    alignSelf: 'stretch',
-  },
-  triggerFull: {
-    alignSelf: 'stretch',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
-  },
   label: {
     flexShrink: 0,
   },
   // Lets a long value wrap inside the pill instead of pushing it off-screen.
   value: {
     flexShrink: 1,
-  },
-  valueFull: {
-    textAlign: 'right',
   },
   backdrop: {
     flex: 1,

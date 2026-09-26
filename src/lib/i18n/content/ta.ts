@@ -280,7 +280,7 @@ export const TA_CONTENT: LanguageContent = {
     'south-africa': 'தென் ஆப்பிரிக்கா',
     uae: 'ஐக்கிய அரபு அமீரகம் (துபாய்)',
   },
-  autoRegion: () => 'தானியங்கி (இந்தச் சாதனத்தின் நேர மண்டலம்)',
+  autoRegion: (tz) => `உள்ளூர் நேரம் (${tz.split('/').pop()?.replace(/_/g, ' ') ?? tz})`,
 
   verseTitles: {
     'Vetri Vel Veeravel': 'வெற்றி வேல் வீரவேல்',

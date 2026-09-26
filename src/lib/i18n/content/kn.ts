@@ -280,7 +280,7 @@ export const KN_CONTENT: LanguageContent = {
     'south-africa': 'ದಕ್ಷಿಣ ಆಫ್ರಿಕಾ',
     uae: 'ಯುಎಇ (ದುಬೈ)',
   },
-  autoRegion: () => 'ಸ್ವಯಂ (ಈ ಸಾಧನದ ಸಮಯ ವಲಯ)',
+  autoRegion: (tz) => `ಸ್ಥಳೀಯ ಸಮಯ (${tz.split('/').pop()?.replace(/_/g, ' ') ?? tz})`,
 
   verseTitles: {
     'Vetri Vel Veeravel': 'ವೆಟ್ರಿ ವೇಲ್ ವೀರವೇಲ್',

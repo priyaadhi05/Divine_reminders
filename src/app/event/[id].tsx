@@ -10,7 +10,6 @@ import { SharePanel } from '@/components/share-panel';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
-import { useRegion } from '@/contexts/region-context';
 import { CATEGORY_LABELS, formatPeriodTiming, getDeityById, getEventById } from '@/data/events';
 import { useTheme } from '@/hooks/use-theme';
 import { useTranslation } from '@/hooks/use-translation';
@@ -19,37 +18,32 @@ import { CATEGORY_STYLE } from '@/lib/category-style';
 import { getDevotional } from '@/lib/i18n/content';
 import { REMINDERS_SUPPORTED, getTopicLeadDays, isTopicFollowed, setTopicFollowed, setTopicLeadDays } from '@/lib/notifications';
 import { ensureRemindersAllowed } from '@/lib/reminder-permission';
-import { resolveRegionTimeZone } from '@/lib/regions';
+import { AUTO_REGION_ID, resolveRegionTimeZone } from '@/lib/regions';
 import { buildGreeting } from '@/lib/share-greeting';
+
+// Asia/Calcutta is the older name some phones still report for India.
+const IST_ZONES = ['Asia/Kolkata', 'Asia/Calcutta'];
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const event = getEventById(id);
-  const { regionId: homeRegionId } = useRegion();
   const theme = useTheme();
   const { t, categoryLabel, deityName: translatedDeityName, localize, fullDate, languageId } = useTranslation();
   const [reminderOn, setReminderOn] = useState(false);
   const [leadDays, setLeadDays] = useState<number[]>([3, 2, 1]);
   const [busy, setBusy] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  // Starts on the home country/region chosen at onboarding, but switching
-  // it here (see RegionSelector) only changes what this page shows - it's a
-  // one-off "what would this look like elsewhere?" peek, not a change to
-  // that home setting.
-  const [viewingRegionId, setViewingRegionId] = useState(homeRegionId);
+  // Always starts on the phone's own time zone, so someone in Berlin or
+  // Toronto sees when the tithi begins and ends on their own clock without
+  // setting anything. "See in" (RegionSelector) is a one-off peek at another
+  // country - e.g. family back in India - and isn't remembered.
+  const [viewingRegionId, setViewingRegionId] = useState(AUTO_REGION_ID);
 
   useEffect(() => {
     if (!event) return;
     isTopicFollowed(event.deity, event.category).then(setReminderOn);
     getTopicLeadDays(event.deity, event.category).then(setLeadDays);
   }, [event]);
-
-  // Home region loads from storage asynchronously (see RegionProvider), so
-  // sync once it resolves - this only fires again later if the home region
-  // itself changes, not from a peek made on this page.
-  useEffect(() => {
-    setViewingRegionId(homeRegionId);
-  }, [homeRegionId]);
 
   if (!event) {
     return (
@@ -225,11 +219,20 @@ export default function EventDetailScreen() {
               </ThemedView>
             </ThemedView>
 
-            <ThemedView type="backgroundSelected" style={styles.timingNoteBadge}>
-              <ThemedText type="small" themeColor="textSecondary">
-                {t('event.timingNote', { region: timing.regionLabel, startIST: timing.startIST, endIST: timing.endIST })}
-              </ThemedText>
-            </ThemedView>
+            {/* A tithi begins and ends at the same instant everywhere - the
+                region only changes which clock it's shown on. So the India
+                (IST) reference is only worth repeating when the times above
+                differ from it; for India itself there's nothing to add, and
+                for places on the same clock (Sri Lanka) it just says so. */}
+            {!IST_ZONES.includes(timeZone) && (
+              <ThemedView type="backgroundSelected" style={styles.timingNoteBadge}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {timing.startLocal === timing.startIST && timing.endLocal === timing.endIST
+                    ? t('event.sameAsIST', { region: timing.regionLabel })
+                    : t('event.timingNote', { region: timing.regionLabel, startIST: timing.startIST, endIST: timing.endIST })}
+                </ThemedText>
+              </ThemedView>
+            )}
           </ThemedView>
         )}
 
