@@ -251,7 +251,7 @@ export async function setTopicLeadDays(deityId: string, category: string, days: 
 async function ensureChannel(): Promise<void> {
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-    name: 'Bhakti Reminder alerts',
+    name: 'Deiva Dinam reminders',
     importance: Notifications.AndroidImportance.DEFAULT,
   });
 }

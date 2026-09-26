@@ -96,7 +96,7 @@ def spaced(d, y, text, f, fill, spacing):
 
 def text(d, name, mantra):
     brand = font('Cinzel.ttf', 34, 'Bold')
-    left, right = spaced(d, 78, 'BHAKTI REMINDER', brand, GOLD + (255,), 7)
+    left, right = spaced(d, 78, 'DEIVA DINAM', brand, GOLD + (255,), 7)
     for x0, x1 in ((left - 110, left - 24), (right + 24, right + 110)):
         d.line((x0, 66, x1, 66), fill=GOLD + (200,), width=2)
     title = font('Cinzel.ttf', 92, 'Bold')

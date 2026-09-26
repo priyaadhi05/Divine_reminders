@@ -57,7 +57,7 @@ Join our community of developers creating universal apps.
 
 ## How this app works
 
-Divine Calendar is a React Native app (Expo + Expo Router) covering multiple
+Deiva Dinam ("divine day") is a React Native app (Expo + Expo Router) covering multiple
 deities (Murugan, Vishnu, Shiva, Amman, Ganesha, Ayyappan, Hanuman, Lakshmi), each with their own festivals,
 vrathams, and monthly observances for 2026–2045.
 

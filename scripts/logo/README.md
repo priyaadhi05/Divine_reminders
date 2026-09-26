@@ -1,23 +1,24 @@
 # App logo
 
-The logo (a lit diya on a lotus, in a gold-ringed green seal) is drawn in
-code so every size stays in sync.
+The icon is a lit diya on a lotus in a temple, generated as a 1024×1024
+image and turned into every size by `make-icons.py` (needs `pip install
+opencv-python pillow numpy`):
 
-1. `python3 scripts/logo/generate-logo.py scripts/logo/out` writes the SVG
-   variants (`icon`, `badge`, `android-fg`, `android-bg`, `android-mono`,
-   `splash`).
-2. `scripts/logo/render-svg.js <svg> <png> <px>` renders one to PNG with
-   headless Chrome (needs `playwright-core` and Google Chrome installed).
+1. `python3 scripts/logo/make-icons.py prepare <generated.png>` removes the
+   generator's corner mark, warms the pale water and saves the two masters
+   here - `icon-master.png` (zoomed on the lotus) and `icon-master-wide.png`
+   (uncropped, for Android's adaptive icon, which the launcher crops).
+2. `python3 scripts/logo/make-icons.py build` writes `icon.png`,
+   `favicon.png`, `android-icon-foreground.png`,
+   `android-icon-background.png`, `splash-icon.png`, `logo-mark.png` and
+   `logo-mark-transparent.png` in `assets/images/`. It prints the Android
+   background colour - keep `android.adaptiveIcon.backgroundColor` in
+   `app.json` in step with it.
 
-Sizes used in `assets/images/`:
+Then re-run `scripts/cards/generate-cards.py` if the share cards should
+pick up any branding change.
 
-| file | source | px |
-|---|---|---|
-| icon.png | icon | 1024 |
-| android-icon-foreground.png | android-fg | 512 |
-| android-icon-background.png | android-bg | 512 |
-| android-icon-monochrome.png | android-mono | 432 |
-| splash-icon.png | splash | 600 |
-| favicon.png | icon | 48 |
-| logo-mark.png | badge | 360 |
-| logo-mark-transparent.png | badge | 360 |
+`android-icon-monochrome.png` (the silhouette Android 13+ uses for themed
+icons) still comes from the earlier drawn logo - `generate-logo.py`'s
+`android-mono` variant, rendered with `render-svg.js` at 432 px. It is the
+same diya-on-lotus shape, so it still matches.
